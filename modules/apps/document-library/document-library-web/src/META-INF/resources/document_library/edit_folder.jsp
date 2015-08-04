@@ -79,7 +79,34 @@ if (workflowEnabled) {
 
 	<liferay-ui:error exception="<%= DuplicateFileException.class %>" message="please-enter-a-unique-folder-name" />
 	<liferay-ui:error exception="<%= DuplicateFolderNameException.class %>" message="please-enter-a-unique-folder-name" />
-	<liferay-ui:error exception="<%= FolderNameException.class %>" message="please-enter-a-valid-name" />
+
+	<liferay-ui:error exception="<%= FolderNameException.class %>">
+
+		<%
+		String folderNameGeneralRestrictions = StringUtil.toLowerCase(LanguageUtil.get(request, "blank"));
+
+		String folderNameReservedWords = StringPool.NULL + StringPool.COMMA_AND_SPACE + StringUtil.merge(PropsValues.DL_NAME_BLACKLIST, StringPool.COMMA);
+
+		String folderNameInvalidEndCharacters = StringPool.BLANK;
+
+		for (String blacklistLastChar : PropsValues.DL_CHAR_LAST_BLACKLIST) {
+			String invalidEndChar = blacklistLastChar;
+
+			if (invalidEndChar.startsWith("\\u")) {
+				invalidEndChar = UnicodeFormatter.parseString(invalidEndChar);
+			}
+
+			folderNameInvalidEndCharacters += invalidEndChar + StringPool.SPACE;
+		}
+
+		folderNameInvalidEndCharacters = StringUtil.trimTrailing(folderNameInvalidEndCharacters);
+
+		String folderNameInvalidCharacters = StringUtil.merge(PropsValues.DL_CHAR_BLACKLIST, StringPool.SPACE);
+		%>
+
+		<liferay-ui:message arguments="<%= new String[] {folderNameGeneralRestrictions, folderNameReservedWords, folderNameInvalidEndCharacters, folderNameInvalidCharacters} %>" key="the-folder-name-cannot-be-x-a-reserved-word-x-end-with-the-following-characters-x-or-contain-the-following-invalid-characters-x" translateArguments="<%= false %>" />
+	</liferay-ui:error>
+
 	<liferay-ui:error exception="<%= RequiredFileEntryTypeException.class %>" message="please-select-a-document-type" />
 
 	<aui:model-context bean="<%= folder %>" model="<%= DLFolder.class %>" />
