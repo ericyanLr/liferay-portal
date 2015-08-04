@@ -50,15 +50,15 @@ if (userGroup != null) {
 	<liferay-ui:error exception="<%= UserGroupNameException.class %>">
 
 		<%
-			String userGroupNameGeneralRestrictions = StringUtil.toLowerCase(LanguageUtil.get(request, "blank"));
+		String userGroupNameGeneralRestrictions = StringUtil.toLowerCase(LanguageUtil.get(request, "blank"));
 
-			if (!PropsValues.USER_GROUPS_NAME_ALLOW_NUMERIC) {
-				userGroupNameGeneralRestrictions += StringPool.COMMA_AND_SPACE + StringUtil.toLowerCase(LanguageUtil.get(request, "numeric"));
-			}
+		if (!PropsValues.USER_GROUPS_NAME_ALLOW_NUMERIC) {
+			userGroupNameGeneralRestrictions += StringPool.COMMA_AND_SPACE + StringUtil.toLowerCase(LanguageUtil.get(request, "numeric"));
+		}
 
-			String userGroupNameReservedWords = StringPool.NULL;
+		String userGroupNameReservedWords = StringPool.NULL;
 
-			String userGroupNameInvalidCharacters = StringPool.COMMA + StringPool.SPACE + StringPool.STAR;
+		String userGroupNameInvalidCharacters = StringPool.COMMA + StringPool.SPACE + StringPool.STAR;
 		%>
 
 		<liferay-ui:message arguments="<%= new String[] {userGroupNameGeneralRestrictions, userGroupNameReservedWords, userGroupNameInvalidCharacters} %>" key="the-user-group-name-cannot-be-x-a-reserved-word-x-or-contain-the-following-invalid-characters-x" translateArguments="<%= false %>" />
