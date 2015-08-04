@@ -68,7 +68,16 @@ else {
 		title='<%= (folder == null) ? ((parentFolderId > 0) ? "add-subfolder" : "add-folder") : LanguageUtil.format(request, "edit-x", folder.getName(), false) %>'
 	/>
 
-	<liferay-ui:error exception="<%= FolderNameException.class %>" message="please-enter-a-valid-name" />
+	<liferay-ui:error exception="<%= FolderNameException.class %>">
+
+		<%
+		String bookmarkFolderNameGeneralRestrictions = StringUtil.toLowerCase(LanguageUtil.get(request, "blank"));
+		String bookmarkFolderNameReservedWords = StringPool.NULL;
+		String bookmarkFolderNameInvalidCharacters = StringPool.DOUBLE_SLASH + StringPool.SPACE + StringPool.DOUBLE_BACK_SLASH;
+		%>
+
+		<liferay-ui:message arguments="<%= new String[] {bookmarkFolderNameGeneralRestrictions, bookmarkFolderNameReservedWords, bookmarkFolderNameInvalidCharacters} %>" key="the-folder-name-cannot-be-x-a-reserved-word-x-or-contain-the-following-invalid-characters-x" translateArguments="<%= false %>" />
+	</liferay-ui:error>
 
 	<aui:model-context bean="<%= folder %>" model="<%= BookmarksFolder.class %>" />
 
