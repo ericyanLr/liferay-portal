@@ -112,7 +112,19 @@ else if (group != null) {
 
 <liferay-ui:error exception="<%= DuplicateGroupException.class %>" message="please-enter-a-unique-name" />
 <liferay-ui:error exception="<%= GroupInheritContentException.class %>" message="this-site-cannot-inherit-content-from-its-parent-site" />
-<liferay-ui:error exception="<%= GroupKeyException.class %>" message="please-enter-a-valid-name" />
+
+<liferay-ui:error exception="<%= GroupKeyException.class %>">
+
+	<%
+	String siteNameGeneralRestrictions = StringUtil.toLowerCase(LanguageUtil.get(request, "blank")) + StringPool.COMMA_AND_SPACE + StringUtil.toLowerCase(LanguageUtil.get(request, "numeric"));
+	String siteNameReservedWords = StringPool.NULL;
+	String siteNameRestrictedContainedWords = StringPool.QUOTE + StringPool.SPACE + GroupLocalServiceImpl.ORGANIZATION_NAME_SUFFIX + StringPool.QUOTE;
+	String siteNameInvalidCharacters = StringPool.STAR;
+	%>
+
+	<liferay-ui:message arguments="<%= new String[] {siteNameGeneralRestrictions, siteNameReservedWords, siteNameRestrictedContainedWords, siteNameInvalidCharacters} %>" key="the-site-name-cannot-be-x-a-reserved-word-x-contain-the-term-x-or-contain-the-following-invalid-characters-x" translateArguments="<%= false %>" />
+</liferay-ui:error>
+
 <liferay-ui:error exception="<%= GroupParentException.MustNotBeOwnParent.class %>" message="the-site-cannot-be-its-own-parent-site" />
 <liferay-ui:error exception="<%= GroupParentException.MustNotHaveChildParent.class %>" message="the-site-cannot-have-a-child-as-its-parent-site" />
 <liferay-ui:error exception="<%= GroupParentException.MustNotHaveStagingParent.class %>" message="the-site-cannot-have-a-staging-site-as-its-parent-site" />
