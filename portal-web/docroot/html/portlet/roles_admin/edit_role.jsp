@@ -53,7 +53,23 @@ String subtype = BeanParamUtil.getString(role, request, "subtype");
 
 	<liferay-ui:error exception="<%= DuplicateRoleException.class %>" message="please-enter-a-unique-name" />
 	<liferay-ui:error exception="<%= RequiredRoleException.class %>" message="old-role-name-is-a-required-system-role" />
-	<liferay-ui:error exception="<%= RoleNameException.class %>" message="please-enter-a-valid-name" />
+
+	<liferay-ui:error exception="<%= RoleNameException.class %>">
+
+		<%
+		String roleNameGeneralRestrictions = StringUtil.toLowerCase(LanguageUtil.get(request, "blank"));
+
+		if (!PropsValues.ROLES_NAME_ALLOW_NUMERIC) {
+			roleNameGeneralRestrictions += StringPool.COMMA_AND_SPACE + StringUtil.toLowerCase(LanguageUtil.get(request, "numeric"));
+		}
+
+		String roleNameReservedWords = StringPool.NULL + StringPool.COMMA_AND_SPACE + RoleConstants.PLACEHOLDER_DEFAULT_GROUP_ROLE;
+
+		String roleNameInvalidCharacters = StringPool.COMMA + StringPool.SPACE + StringPool.STAR;
+		%>
+
+		<liferay-ui:message arguments="<%= new String[] {roleNameGeneralRestrictions, roleNameReservedWords, roleNameInvalidCharacters} %>" key="the-role-name-cannot-be-x-a-reserved-word-x-or-contain-the-following-invalid-characters-x" translateArguments="<%= false %>" />
+	</liferay-ui:error>
 
 	<aui:model-context bean="<%= role %>" model="<%= Role.class %>" />
 
