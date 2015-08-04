@@ -46,7 +46,23 @@ if (userGroup != null) {
 
 	<liferay-ui:error exception="<%= DuplicateUserGroupException.class %>" message="please-enter-a-unique-name" />
 	<liferay-ui:error exception="<%= RequiredUserGroupException.class %>" message="this-is-a-required-user-group" />
-	<liferay-ui:error exception="<%= UserGroupNameException.class %>" message="please-enter-a-valid-name" />
+
+	<liferay-ui:error exception="<%= UserGroupNameException.class %>">
+
+		<%
+			String userGroupNameGeneralRestrictions = StringUtil.toLowerCase(LanguageUtil.get(request, "blank"));
+
+			if (!PropsValues.USER_GROUPS_NAME_ALLOW_NUMERIC) {
+				userGroupNameGeneralRestrictions += StringPool.COMMA_AND_SPACE + StringUtil.toLowerCase(LanguageUtil.get(request, "numeric"));
+			}
+
+			String userGroupNameReservedWords = StringPool.NULL;
+
+			String userGroupNameInvalidCharacters = StringPool.COMMA + StringPool.SPACE + StringPool.STAR;
+		%>
+
+		<liferay-ui:message arguments="<%= new String[] {userGroupNameGeneralRestrictions, userGroupNameReservedWords, userGroupNameInvalidCharacters} %>" key="the-user-group-name-cannot-be-x-a-reserved-word-x-or-contain-the-following-invalid-characters-x" translateArguments="<%= false %>" />
+	</liferay-ui:error>
 
 	<aui:model-context bean="<%= userGroup %>" model="<%= UserGroup.class %>" />
 
