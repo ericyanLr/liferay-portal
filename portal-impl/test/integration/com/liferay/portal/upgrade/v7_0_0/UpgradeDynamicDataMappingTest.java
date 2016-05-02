@@ -27,8 +27,11 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -50,154 +53,85 @@ public class UpgradeDynamicDataMappingTest extends UpgradeKernelPackage {
 	@Before
 	public void setUp() throws Exception {
 		connection = DataAccess.getUpgradeOptimizedConnection();
-
-		runSQL("insert into Counter values('" + _OLD_CLASS_NAME + "', 10)");
-
-		runSQL(
-			"insert into ClassName_ values(0, " + increment(ClassName.class) +
-				", 'PREFIX_" + _OLD_CLASS_NAME + "')");
-
-		StringBundler sb = new StringBundler(9);
-
-		sb.append("insert into ResourceBlock values(0, ");
-		sb.append(increment(ResourceBlock.class));
-		sb.append(", ");
-		sb.append(TestPropsValues.getCompanyId());
-		sb.append(", ");
-		sb.append(TestPropsValues.getGroupId());
-		sb.append(", '");
-		sb.append(_OLD_CLASS_NAME);
-		sb.append("_POSTFIX', 'HASH', 1)");
-
-		runSQL(sb.toString());
-
-		sb = new StringBundler(9);
-
-		sb.append("insert into ResourcePermission values(0, ");
-		sb.append(increment(ResourcePermission.class));
-		sb.append(", ");
-		sb.append(TestPropsValues.getCompanyId());
-		sb.append(", 'PREFIX_");
-		sb.append(_OLD_CLASS_NAME);
-		sb.append("_POSTFIX', ");
-		sb.append(ResourceConstants.SCOPE_INDIVIDUAL);
-		sb.append(", 'PRIM_KEY', 2, 3, 4, 5, [$TRUE$])");
-
-		runSQL(sb.toString());
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		for (String className : getClassNames()[0]) {
-			runSQL("delete from Counter where name like '%" + className + "%'");
-
-			runSQL(
-				"delete from ClassName_ where value like '%" + className +
-					"%'");
-
-			runSQL(
-				"delete from ResourceBlock where name like '%" + className +
-					"%'");
-
-			runSQL(
-				"delete from ResourcePermission where name like '%" +
-					className + "%'");
-		}
-
 		connection.close();
 	}
 
 	@Test
-	public void testUpgradeClassName() throws Exception {
-		assertUpgradeSuccessful("ClassName_", "value");
-	}
+	public void testUpgrade() throws Exception {
+		DatabaseMetaData metadata = connection.getMetaData();
 
-	@Test
-	public void testUpgradeCounter() throws Exception {
-		assertUpgradeSuccessful("Counter", "name");
-	}
+		String tableName = "ddmtemplate";
+		String columnName = "templateKey";
 
-	@Test
-	public void testUpgradeResourceBlock() throws Exception {
-		assertUpgradeSuccessful("ResourceBlock", "name");
-	}
+		ResultSet columnResultSet = metadata.getColumns(
+			null, null, tableName, columnName);
 
-	@Test
-	public void testUpgradeResourcePermission() throws Exception {
-		assertUpgradeSuccessful("ResourcePermission", "name");
-	}
+		if (columnResultSet.next()) {
+			testTableName(tableName, columnResultSet);
 
-	protected void assertUpgradeSuccessful(String tableName, String columnName)
-		throws Exception {
+			testColumnName(columnName, columnResultSet);
 
-		StringBundler oldSelectSB = new StringBundler(9);
-
-		oldSelectSB.append("select ");
-		oldSelectSB.append(columnName);
-		oldSelectSB.append(" from ");
-		oldSelectSB.append(tableName);
-		oldSelectSB.append(" where ");
-		oldSelectSB.append(columnName);
-		oldSelectSB.append(" like '%");
-		oldSelectSB.append(_OLD_CLASS_NAME);
-		oldSelectSB.append("%'");
-
-		String oldValue = null;
-
-		try (PreparedStatement ps = connection.prepareStatement(
-				oldSelectSB.toString());
-			ResultSet rs = ps.executeQuery()) {
-
-			Assert.assertTrue(
-				"Table " + tableName + " and column " + columnName +
-					" does not contain value " + _OLD_CLASS_NAME,
-				rs.next());
-
-			oldValue = rs.getString(columnName);
+			testColumnDataType(Types.VARCHAR, columnResultSet);
 		}
-
-		upgradeTable(
-			tableName, columnName, getClassNames(), WildcardMode.SURROUND);
-
-		String newValue = StringUtil.replace(
-			oldValue, _OLD_CLASS_NAME, _NEW_CLASS_NAME);
-
-		StringBundler newSelectSB = new StringBundler(9);
-
-		newSelectSB.append("select ");
-		newSelectSB.append(columnName);
-		newSelectSB.append(" from ");
-		newSelectSB.append(tableName);
-		newSelectSB.append(" where ");
-		newSelectSB.append(columnName);
-		newSelectSB.append(" = '");
-		newSelectSB.append(newValue);
-		newSelectSB.append("'");
-
-		try (PreparedStatement ps = connection.prepareStatement(
-				newSelectSB.toString());
-			ResultSet rs = ps.executeQuery()) {
-
-			Assert.assertTrue(
-				"Table " + tableName + " and column " + columnName +
-					" does not contain value " + newValue,
-				rs.next());
+		else {
+			Assert.fail("Could not retrieve metadata for table: " + tableName);
 		}
 	}
 
-	@Override
-	protected String[][] getClassNames() {
-		return new String[][] {{_OLD_CLASS_NAME, _NEW_CLASS_NAME}};
+	public void testColumnName(String expectedColumnName, ResultSet resultSet)
+		throws SQLException {
+
+		String resultColumnName = resultSet.getString("COLUMN_NAME");
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(
+			"Retrieved metadata does not match the expected column name: ");
+		sb.append(expectedColumnName);
+		sb.append(". Instead, it has a column name of: ");
+		sb.append(resultColumnName);
+
+		Assert.assertEquals(sb.toString(), expectedColumnName,
+			resultColumnName);
 	}
 
-	protected long increment(Class<?> clazz) throws Exception {
-		return CounterLocalServiceUtil.increment(clazz.getName());
+	public void testTableName(String expectedTableName, ResultSet resultSet)
+		throws SQLException{
+
+		String resultTableName = resultSet.getString("TABLE_NAME");
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(
+			"Retrieved metadata does not match the expected table name: ");
+		sb.append(expectedTableName);
+		sb.append(". Instead, it has a table name of:");
+		sb.append(resultTableName);
+
+		Assert.assertEquals(sb.toString(), expectedTableName, resultTableName);
 	}
 
-	private static final String _NEW_CLASS_NAME =
-		"com.liferay.class.path.kernel.Test";
+	public void testColumnDataType(int expectedColumnDataType,
+		ResultSet resultSet) throws SQLException {
 
-	private static final String _OLD_CLASS_NAME =
-		"com.liferay.portlet.classpath.Test";
+		String resultColumnName = resultSet.getString("COLUMN_NAME");
+		int resultDataType = resultSet.getInt("DATA_TYPE");
+		String resultDataTypeName = resultSet.getString("TYPE_NAME");
+
+		StringBundler sb = new StringBundler(7);
+
+		sb.append("Column ");
+		sb.append(resultColumnName);
+		sb.append(" does not have the expected data type VARCHAR.");
+		sb.append(" Instead, it has a data type: ");
+		sb.append(resultDataTypeName);
+
+		Assert.assertEquals(sb.toString(), resultDataType,
+			expectedColumnDataType);
+	}
 
 }
