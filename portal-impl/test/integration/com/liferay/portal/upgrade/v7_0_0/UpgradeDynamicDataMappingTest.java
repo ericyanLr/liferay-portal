@@ -21,7 +21,6 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 
 import org.junit.After;
@@ -34,7 +33,7 @@ import org.junit.Test;
 /**
  * @author Eric Yan
  */
-public class UpgradeDynamicDataMappingTest extends UpgradeKernelPackage {
+public class UpgradeDynamicDataMappingTest extends UpgradeDynamicDataMapping {
 
 	@ClassRule
 	@Rule
@@ -53,76 +52,43 @@ public class UpgradeDynamicDataMappingTest extends UpgradeKernelPackage {
 
 	@Test
 	public void testUpgrade() throws Exception {
+		testMetaData();
+	}
+
+	public void testMetaData() throws Exception{
 		DatabaseMetaData metadata = connection.getMetaData();
 
-		String tableName = "ddmtemplate";
-		String columnName = "templateKey";
+		String tableName = normalizeName("ddmtemplate", metadata);
+		String columnName = normalizeName("templateKey", metadata);
+
+		ResultSet tableResultSet = metadata.getTables(
+			null, null, tableName, null);
+
+		if (!tableResultSet.next()) {
+			Assert.fail("Could not retrieve metadata for table: " + tableName);
+		}
 
 		ResultSet columnResultSet = metadata.getColumns(
 			null, null, tableName, columnName);
 
 		if (columnResultSet.next()) {
-			testTableName(tableName, columnResultSet);
+			int columnDataType = columnResultSet.getInt("DATA_TYPE");
 
-			testColumnName(columnName, columnResultSet);
+			StringBundler sb = new StringBundler(5);
 
-			testColumnDataType(Types.VARCHAR, columnResultSet);
+			sb.append("Column ");
+			sb.append(columnName);
+			sb.append(" does not have the expected data type: VARCHAR");
+			sb.append(" Instead, it has a data type: ");
+			sb.append(columnDataType);
+
+			Assert.assertEquals(sb.toString(), columnDataType,
+				Types.VARCHAR);
 		}
 		else {
-			Assert.fail("Could not retrieve metadata for table: " + tableName);
+			Assert.fail(
+				"Could not retrieve metadata for column: " + columnName);
 		}
-	}
-
-	public void testColumnName(String expectedColumnName, ResultSet resultSet)
-		throws SQLException {
-
-		String resultColumnName = resultSet.getString("COLUMN_NAME");
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(
-			"Retrieved metadata does not match the expected column name: ");
-		sb.append(expectedColumnName);
-		sb.append(". Instead, it has a column name of: ");
-		sb.append(resultColumnName);
-
-		Assert.assertEquals(sb.toString(), expectedColumnName,
-			resultColumnName);
-	}
-
-	public void testTableName(String expectedTableName, ResultSet resultSet)
-		throws SQLException{
-
-		String resultTableName = resultSet.getString("TABLE_NAME");
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(
-			"Retrieved metadata does not match the expected table name: ");
-		sb.append(expectedTableName);
-		sb.append(". Instead, it has a table name of:");
-		sb.append(resultTableName);
-
-		Assert.assertEquals(sb.toString(), expectedTableName, resultTableName);
-	}
-
-	public void testColumnDataType(int expectedColumnDataType,
-								   ResultSet resultSet) throws SQLException {
-
-		String resultColumnName = resultSet.getString("COLUMN_NAME");
-		int resultDataType = resultSet.getInt("DATA_TYPE");
-		String resultDataTypeName = resultSet.getString("TYPE_NAME");
-
-		StringBundler sb = new StringBundler(7);
-
-		sb.append("Column ");
-		sb.append(resultColumnName);
-		sb.append(" does not have the expected data type VARCHAR.");
-		sb.append(" Instead, it has a data type: ");
-		sb.append(resultDataTypeName);
-
-		Assert.assertEquals(sb.toString(), resultDataType,
-			expectedColumnDataType);
 	}
 
 }
