@@ -14,17 +14,20 @@
 
 package com.liferay.portal.upgrade.v7_0_0;
 
+import com.liferay.portal.kernel.dao.db.DB;
+import com.liferay.portal.kernel.dao.db.DBManagerUtil;
+import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.upgrade.util.UpgradeColumn;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.upgrade.v6_2_0.util.DDMTemplateTable;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Types;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -43,58 +46,62 @@ public class UpgradeDynamicDataMappingTest extends UpgradeDynamicDataMapping {
 
 	@Before
 	public void setUp() throws Exception {
-		_connection = DataAccess.getUpgradeOptimizedConnection();
-	}
+		try (Connection con = DataAccess.getUpgradeOptimizedConnection()) {
+			connection = con;
 
-	@After
-	public void tearDown() throws Exception {
-		_connection.close();
+			alter(
+				DDMTemplateTable.class,
+				new AlterColumnType("templateKey", "STRING"));
+		}
 	}
 
 	@Test
 	public void testUpgrade() throws Exception {
-		testUpgradeDDMTemplateTemplateKey();
-	}
+		try (Connection con = DataAccess.getUpgradeOptimizedConnection()) {
+			DatabaseMetaData metadata = con.getMetaData();
 
-	protected void testUpgradeDDMTemplateTemplateKey() throws Exception{
-		String tableName = "ddmtemplate";
-		String columnName = "templateKey";
+			try (ResultSet templateKeyColumnResultSet = metadata.getColumns(
+				null, null, normalizeName("ddmtemplate", metadata),
+				normalizeName("templateKey", metadata))) {
 
-		ResultSet templateKeyColumnResultSet = getColumnResultSet(
-			_connection, tableName, columnName);
+				Assert.assertTrue(templateKeyColumnResultSet.next());
 
-		if(templateKeyColumnResultSet.next()) {
-			int columnDataType = templateKeyColumnResultSet.getInt("DATA_TYPE");
+				int columnDataType = templateKeyColumnResultSet.getInt(
+					"DATA_TYPE");
 
-			if (columnDataType != Types.VARCHAR) {
-				upgrade();
+				Assert.assertNotEquals(Types.VARCHAR, columnDataType);
+			}
 
-				templateKeyColumnResultSet = getColumnResultSet(
-					_connection, tableName, columnName);
+			upgrade();
 
-				if(templateKeyColumnResultSet.next()) {
-					columnDataType = templateKeyColumnResultSet.getInt(
-						"DATA_TYPE");
+			metadata = con.getMetaData();
 
-					StringBundler sb = new StringBundler(5);
+			try (ResultSet templateKeyColumnResultSet = metadata.getColumns(
+					null, null, normalizeName("ddmtemplate", metadata),
+					normalizeName("templateKey", metadata))) {
 
-					sb.append("Column ");
-					sb.append(columnName);
-					sb.append(" does not have the expected data type: VARCHAR");
-					sb.append(" Instead, it has a data type: ");
-					sb.append(columnDataType);
+				Assert.assertTrue(templateKeyColumnResultSet.next());
 
-					Assert.assertEquals(
-						sb.toString(), columnDataType,
-						Types.VARCHAR);
-				}
+				int columnDataType = templateKeyColumnResultSet.getInt(
+					"DATA_TYPE");
+
+				Assert.assertEquals(Types.VARCHAR, columnDataType);
 			}
 		}
-		else {
-			Assert.fail(
-				"Could not retrieve metadata for column: " + columnName);
-		}
 	}
 
-	private Connection _connection;
+	@Override
+	protected void upgradeTable(
+			String tableName, Object[][] tableColumns, String createSQL,
+			String[] indexesSQL, UpgradeColumn... upgradeColumns)
+		throws Exception {
+
+		DB db = DBManagerUtil.getDB();
+
+		Assert.assertEquals(DBType.DB2, db.getDBType());
+
+		super.upgradeTable(
+			tableName, tableColumns, createSQL, indexesSQL, upgradeColumns);
+	}
+
 }

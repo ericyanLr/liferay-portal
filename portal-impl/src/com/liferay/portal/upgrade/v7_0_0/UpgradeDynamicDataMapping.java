@@ -17,7 +17,6 @@ package com.liferay.portal.upgrade.v7_0_0;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.upgrade.v6_2_0.util.DDMTemplateTable;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Types;
@@ -29,32 +28,23 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 	@Override
 	protected void doUpgrade() throws Exception {
-		String tableName = "ddmtemplate";
-		String columnName = "templateKey";
+		DatabaseMetaData metadata = connection.getMetaData();
 
-		ResultSet templateKeyColumnResultSet = getColumnResultSet(
-			connection, tableName, columnName);
+		try (ResultSet templateKeyColumnResultSet = metadata.getColumns(
+				null, null, normalizeName("ddmtemplate", metadata),
+				normalizeName("templateKey", metadata))) {
 
-		if (templateKeyColumnResultSet.next()) {
-			int columnDataType = templateKeyColumnResultSet.getInt("DATA_TYPE");
+			if (templateKeyColumnResultSet.next()) {
+				int columnDataType = templateKeyColumnResultSet.getInt(
+					"DATA_TYPE");
 
-			if (columnDataType != Types.VARCHAR) {
-				alter(
-					DDMTemplateTable.class,
-					new AlterColumnType("templateKey", "VARCHAR(75) null"));
+				if (columnDataType != Types.VARCHAR) {
+					alter(
+						DDMTemplateTable.class,
+						new AlterColumnType("templateKey", "VARCHAR(75) null"));
+				}
 			}
 		}
 	}
 
-	protected ResultSet getColumnResultSet(Connection connection,
-			String tableName, String columnName)
-		throws Exception{
-		DatabaseMetaData metadata = connection.getMetaData();
-
-		tableName = normalizeName(tableName, metadata);
-		columnName = normalizeName(columnName, metadata);
-
-		return metadata.getColumns(
-			null, null, tableName, columnName);
-	}
 }
