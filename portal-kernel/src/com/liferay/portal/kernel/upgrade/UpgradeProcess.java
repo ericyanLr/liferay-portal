@@ -319,6 +319,7 @@ public abstract class UpgradeProcess
 						objectValuePairs = getIndexesSQL(
 							tableClass.getClassLoader(), tableName);
 
+
 					if (objectValuePairs == null) {
 						continue;
 					}
@@ -365,9 +366,13 @@ public abstract class UpgradeProcess
 			ClassLoader classLoader, String tableName)
 		throws IOException {
 
+		System.out.println("Is PortalClassLoader: " + PortalClassLoaderUtil.isPortalClassLoader(classLoader));
+
 		if (!PortalClassLoaderUtil.isPortalClassLoader(classLoader)) {
 			List<ObjectValuePair<String, IndexMetadata>> objectValuePairs =
 				new ArrayList<>();
+
+			System.out.println("Try reading: META-INF/sql/indexes.sql");
 
 			try (InputStream is = classLoader.getResourceAsStream(
 					"META-INF/sql/indexes.sql");
@@ -380,12 +385,16 @@ public abstract class UpgradeProcess
 				while ((line = unsyncBufferedReader.readLine()) != null) {
 					line = line.trim();
 
+					System.out.println("Reading line...: " + line);
+
 					if (line.isEmpty()) {
 						continue;
 					}
 
 					IndexMetadata indexMetadata =
 						IndexMetadataFactoryUtil.createIndexMetadata(line);
+
+					System.out.println("Created indexMetadata: " + indexMetadata);
 
 					if (tableName.equals(indexMetadata.getTableName())) {
 						objectValuePairs.add(
@@ -397,9 +406,14 @@ public abstract class UpgradeProcess
 			return objectValuePairs;
 		}
 
+		System.out.println("Is portalIndexesSql empty: " + _portalIndexesSQL.isEmpty());
+
 		if (!_portalIndexesSQL.isEmpty()) {
+			System.out.println("Retrieve index sql for table: " + tableName);
 			return _portalIndexesSQL.get(tableName);
 		}
+
+		System.out.println("Attempt to get resource: com/liferay/portal/tools/sql/dependencies/indexes.sql");
 
 		try (InputStream is = classLoader.getResourceAsStream(
 				"com/liferay/portal/tools/sql/dependencies/indexes.sql");
@@ -418,6 +432,8 @@ public abstract class UpgradeProcess
 
 				IndexMetadata indexMetadata =
 					IndexMetadataFactoryUtil.createIndexMetadata(line);
+
+				System.out.println("indexes.sql - index metadata: " + indexMetadata);
 
 				List<ObjectValuePair<String, IndexMetadata>> objectValuePairs =
 					_portalIndexesSQL.get(indexMetadata.getTableName());
