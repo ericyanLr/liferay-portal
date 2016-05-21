@@ -79,7 +79,7 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			alter(
 				DDMTemplateTable.class,
 				new AlterTableAddColumn("classNameId LONG"),
-				new AlterTableAddColumn("templateKey STRING"),
+				new AlterTableAddColumn("templateKey VARCHAR(75) null"),
 				new AlterColumnName("structureId", "classPK LONG"));
 
 			long classNameId = PortalUtil.getClassNameId(
