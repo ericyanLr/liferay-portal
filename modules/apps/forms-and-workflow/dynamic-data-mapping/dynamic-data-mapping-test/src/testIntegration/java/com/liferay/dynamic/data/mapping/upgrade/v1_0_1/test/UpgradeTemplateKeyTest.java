@@ -22,13 +22,21 @@ import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.util.UpgradeColumn;
+import com.liferay.portal.test.log.CaptureAppender;
+import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Types;
+
+import java.util.List;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.spi.LoggingEvent;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -96,6 +104,34 @@ public class UpgradeTemplateKeyTest extends UpgradeTemplateKey {
 
 				Assert.assertEquals(Types.VARCHAR, columnDataType);
 			}
+		}
+	}
+
+	@Override
+	protected void alter(Class<?> tableClass, Alterable... alterables)
+		throws Exception {
+
+		if (_isSetUpRunning) {
+			try (CaptureAppender captureAppender =
+					Log4JLoggerTestUtil.configureLog4JLogger(
+						UpgradeProcess.class.getName(), Level.WARN)) {
+
+				super.alter(tableClass, alterables);
+
+				List<LoggingEvent> loggingEvents =
+					captureAppender.getLoggingEvents();
+
+				Assert.assertEquals(1, loggingEvents.size());
+
+				LoggingEvent loggingEvent = loggingEvents.get(0);
+
+				Assert.assertEquals(
+					"Fallback to recreating the table",
+					loggingEvent.getMessage());
+			}
+		}
+		else {
+			super.alter(tableClass, alterables);
 		}
 	}
 
