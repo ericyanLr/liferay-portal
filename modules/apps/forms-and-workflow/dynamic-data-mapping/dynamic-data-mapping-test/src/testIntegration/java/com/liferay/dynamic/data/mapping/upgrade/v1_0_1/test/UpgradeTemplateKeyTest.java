@@ -58,6 +58,10 @@ public class UpgradeTemplateKeyTest extends UpgradeTemplateKey {
 
 	@Before
 	public void setUp() throws Exception {
+		System.out.println("setUp is Running..");
+
+		Assert.assertTrue("setUp is Running..", true);
+
 		_isSetUpRunning = true;
 
 		try (Connection con = DataAccess.getUpgradeOptimizedConnection()) {
@@ -69,6 +73,22 @@ public class UpgradeTemplateKeyTest extends UpgradeTemplateKey {
 		}
 		finally {
 			_isSetUpRunning = false;
+		}
+
+		try (Connection con = DataAccess.getUpgradeOptimizedConnection()) {
+			DatabaseMetaData metadata = con.getMetaData();
+
+			try (ResultSet templateKeyColumnResultSet = metadata.getColumns(
+				null, null, normalizeName("ddmtemplate", metadata),
+				normalizeName("templateKey", metadata))) {
+
+				Assert.assertTrue(templateKeyColumnResultSet.next());
+
+				int columnDataType = templateKeyColumnResultSet.getInt(
+					"DATA_TYPE");
+
+				Assert.assertNotEquals(Types.VARCHAR, columnDataType);
+			}
 		}
 	}
 
@@ -126,6 +146,10 @@ public class UpgradeTemplateKeyTest extends UpgradeTemplateKey {
 				LoggingEvent loggingEvent = loggingEvents.get(0);
 
 				Assert.assertEquals(
+					"Fallback to recreating the table",
+					loggingEvent.getMessage());
+
+				Assert.assertNotEquals(
 					"Fallback to recreating the table",
 					loggingEvent.getMessage());
 			}
