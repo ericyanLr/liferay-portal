@@ -58,37 +58,32 @@ public class UpgradeTemplateKeyTest extends UpgradeTemplateKey {
 
 	@Before
 	public void setUp() throws Exception {
-		System.out.println("setUp is Running..");
-
-		Assert.assertTrue("setUp is Running..", true);
-
 		_isSetUpRunning = true;
 
 		try (Connection con = DataAccess.getUpgradeOptimizedConnection()) {
 			connection = con;
 
-			alter(
-				DDMTemplateTable.class,
-				new AlterColumnType("templateKey", "STRING"));
+			try (CaptureAppender captureAppender =
+					 Log4JLoggerTestUtil.configureLog4JLogger(
+						 UpgradeProcess.class.getName(), Level.WARN)) {
+				alter(
+					DDMTemplateTable.class,
+					new AlterColumnType("templateKey", "STRING"));
+
+				List<LoggingEvent> loggingEvents =
+					captureAppender.getLoggingEvents();
+
+				Assert.assertEquals(1, loggingEvents.size());
+
+				LoggingEvent loggingEvent = loggingEvents.get(0);
+
+				Assert.assertEquals(
+					"Fallback to recreating the table",
+					loggingEvent.getMessage());
+			}
 		}
 		finally {
 			_isSetUpRunning = false;
-		}
-
-		try (Connection con = DataAccess.getUpgradeOptimizedConnection()) {
-			DatabaseMetaData metadata = con.getMetaData();
-
-			try (ResultSet templateKeyColumnResultSet = metadata.getColumns(
-				null, null, normalizeName("ddmtemplate", metadata),
-				normalizeName("templateKey", metadata))) {
-
-				Assert.assertTrue(templateKeyColumnResultSet.next());
-
-				int columnDataType = templateKeyColumnResultSet.getInt(
-					"DATA_TYPE");
-
-				Assert.assertNotEquals(Types.VARCHAR, columnDataType);
-			}
 		}
 	}
 
@@ -124,38 +119,6 @@ public class UpgradeTemplateKeyTest extends UpgradeTemplateKey {
 
 				Assert.assertEquals(Types.VARCHAR, columnDataType);
 			}
-		}
-	}
-
-	@Override
-	protected void alter(Class<?> tableClass, Alterable... alterables)
-		throws Exception {
-
-		if (_isSetUpRunning) {
-			try (CaptureAppender captureAppender =
-					Log4JLoggerTestUtil.configureLog4JLogger(
-						UpgradeProcess.class.getName(), Level.WARN)) {
-
-				super.alter(tableClass, alterables);
-
-				List<LoggingEvent> loggingEvents =
-					captureAppender.getLoggingEvents();
-
-				Assert.assertEquals(1, loggingEvents.size());
-
-				LoggingEvent loggingEvent = loggingEvents.get(0);
-
-				Assert.assertEquals(
-					"Fallback to recreating the table",
-					loggingEvent.getMessage());
-
-				Assert.assertNotEquals(
-					"Fallback to recreating the table",
-					loggingEvent.getMessage());
-			}
-		}
-		else {
-			super.alter(tableClass, alterables);
 		}
 	}
 
