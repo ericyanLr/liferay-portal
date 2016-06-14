@@ -95,6 +95,22 @@ public class DDLRecordStagedModelDataHandler
 	}
 
 	@Override
+	protected void doImportCompanyStagedModel(
+			PortletDataContext portletDataContext, String uuid, long recordId)
+		throws Exception {
+
+		DDLRecord existingRecord =
+			DDLRecordLocalServiceUtil.fetchDDLRecordByUuidAndGroupId(
+				uuid, portletDataContext.getCompanyGroupId());
+
+		Map<Long, Long> recordIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				DDLRecord.class);
+
+		recordIds.put(recordId, existingRecord.getRecordId());
+	}
+
+	@Override
 	protected void doImportStagedModel(
 			PortletDataContext portletDataContext, DDLRecord record)
 		throws Exception {
