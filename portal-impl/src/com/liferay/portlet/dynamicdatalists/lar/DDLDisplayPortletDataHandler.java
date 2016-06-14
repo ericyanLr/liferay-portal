@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.dynamicdatalists.lar;
 
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.lar.DataLevel;
 import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.lar.PortletDataHandlerControl;
@@ -23,12 +24,16 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portlet.dynamicdatalists.model.DDLRecord;
 import com.liferay.portlet.dynamicdatalists.model.DDLRecordSet;
+import com.liferay.portlet.dynamicdatalists.service.DDLRecordLocalServiceUtil;
 import com.liferay.portlet.dynamicdatalists.service.DDLRecordSetLocalServiceUtil;
 import com.liferay.portlet.dynamicdatalists.service.permission.DDLPermission;
 import com.liferay.portlet.dynamicdatamapping.model.DDMTemplate;
 import com.liferay.portlet.dynamicdatamapping.service.DDMTemplateLocalServiceUtil;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletPreferences;
@@ -89,6 +94,15 @@ public class DDLDisplayPortletDataHandler extends DDLPortletDataHandler {
 		if (recordSet != null) {
 			StagedModelDataHandlerUtil.exportReferenceStagedModel(
 				portletDataContext, portletId, recordSet);
+
+			List<DDLRecord> records = DDLRecordLocalServiceUtil.getRecords(
+				recordSetId, WorkflowConstants.STATUS_APPROVED,
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+
+			for (DDLRecord record : records) {
+				StagedModelDataHandlerUtil.exportReferenceStagedModel(
+					portletDataContext, portletId, record);
+			}
 		}
 
 		long displayDDMTemplateId = GetterUtil.getLong(
