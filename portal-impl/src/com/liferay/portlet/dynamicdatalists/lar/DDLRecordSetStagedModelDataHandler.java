@@ -91,6 +91,22 @@ public class DDLRecordSetStagedModelDataHandler
 	}
 
 	@Override
+	protected boolean validateMissingReference(
+			String uuid, long companyId, long groupId)
+		throws Exception {
+
+		DDLRecordSet recordSet =
+			DDLRecordSetLocalServiceUtil.fetchDDLRecordSetByUuidAndGroupId(
+				uuid, groupId);
+
+		if (recordSet == null) {
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
 	protected void doImportCompanyStagedModel(
 			PortletDataContext portletDataContext, String uuid,
 			long recordSetId)
