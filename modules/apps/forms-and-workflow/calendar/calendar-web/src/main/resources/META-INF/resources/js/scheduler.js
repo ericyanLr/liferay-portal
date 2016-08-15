@@ -847,10 +847,25 @@ AUI.add(
 
 						var editCalendarBookingURL = decodeURIComponent(recorder.get('editCalendarBookingURL'));
 
+						var startTimeYear = instance.get('date').getFullYear();
+
+						var startTimeMonth = instance.get('date').getMonth();
+
+						var startTimeDay = instance.get('date').getDate();
+
+						var startTimeHour = instance.get('date').getHours();
+
+						var startTimeMinute = instance.get('date').getMinutes();
+
 						var data = {
 							activeView: activeViewName,
 							calendarId: calendarId,
-							titleCurrentValue: ''
+							titleCurrentValue: '',
+							startTimeYear: startTimeYear,
+							startTimeMonth: startTimeMonth,
+							startTimeDay: startTimeDay,
+							startTimeHour: startTimeHour,
+							startTimeMinute: startTimeMinute
 						};
 
 						Liferay.Util.openWindow(
