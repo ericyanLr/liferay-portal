@@ -26,6 +26,7 @@ import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.petra.content.ContentUtil;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
@@ -110,6 +111,13 @@ public class AssetPublisherConfigurationAction
 				AssetPublisherConfigurationAction.class.getClassLoader(),
 				AssetPublisherWebConfigurationValues.
 					EMAIL_ASSET_ENTRY_ADDED_SUBJECT));
+
+		try {
+			updateAssetTypes(portletRequest, portletPreferences);
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
 	}
 
 	@Override
@@ -183,6 +191,7 @@ public class AssetPublisherConfigurationAction
 			}
 			else if (cmd.equals("selection-style")) {
 				setSelectionStyle(actionRequest, preferences);
+				updateAssetTypes(actionRequest, preferences);
 			}
 
 			if (SessionErrors.isEmpty(actionRequest)) {
@@ -532,6 +541,55 @@ public class AssetPublisherConfigurationAction
 			displayStyle.equals("view-count-details")) {
 
 			preferences.setValue("displayStyle", "full-content");
+		}
+	}
+
+	protected void updateAssetTypes(
+			PortletRequest portletRequest, PortletPreferences preferences)
+		throws Exception {
+
+		boolean anyAssetType = GetterUtil.getBoolean(
+			getParameter(portletRequest, "anyAssetType"));
+
+		String selectionStyle = getParameter(portletRequest, "selectionStyle");
+
+		if (selectionStyle.equals("manual")) {
+			preferences.reset("anyAssetType");
+
+			anyAssetType = true;
+		}
+
+		List<String> selectedClassNameIds = new ArrayList<>();
+
+		if (!anyAssetType) {
+			long defaultClassNameId = GetterUtil.getLong(
+				getParameter(portletRequest, "anyAssetType"));
+
+			if (defaultClassNameId > 0) {
+				selectedClassNameIds.add(Long.toString(defaultClassNameId));
+			}
+			else {
+				String classNameIds = getParameter(
+					portletRequest, "classNameIds");
+
+				String[] classNameIdsArr = StringUtil.split(classNameIds);
+
+				for (String classNameId : classNameIdsArr) {
+					selectedClassNameIds.add(classNameId);
+				}
+			}
+		}
+
+		if (selectedClassNameIds.size() <= 1) {
+			if (selectedClassNameIds.size() == 0) {
+				preferences.reset("anyAssetType");
+			}
+			else {
+				preferences.setValue(
+					"anyAssetType", selectedClassNameIds.get(0));
+			}
+
+			preferences.reset("classNameIds");
 		}
 	}
 
