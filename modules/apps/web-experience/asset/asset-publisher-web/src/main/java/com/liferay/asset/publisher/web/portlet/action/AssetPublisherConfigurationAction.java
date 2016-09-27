@@ -23,8 +23,10 @@ import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.asset.publisher.web.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfigurationValues;
 import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
+import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.journal.model.JournalArticle;
 import com.liferay.petra.content.ContentUtil;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.Group;
@@ -36,6 +38,7 @@ import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutRevisionLocalService;
@@ -56,6 +59,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portlet.PortletPreferencesImpl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.portlet.ActionRequest;
@@ -488,6 +492,13 @@ public class AssetPublisherConfigurationAction
 	}
 
 	@Reference(unbind = "-")
+	protected void setClassNameLocalService(
+		ClassNameLocalService classNameLocalService) {
+
+		this._classNameLocalService = classNameLocalService;
+	}
+
+	@Reference(unbind = "-")
 	protected void setGroupLocalService(GroupLocalService groupLocalService) {
 		this.groupLocalService = groupLocalService;
 	}
@@ -544,6 +555,83 @@ public class AssetPublisherConfigurationAction
 		}
 	}
 
+	protected void updateAssetSubtypes(
+			PortletRequest portletRequest, PortletPreferences preferences,
+			List<String> selectedClassNameIds)
+		throws Exception {
+
+		Class[] assetTypesWithSubtypes =
+			new Class[] {DLFileEntry.class, JournalArticle.class};
+
+		List<String> selectedClassTypeIds = new ArrayList<>();
+
+		for (Class assetType : assetTypesWithSubtypes) {
+			String assetTypeClassNameId = Long.toString(
+				_classNameLocalService.getClassNameId(assetType));
+
+			String selectedClassTypeKey =
+				"anyClassType" + assetType.getSimpleName() +
+				"AssetRendererFactory";
+
+			String selectedClassTypeIdsKey =
+				"classTypeIds" + assetType.getSimpleName() +
+				"AssetRendererFactory";
+
+			if ((selectedClassNameIds.size() != 1) ||
+				!selectedClassNameIds.contains(assetTypeClassNameId)) {
+
+				preferences.reset(selectedClassTypeKey);
+				preferences.reset(selectedClassTypeIdsKey);
+			}
+			else if (selectedClassNameIds.size() == 1) {
+				boolean anyClassType = GetterUtil.getBoolean(
+					getParameter(portletRequest, selectedClassTypeKey));
+
+				if (anyClassType) {
+					preferences.reset(selectedClassTypeIdsKey);
+				}
+				else {
+					long defaultClassTypeId = GetterUtil.getLong(
+						getParameter(portletRequest, selectedClassTypeKey));
+
+					if (defaultClassTypeId > 0) {
+						selectedClassTypeIds.add(
+							Long.toString(defaultClassTypeId));
+
+						preferences.reset(selectedClassTypeIdsKey);
+					}
+					else {
+						String[] classTypeIds = StringUtil.split(
+							getParameter(
+								portletRequest, selectedClassTypeIdsKey));
+
+						Collections.addAll(selectedClassTypeIds, classTypeIds);
+
+						if (classTypeIds.length <= 1) {
+							if (classTypeIds.length == 1) {
+								preferences.setValue(
+									selectedClassTypeKey, classTypeIds[0]);
+							}
+							else {
+								preferences.reset(selectedClassTypeKey);
+							}
+
+							preferences.reset(selectedClassTypeIdsKey);
+						}
+					}
+				}
+			}
+		}
+
+		if (selectedClassTypeIds.size() > 0) {
+			preferences.setValues("classTypeIds", selectedClassTypeIds.toArray(
+				new String[selectedClassTypeIds.size()]));
+		}
+		else {
+			preferences.reset("classTypeIds");
+		}
+	}
+
 	protected void updateAssetTypes(
 			PortletRequest portletRequest, PortletPreferences preferences)
 		throws Exception {
@@ -591,6 +679,8 @@ public class AssetPublisherConfigurationAction
 
 			preferences.reset("classNameIds");
 		}
+
+		updateAssetSubtypes(portletRequest, preferences, selectedClassNameIds);
 	}
 
 	protected void updateDefaultAssetPublisher(ActionRequest actionRequest)
@@ -763,5 +853,7 @@ public class AssetPublisherConfigurationAction
 	protected GroupLocalService groupLocalService;
 	protected LayoutLocalService layoutLocalService;
 	protected LayoutRevisionLocalService layoutRevisionLocalService;
+
+	private ClassNameLocalService _classNameLocalService;
 
 }
