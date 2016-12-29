@@ -17,6 +17,14 @@
 <%@ include file="/init.jsp" %>
 
 <%
+String portletResource = ParamUtil.getString(request, "portletResource");
+
+RenderResponse originalRenderResponse = (RenderResponse)request.getAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE);
+
+if (portletResource.equals(PortletConfigurationPortletKeys.PORTLET_CONFIGURATION)) {
+	request.setAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE, new PortletConfigurationResponse(originalRenderResponse));
+}
+
 String randomNamespace = PortalUtil.generateRandomKey(request, "portlet_asset_publisher_edit_query_rule") + StringPool.UNDERLINE;
 
 long[] categorizableGroupIds = (long[])request.getAttribute("configuration.jsp-categorizableGroupIds");
@@ -101,3 +109,9 @@ if (queryLogicIndex >= 0) {
 		}
 	);
 </aui:script>
+
+<%
+if (portletResource.equals(PortletConfigurationPortletKeys.PORTLET_CONFIGURATION)) {
+	request.setAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE, originalRenderResponse);
+}
+%>

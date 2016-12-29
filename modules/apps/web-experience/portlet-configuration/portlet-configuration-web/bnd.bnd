@@ -1,5 +1,8 @@
 Bundle-Name: Liferay Portlet Configuration Web
 Bundle-SymbolicName: com.liferay.portlet.configuration.web
-Bundle-Version: 1.0.13
+Bundle-Version: 1.1.0
+Export-Package:\
+	com.liferay.portlet.configuration.web.internal.constants,\
+	com.liferay.portlet.configuration.web.internal.servlet
 Liferay-Releng-Module-Group-Description:
 Liferay-Releng-Module-Group-Title: Site Management

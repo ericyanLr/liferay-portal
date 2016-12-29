@@ -48,6 +48,8 @@ page import="com.liferay.asset.publisher.web.constants.AssetPublisherWebKeys" %>
 page import="com.liferay.asset.publisher.web.display.context.AssetEntryResult" %><%@
 page import="com.liferay.asset.publisher.web.display.context.AssetPublisherDisplayContext" %><%@
 page import="com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfigurationValues" %><%@
+page import="com.liferay.portlet.configuration.web.internal.constants.PortletConfigurationPortletKeys" %><%@
+page import="com.liferay.portlet.configuration.web.internal.servlet.PortletConfigurationResponse" %><%@
 page import="com.liferay.asset.publisher.web.util.AssetPublisherCustomizer" %><%@
 page import="com.liferay.asset.publisher.web.util.AssetPublisherHelper" %><%@
 page import="com.liferay.asset.publisher.web.util.AssetPublisherUtil" %><%@
@@ -85,6 +87,7 @@ page import="com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil" %><%@
 page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.HttpUtil" %><%@
+page import="com.liferay.portal.kernel.util.JavaConstants" %><%@
 page import="com.liferay.portal.kernel.util.KeyValuePair" %><%@
 page import="com.liferay.portal.kernel.util.KeyValuePairComparator" %><%@
 page import="com.liferay.portal.kernel.util.ListUtil" %><%@
@@ -122,7 +125,8 @@ page import="java.util.Set" %>
 
 <%@ page import="javax.portlet.PortletMode" %><%@
 page import="javax.portlet.PortletRequest" %><%@
-page import="javax.portlet.PortletURL" %>
+page import="javax.portlet.PortletURL" %><%@
+page import="javax.portlet.RenderResponse" %>
 
 <liferay-frontend:defineObjects />
 
