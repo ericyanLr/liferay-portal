@@ -17,6 +17,29 @@
 <%@ include file="/init.jsp" %>
 
 <%
+class PortletConfigurationResponseWrapper extends RenderResponseWrapper {
+	public PortletConfigurationResponseWrapper(RenderResponse renderResponse, String namespace) {
+		super(renderResponse);
+
+		_namespace = namespace;
+	}
+
+	@Override
+	public String getNamespace() {
+		return _namespace;
+	}
+
+	private String _namespace;
+}
+
+String portletResource = ParamUtil.getString(request, "portletResource");
+
+RenderResponse originalRenderResponse = (RenderResponse)request.getAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE);
+
+if (Validator.isNotNull(portletResource) && portletResource.equals("com_liferay_portlet_configuration_web_portlet_PortletConfigurationPortlet")) {
+	request.setAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE, new PortletConfigurationResponseWrapper(originalRenderResponse, PortalUtil.getPortletNamespace("com_liferay_portlet_configuration_web_portlet_PortletConfigurationPortlet")));
+}
+
 String randomNamespace = PortalUtil.generateRandomKey(request, "portlet_asset_publisher_edit_query_rule") + StringPool.UNDERLINE;
 
 long[] categorizableGroupIds = (long[])request.getAttribute("configuration.jsp-categorizableGroupIds");
@@ -101,3 +124,9 @@ if (queryLogicIndex >= 0) {
 		}
 	);
 </aui:script>
+
+<%
+if (Validator.isNotNull(portletResource) && portletResource.equals("com_liferay_portlet_configuration_web_portlet_PortletConfigurationPortlet")) {
+	request.setAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE, originalRenderResponse);
+}
+%>
