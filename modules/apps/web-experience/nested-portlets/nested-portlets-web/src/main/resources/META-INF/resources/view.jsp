@@ -1,4 +1,5 @@
-<%--
+<%@ page
+	import="com.liferay.portal.kernel.servlet.PersistentHttpServletRequestWrapper" %><%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -38,7 +39,63 @@ try {
 	String templateContent = (String)request.getAttribute(NestedPortletsWebKeys.TEMPLATE_CONTENT + portletDisplay.getId());
 
 	if (Validator.isNotNull(templateId) && Validator.isNotNull(templateContent)) {
-		RuntimePageUtil.processTemplate(PortalUtil.getOriginalServletRequest(request), response, new StringTemplateResource(templateId, templateContent));
+		HttpServletRequest originalRequest = null;
+
+		HttpServletRequestWrapper currentRequestWrapper = null;
+
+		HttpServletRequest currentRequest = request;
+		HttpServletRequest nextRequest = null;
+
+		while (currentRequest instanceof HttpServletRequestWrapper) {
+			if (currentRequest instanceof
+				PersistentHttpServletRequestWrapper) {
+
+				PersistentHttpServletRequestWrapper
+					persistentHttpServletRequestWrapper =
+					(PersistentHttpServletRequestWrapper) currentRequest;
+
+				persistentHttpServletRequestWrapper =
+					persistentHttpServletRequestWrapper.clone();
+
+				if (originalRequest == null) {
+					originalRequest = persistentHttpServletRequestWrapper;
+				}
+
+				if (currentRequestWrapper != null) {
+					currentRequestWrapper.setRequest(
+						persistentHttpServletRequestWrapper);
+				}
+
+				currentRequestWrapper = persistentHttpServletRequestWrapper;
+			}
+
+			// Get original request so that portlets inside portlets render
+			// properly
+
+			HttpServletRequestWrapper httpServletRequestWrapper =
+				(HttpServletRequestWrapper) currentRequest;
+
+			nextRequest =
+				(HttpServletRequest) httpServletRequestWrapper.getRequest();
+
+			if ((currentRequest.getDispatcherType() != DispatcherType.INCLUDE) &&
+				(currentRequest.getDispatcherType() != nextRequest.getDispatcherType())) {
+
+				break;
+			}
+
+			currentRequest = nextRequest;
+		}
+
+		if (currentRequestWrapper != null) {
+			currentRequestWrapper.setRequest(currentRequest);
+		}
+
+		if (originalRequest == null) {
+			originalRequest = currentRequest;
+		}
+
+		RuntimePageUtil.processTemplate(originalRequest, response, new StringTemplateResource(templateId, templateContent));
 	}
 }
 catch (Exception e) {
