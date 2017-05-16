@@ -5108,6 +5108,12 @@ public class ServiceBuilder {
 		List<Element> columnElements = entityElement.elements("column");
 
 		if (uuid) {
+			if (columnElements.isEmpty()) {
+				throw new ServiceBuilderException(
+					"Cannot create and entity with just a uuid, and no " +
+						"columns.");
+			}
+
 			Element columnElement = DocumentHelper.createElement("column");
 
 			columnElement.addAttribute("name", "uuid");
