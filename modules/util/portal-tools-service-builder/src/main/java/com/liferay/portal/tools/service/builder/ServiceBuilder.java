@@ -5225,6 +5225,11 @@ public class ServiceBuilder {
 			}
 		}
 
+		if (uuid && pkList.isEmpty()) {
+			throw new ServiceBuilderException(
+				"Cannot create and entity with just a uuid, and no columns.");
+		}
+
 		if (hasLocalizationTable) {
 			int index = columnList.indexOf(
 				new EntityColumn("defaultLanguageId"));
