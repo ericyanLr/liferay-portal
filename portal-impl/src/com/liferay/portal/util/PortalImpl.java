@@ -8380,6 +8380,18 @@ public class PortalImpl implements Portal {
 							path = PropsValues.WIDGET_SERVLET_MAPPING;
 						}
 
+						Locale siteDefaultLocale = getSiteDefaultLocale(
+							group.getGroupId());
+
+						if (themeDisplay.isI18n() &&
+							((PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE ==
+								2) ||
+							 !siteDefaultLocale.equals(
+								 themeDisplay.getLocale()))) {
+
+							path = buildI18NPath(themeDisplay.getLocale());
+						}
+
 						if (!StringUtil.equalsIgnoreCase(
 								virtualHostname, _LOCALHOST) &&
 							!_isSameHostName(virtualHostname, portalDomain)) {
