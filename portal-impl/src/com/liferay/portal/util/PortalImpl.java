@@ -8184,6 +8184,13 @@ public class PortalImpl implements Portal {
 
 		if ((pos <= 0) || (pos >= canonicalURL.length())) {
 			for (Locale locale : availableLocales) {
+				if (locale.equals(getSiteDefaultLocale(layout.getGroupId())) &&
+					(PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE != 2)) {
+
+					alternateURLs.put(locale, canonicalURL);
+					continue;
+				}
+
 				alternateURLs.put(
 					locale, canonicalURL.concat(buildI18NPath(locale)));
 			}
@@ -8450,7 +8457,14 @@ public class PortalImpl implements Portal {
 
 		if (themeDisplay.isI18n()) {
 			if (canonicalURL) {
-				sb.append(buildI18NPath(themeDisplay.getLocale()));
+				Locale siteDefaultLocale = getSiteDefaultLocale(
+					group.getGroupId());
+
+				if ((PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 2) ||
+					!siteDefaultLocale.equals(themeDisplay.getLocale())) {
+
+					sb.append(buildI18NPath(themeDisplay.getLocale()));
+				}
 			}
 			else {
 				sb.append(themeDisplay.getI18nPath());
