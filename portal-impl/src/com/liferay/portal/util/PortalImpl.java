@@ -8265,17 +8265,21 @@ public class PortalImpl implements Portal {
 		String canonicalURLPrefix = canonicalURL.substring(0, pos);
 		String canonicalURLSuffix = canonicalURL.substring(pos);
 
-		String i18nPath = buildI18NPath(themeDisplay.getLocale());
+		if (Validator.isNotNull(themeDisplay.getLocale())) {
+			String i18nPath = buildI18NPath(themeDisplay.getLocale());
 
-		if (themeDisplay.isI18n() && canonicalURLSuffix.startsWith(i18nPath)) {
-			int canonicalURLSuffixPos = i18nPath.length() + pos;
+			if (themeDisplay.isI18n() &&
+				canonicalURLSuffix.startsWith(i18nPath)) {
 
-			if (canonicalURLSuffixPos >= canonicalURL.length()) {
-				canonicalURLSuffix = StringPool.BLANK;
-			}
-			else {
-				canonicalURLSuffix = canonicalURL.substring(
-					canonicalURLSuffixPos + 1);
+				int canonicalURLSuffixPos = i18nPath.length() + pos;
+
+				if (canonicalURLSuffixPos >= canonicalURL.length()) {
+					canonicalURLSuffix = StringPool.BLANK;
+				}
+				else {
+					canonicalURLSuffix = canonicalURL.substring(
+						canonicalURLSuffixPos + 1);
+				}
 			}
 		}
 
