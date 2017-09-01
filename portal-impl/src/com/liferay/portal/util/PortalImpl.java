@@ -1353,10 +1353,27 @@ public class PortalImpl implements Portal {
 		String defaultLayoutFriendlyURL = null;
 
 		Locale siteDefaultLocale = getSiteDefaultLocale(layout.getGroupId());
+		Locale locale = null;
+
+		if (themeDisplay.isI18n() ||
+			(PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 2)) {
+
+			if (themeDisplay.isI18n() &&
+				!siteDefaultLocale.equals(themeDisplay.getLocale())) {
+
+				locale = themeDisplay.getLocale();
+			}
+			else if (PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 2) {
+				locale = siteDefaultLocale;
+			}
+		}
 
 		if (siteDefaultLocale.equals(themeDisplay.getLocale())) {
 			defaultLayoutFriendlyURL = themeDisplay.getLayoutFriendlyURL(
 				layout);
+		}
+		else if (locale != null) {
+			defaultLayoutFriendlyURL = layout.getFriendlyURL(locale);
 		}
 		else {
 			defaultLayoutFriendlyURL = layout.getFriendlyURL(
@@ -1401,17 +1418,6 @@ public class PortalImpl implements Portal {
 
 		if (themeDisplay.isI18n() ||
 			(PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 2)) {
-
-			Locale locale = null;
-
-			if (themeDisplay.isI18n() &&
-				!siteDefaultLocale.equals(themeDisplay.getLocale())) {
-
-				locale = themeDisplay.getLocale();
-			}
-			else if (PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 2) {
-				locale = siteDefaultLocale;
-			}
 
 			if (locale != null) {
 				if (rootURL) {
