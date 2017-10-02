@@ -48,7 +48,6 @@ import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.tree.TreeModelTasksAdapter;
 import com.liferay.portal.kernel.tree.TreePathUtil;
@@ -1895,13 +1894,13 @@ public class OrganizationLocalServiceImpl
 
 			indexer.reindex(reindexOrganizations);
 
-			long userCount = UserLocalServiceUtil.getOrganizationUsersCount(
+			long userCount = userLocalService.getOrganizationUsersCount(
 				organizationId);
 
 			Indexer<User> userIndexer = IndexerRegistryUtil.nullSafeGetIndexer(
 				User.class);
 
-			for (int i = 0; i < userCount; i+= 10000) {
+			for (int i = 0; i < userCount; i += 10000) {
 				int start = i;
 				int end = i + 10000;
 
