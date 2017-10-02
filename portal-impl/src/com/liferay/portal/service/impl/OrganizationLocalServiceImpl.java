@@ -48,6 +48,7 @@ import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.tree.TreeModelTasksAdapter;
 import com.liferay.portal.kernel.tree.TreePathUtil;
@@ -68,6 +69,7 @@ import com.liferay.portal.kernel.util.comparator.OrganizationIdComparator;
 import com.liferay.portal.kernel.util.comparator.OrganizationNameComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.impl.OrganizationImpl;
+import com.liferay.portal.security.permission.PermissionCacheUtil;
 import com.liferay.portal.service.base.OrganizationLocalServiceBaseImpl;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
@@ -1892,6 +1894,26 @@ public class OrganizationLocalServiceImpl
 			}
 
 			indexer.reindex(reindexOrganizations);
+
+			long userCount = UserLocalServiceUtil.getOrganizationUsersCount(
+				organizationId);
+
+			Indexer<User> userIndexer = IndexerRegistryUtil.nullSafeGetIndexer(
+				User.class);
+
+			for (int i = 0; i < userCount; i+= 10000) {
+				int start = i;
+				int end = i + 10000;
+
+				List<User> users = organizationPersistence.getUsers(
+					organizationId, start, end);
+
+				for (User user : users) {
+					userIndexer.reindex(user);
+
+					PermissionCacheUtil.clearCache(user.getUserId());
+				}
+			}
 		}
 		else {
 			indexer.reindex(organization);
