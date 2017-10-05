@@ -15,6 +15,7 @@
 package com.liferay.portal.security.permission;
 
 import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
+import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.executor.PortalExecutorManagerUtil;
 import com.liferay.portal.kernel.model.BaseModelListener;
 import com.liferay.portal.kernel.model.Organization;
@@ -38,7 +39,7 @@ public class OrganizationModelListener extends BaseModelListener<Organization> {
 			updateOrganizationUsers(organization);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			throw new ModelListenerException(e);
 		}
 	}
 
@@ -56,6 +57,8 @@ public class OrganizationModelListener extends BaseModelListener<Organization> {
 
 			@Override
 			public Void call() throws Exception {
+				long currentParentId = organization.getParentOrganizationId();
+
 				if (_oldParentId == currentParentId) {
 					return null;
 				}
@@ -63,13 +66,22 @@ public class OrganizationModelListener extends BaseModelListener<Organization> {
 				Indexer<User> userIndexer =
 					IndexerRegistryUtil.nullSafeGetIndexer(User.class);
 
-				List<User> users = UserLocalServiceUtil.getOrganizationUsers(
+				long userCount = UserLocalServiceUtil.getOrganizationUsersCount(
 					organization.getOrganizationId());
 
-				for (User user : users) {
-					userIndexer.reindex(user);
+				for (int i = 0; i < userCount; i += 10000) {
+					int start = i;
+					int end = i + 10000;
 
-					PermissionCacheUtil.clearCache(user.getUserId());
+					List<User> users =
+						UserLocalServiceUtil.getOrganizationUsers(
+							organization.getOrganizationId(), start, end);
+
+					for (User user : users) {
+						userIndexer.reindex(user);
+
+						PermissionCacheUtil.clearCache(user.getUserId());
+					}
 				}
 
 				return null;
