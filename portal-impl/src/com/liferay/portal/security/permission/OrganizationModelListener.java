@@ -50,11 +50,13 @@ public class OrganizationModelListener extends BaseModelListener<Organization> {
 		_organizationId = organization.getOrganizationId();
 
 		try {
-			_oldParentId = OrganizationLocalServiceUtil.getOrganization(
-				_organizationId).getParentOrganizationId();
+			Organization oldOrganization =
+				OrganizationLocalServiceUtil.getOrganization(
+					_organizationId);
+
+			_oldParentId = oldOrganization.getParentOrganizationId();
 		}
 		catch (PortalException pe) {
-			pe.printStackTrace();
 			_oldParentId = organization.getParentOrganizationId();
 		}
 	}
