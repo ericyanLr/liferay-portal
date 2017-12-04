@@ -441,6 +441,12 @@ public class WabProcessor {
 		PackageRef packageRef = analyzer.getPackageRef(packageName);
 
 		packages.put(packageRef, new Attrs());
+
+		if (!_importPackageParameters.containsKey(packageName) &&
+			!packageName.startsWith("java.")) {
+
+			_importPackageParameters.add(packageName, _optionalAttrs);
+		}
 	}
 
 	protected void processDeclarativeReferences(Analyzer analyzer)
