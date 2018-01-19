@@ -12,11 +12,8 @@
  * details.
  */
 
-package com.liferay.calendar.search.test;
+package com.liferay.document.library.search.test;
 
-import com.liferay.calendar.model.Calendar;
-import com.liferay.calendar.model.CalendarBooking;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ResourceConstants;
@@ -28,6 +25,7 @@ import com.liferay.portal.kernel.search.SearchEngine;
 import com.liferay.portal.kernel.search.SearchEngineHelperUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
@@ -35,12 +33,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Wade Cao
- * @author André de Oliveira
+ * @author Eric Yan
  */
-public class CalendarFieldsFixture {
+public class DLFieldsFixture {
 
-	public CalendarFieldsFixture(
+	public DLFieldsFixture(
 		ResourcePermissionLocalService resourcePermissionLocalService) {
 
 		_resourcePermissionLocalService = resourcePermissionLocalService;
@@ -107,21 +104,11 @@ public class CalendarFieldsFixture {
 	}
 
 	public void populateUID(
-		Calendar calendar, Map<String, String> fieldValues) {
+		long id, String modelClassName, Map<String, String> fieldValues) {
 
-		fieldValues.put(
-			Field.UID,
-			calendar.getModelClassName() + "_PORTLET_" +
-				calendar.getCalendarId());
-	}
+		String uid = modelClassName + "_PORTLET_" + id;
 
-	public void populateUID(
-		CalendarBooking calendarBooking, Map<String, String> fieldValues) {
-
-		fieldValues.put(
-			Field.UID,
-			calendarBooking.getModelClassName() + "_PORTLET_" +
-				calendarBooking.getCalendarBookingId());
+		fieldValues.put(Field.UID, uid);
 	}
 
 	public void postProcessDocument(Document document) {
