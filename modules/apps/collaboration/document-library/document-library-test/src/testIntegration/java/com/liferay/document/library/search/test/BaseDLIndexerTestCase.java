@@ -19,7 +19,7 @@ import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalServi
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.IndexerRegistry;
-import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.test.rule.Inject;
 
@@ -42,7 +42,7 @@ public abstract class BaseDLIndexerTestCase {
 	}
 
 	protected DLFieldsFixture createDLFieldsFixture() {
-		return new DLFieldsFixture(roleLocalService);
+		return new DLFieldsFixture(resourcePermissionLocalService);
 	}
 
 	protected DLFixture createDLFixture() {
@@ -78,7 +78,7 @@ public abstract class BaseDLIndexerTestCase {
 	protected IndexerRegistry indexerRegistry;
 
 	@Inject
-	protected RoleLocalService roleLocalService;
+	protected ResourcePermissionLocalService resourcePermissionLocalService;
 
 	@DeleteAfterTestRun
 	private final List<Group> _groups = new ArrayList<>(1);

@@ -24,7 +24,7 @@ import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchEngine;
 import com.liferay.portal.kernel.search.SearchEngineHelperUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -37,8 +37,10 @@ import java.util.Map;
  */
 public class DLFieldsFixture {
 
-	public DLFieldsFixture(RoleLocalService roleLocalService) {
-		_roleLocalService = roleLocalService;
+	public DLFieldsFixture(
+		ResourcePermissionLocalService resourcePermissionLocalService) {
+
+		_resourcePermissionLocalService = resourcePermissionLocalService;
 	}
 
 	public boolean isSearchEngineElasticsearch() {
@@ -59,38 +61,38 @@ public class DLFieldsFixture {
 		return vendor.equals("Solr");
 	}
 
-	public void populateGroupRoleId(Map<String, String> fieldValues)
+	public void populateRoleIds(
+			long companyId, String className, long classPK, long groupId,
+			String viewActionId, Map<String, String> fieldValues)
 		throws PortalException {
-
-		Role role = _roleLocalService.getDefaultGroupRole(_group.getGroupId());
-
-		fieldValues.put(
-			Field.GROUP_ROLE_ID,
-			_group.getGroupId() + StringPool.DASH + role.getRoleId());
-	}
-
-	public void populateRoleId(
-		long companyId, String entryClassName, long entryClassPK,
-		String viewActionId, Map<String, String> fieldValues) {
 
 		if (Validator.isNull(viewActionId)) {
 			viewActionId = ActionKeys.VIEW;
 		}
 
-		List<Role> roles = _roleLocalService.getResourceRoles(
-			companyId, entryClassName, ResourceConstants.SCOPE_INDIVIDUAL,
-			Long.toString(entryClassPK), viewActionId);
+		List<Role> roles = _resourcePermissionLocalService.getRoles(
+			companyId, className, ResourceConstants.SCOPE_INDIVIDUAL,
+			Long.toString(classPK), viewActionId);
 
+		List<String> groupRoleIds = new ArrayList<>();
 		List<Long> roleIds = new ArrayList<>();
 
 		for (Role role : roles) {
 			if ((role.getType() == RoleConstants.TYPE_ORGANIZATION) ||
 				(role.getType() == RoleConstants.TYPE_SITE)) {
 
-				continue;
+				groupRoleIds.add(groupId + StringPool.DASH + role.getRoleId());
 			}
+			else {
+				roleIds.add(role.getRoleId());
+			}
+		}
 
-			roleIds.add(role.getRoleId());
+		if (groupRoleIds.size() == 1) {
+			fieldValues.put(Field.GROUP_ROLE_ID, groupRoleIds.get(0));
+		}
+		else if (groupRoleIds.size() > 1) {
+			fieldValues.put(Field.GROUP_ROLE_ID, groupRoleIds.toString());
 		}
 
 		if (roleIds.size() == 1) {
@@ -120,6 +122,7 @@ public class DLFieldsFixture {
 	}
 
 	private Group _group;
-	private final RoleLocalService _roleLocalService;
+	private final ResourcePermissionLocalService
+		_resourcePermissionLocalService;
 
 }

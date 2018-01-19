@@ -200,10 +200,9 @@ public class CalendarIndexerIndexedFieldsTest
 
 		populateCalendarResource(calendar.getCalendarResource(), calendar, map);
 
-		calendarFieldsFixture.populateGroupRoleId(map);
-		calendarFieldsFixture.populateRoleId(
+		calendarFieldsFixture.populateRoleIds(
 			calendar.getCompanyId(), calendar.getModelClassName(),
-			calendar.getCalendarId(), null, map);
+			calendar.getCalendarId(), calendar.getGroupId(), null, map);
 		calendarFieldsFixture.populateUID(calendar, map);
 	}
 

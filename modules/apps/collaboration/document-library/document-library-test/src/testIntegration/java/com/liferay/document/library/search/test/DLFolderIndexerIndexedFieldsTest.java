@@ -18,6 +18,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
@@ -99,8 +100,6 @@ public class DLFolderIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 
 		populateExpectedFieldValues(childFolder, map);
 
-		dlFieldsFixture.populateGroupRoleId(map);
-
 		FieldValuesAssert.assertFieldValues(map, document, folderName);
 	}
 
@@ -142,7 +141,8 @@ public class DLFolderIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 	}
 
 	protected Map<String, String> populateExpectedFieldValues(
-		DLFolder dlFolder, Map<String, String> map) {
+			DLFolder dlFolder, Map<String, String> map)
+		throws PortalException {
 
 		map.put(Field.COMPANY_ID, String.valueOf(dlFolder.getCompanyId()));
 		map.put(Field.DESCRIPTION, dlFolder.getDescription());
@@ -172,9 +172,9 @@ public class DLFolderIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 		populateLocalizedTitleFieldValues(dlFolder, map);
 		populateTreePathFieldValue(dlFolder, map);
 
-		dlFieldsFixture.populateRoleId(
+		dlFieldsFixture.populateRoleIds(
 			dlFolder.getCompanyId(), dlFolder.getModelClassName(),
-			dlFolder.getPrimaryKey(), null, map);
+			dlFolder.getPrimaryKey(), dlFolder.getGroupId(), null, map);
 		dlFieldsFixture.populateUID(
 			dlFolder.getFolderId(), dlFolder.getModelClassName(), map);
 

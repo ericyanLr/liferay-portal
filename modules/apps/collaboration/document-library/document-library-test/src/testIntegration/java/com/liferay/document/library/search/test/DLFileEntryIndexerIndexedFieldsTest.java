@@ -231,10 +231,9 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 		populateDDMFieldValues(fileEntry, map);
 		populateLocalizedTitleFieldValues(fileEntry, map);
 
-		dlFieldsFixture.populateGroupRoleId(map);
-		dlFieldsFixture.populateRoleId(
+		dlFieldsFixture.populateRoleIds(
 			fileEntry.getCompanyId(), DLFileEntry.class.getName(),
-			fileEntry.getPrimaryKey(), null, map);
+			fileEntry.getPrimaryKey(), fileEntry.getGroupId(), null, map);
 		dlFieldsFixture.populateUID(
 			fileEntry.getFileEntryId(), DLFileEntry.class.getName(), map);
 	}

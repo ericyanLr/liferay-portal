@@ -137,11 +137,10 @@ public class CalendarBookingIndexerIndexedFieldsTest
 
 		populateCalendarBooking(calendarBooking, map);
 
-		calendarFieldsFixture.populateGroupRoleId(map);
-		calendarFieldsFixture.populateRoleId(
-			calendar.getCompanyId(), calendar.getModelClassName(),
-			calendar.getCalendarId(), CalendarActionKeys.VIEW_BOOKING_DETAILS,
-			map);
+		calendarFieldsFixture.populateRoleIds(
+			calendarBooking.getCompanyId(), Calendar.class.getName(),
+			calendarBooking.getCalendarId(), calendarBooking.getGroupId(),
+			CalendarActionKeys.VIEW_BOOKING_DETAILS, map);
 		calendarFieldsFixture.populateUID(calendarBooking, map);
 
 		String keywords = "nev";
