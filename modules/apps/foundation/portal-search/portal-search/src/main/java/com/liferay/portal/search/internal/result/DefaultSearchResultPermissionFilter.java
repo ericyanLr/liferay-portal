@@ -12,12 +12,22 @@
  * details.
  */
 
-package com.liferay.portal.kernel.search;
+package com.liferay.portal.search.internal.result;
 
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.RelatedEntryIndexer;
+import com.liferay.portal.kernel.search.RelatedEntryIndexerRegistryUtil;
+import com.liferay.portal.kernel.search.SearchContext;
+import com.liferay.portal.kernel.search.SearchException;
+import com.liferay.portal.kernel.search.SearchResultPermissionFilterFactory.SearchExecutor;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.FacetPostProcessor;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -25,7 +35,6 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -35,39 +44,18 @@ import java.util.Map;
 
 /**
  * @author Tina Tian
- * @deprecated As of 7.0.0, moved to {@link
- *             com.liferay.portal.search.result.DefaultSearchResultPermissionFilter}
  */
-@Deprecated
 @ProviderType
 public class DefaultSearchResultPermissionFilter
 	extends BaseSearchResultPermissionFilter {
 
-	/**
-	 * @param      baseIndexer
-	 * @param      permissionChecker
-	 * @deprecated As of 7.0.0, replace with {@link
-	 *             #DefaultSearchResultPermissionFilter(SearchExecutor,
-	 *             PermissionChecker)}
-	 */
-	@Deprecated
 	public DefaultSearchResultPermissionFilter(
-		BaseIndexer<?> baseIndexer, PermissionChecker permissionChecker) {
+		FacetPostProcessor facetPostProcessor, SearchExecutor searchExecutor,
+		PermissionChecker permissionChecker) {
 
-		this(baseIndexer::doSearch, permissionChecker);
-	}
-
-	public DefaultSearchResultPermissionFilter(
-		SearchExecutor searchExecutor, PermissionChecker permissionChecker) {
-
+		_facetPostProcessor = facetPostProcessor;
 		_searchExecutor = searchExecutor;
 		_permissionChecker = permissionChecker;
-	}
-
-	public interface SearchExecutor {
-
-		public Hits search(SearchContext searchContext) throws SearchException;
-
 	}
 
 	@Override
@@ -98,14 +86,10 @@ public class DefaultSearchResultPermissionFilter
 		}
 
 		if (!excludeDocs.isEmpty()) {
-			FacetPostProcessor facetPostProcessor = _facetPostProcessor;
+			Map<String, Facet> facets = searchContext.getFacets();
 
-			if (facetPostProcessor != null) {
-				Map<String, Facet> facets = searchContext.getFacets();
-
-				for (Facet facet : facets.values()) {
-					facetPostProcessor.exclude(excludeDocs, facet);
-				}
+			for (Facet facet : facets.values()) {
+				_facetPostProcessor.exclude(excludeDocs, facet);
 			}
 		}
 
@@ -200,11 +184,7 @@ public class DefaultSearchResultPermissionFilter
 	private static final Log _log = LogFactoryUtil.getLog(
 		DefaultSearchResultPermissionFilter.class);
 
-	private static volatile FacetPostProcessor _facetPostProcessor =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			FacetPostProcessor.class, DefaultSearchResultPermissionFilter.class,
-			"_facetPostProcessor", false, true);
-
+	private final FacetPostProcessor _facetPostProcessor;
 	private final PermissionChecker _permissionChecker;
 	private final SearchExecutor _searchExecutor;
 
