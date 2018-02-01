@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -51,8 +50,10 @@ public class DefaultSearchResultPermissionFilter
 	extends BaseSearchResultPermissionFilter {
 
 	public DefaultSearchResultPermissionFilter(
-		SearchExecutor searchExecutor, PermissionChecker permissionChecker) {
+		FacetPostProcessor facetPostProcessor, SearchExecutor searchExecutor,
+		PermissionChecker permissionChecker) {
 
+		_facetPostProcessor = facetPostProcessor;
 		_searchExecutor = searchExecutor;
 		_permissionChecker = permissionChecker;
 	}
@@ -85,14 +86,10 @@ public class DefaultSearchResultPermissionFilter
 		}
 
 		if (!excludeDocs.isEmpty()) {
-			FacetPostProcessor facetPostProcessor = _facetPostProcessor;
+			Map<String, Facet> facets = searchContext.getFacets();
 
-			if (facetPostProcessor != null) {
-				Map<String, Facet> facets = searchContext.getFacets();
-
-				for (Facet facet : facets.values()) {
-					facetPostProcessor.exclude(excludeDocs, facet);
-				}
+			for (Facet facet : facets.values()) {
+				_facetPostProcessor.exclude(excludeDocs, facet);
 			}
 		}
 
@@ -187,11 +184,7 @@ public class DefaultSearchResultPermissionFilter
 	private static final Log _log = LogFactoryUtil.getLog(
 		DefaultSearchResultPermissionFilter.class);
 
-	private static volatile FacetPostProcessor _facetPostProcessor =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			FacetPostProcessor.class, DefaultSearchResultPermissionFilter.class,
-			"_facetPostProcessor", false, true);
-
+	private final FacetPostProcessor _facetPostProcessor;
 	private final PermissionChecker _permissionChecker;
 	private final SearchExecutor _searchExecutor;
 
