@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.search.RelatedEntryIndexer;
 import com.liferay.portal.kernel.search.RelatedEntryIndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
+import com.liferay.portal.kernel.search.SearchResultPermissionFilterFactory.SearchExecutor;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.FacetPostProcessor;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -54,12 +55,6 @@ public class DefaultSearchResultPermissionFilter
 
 		_searchExecutor = searchExecutor;
 		_permissionChecker = permissionChecker;
-	}
-
-	public interface SearchExecutor {
-
-		public Hits search(SearchContext searchContext) throws SearchException;
-
 	}
 
 	@Override
