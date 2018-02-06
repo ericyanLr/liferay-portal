@@ -22,9 +22,9 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.RelatedEntryIndexer;
-import com.liferay.portal.kernel.search.RelatedEntryIndexerRegistryUtil;
+import com.liferay.portal.kernel.search.RelatedEntryIndexerRegistry;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.SearchResultPermissionFilterFactory.SearchExecutor;
@@ -35,7 +35,7 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
+import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -51,10 +51,18 @@ public class DefaultSearchResultPermissionFilter
 	extends BaseSearchResultPermissionFilter {
 
 	public DefaultSearchResultPermissionFilter(
-		SearchExecutor searchExecutor, PermissionChecker permissionChecker) {
+		FacetPostProcessor facetPostProcessor, IndexerRegistry indexerRegistry,
+		PermissionChecker permissionChecker, Props props,
+		RelatedEntryIndexerRegistry relatedEntryIndexerRegistry,
+		SearchExecutor searchExecutor) {
 
-		_searchExecutor = searchExecutor;
+		_facetPostProcessor = facetPostProcessor;
+		_indexerRegistry = indexerRegistry;
 		_permissionChecker = permissionChecker;
+		_relatedEntryIndexerRegistry = relatedEntryIndexerRegistry;
+		_searchExecutor = searchExecutor;
+
+		setProps(props);
 	}
 
 	@Override
@@ -85,14 +93,10 @@ public class DefaultSearchResultPermissionFilter
 		}
 
 		if (!excludeDocs.isEmpty()) {
-			FacetPostProcessor facetPostProcessor = _facetPostProcessor;
+			Map<String, Facet> facets = searchContext.getFacets();
 
-			if (facetPostProcessor != null) {
-				Map<String, Facet> facets = searchContext.getFacets();
-
-				for (Facet facet : facets.values()) {
-					facetPostProcessor.exclude(excludeDocs, facet);
-				}
+			for (Facet facet : facets.values()) {
+				_facetPostProcessor.exclude(excludeDocs, facet);
 			}
 		}
 
@@ -141,7 +145,7 @@ public class DefaultSearchResultPermissionFilter
 
 		String entryClassName = document.get(Field.ENTRY_CLASS_NAME);
 
-		Indexer<?> indexer = IndexerRegistryUtil.getIndexer(entryClassName);
+		Indexer<?> indexer = _indexerRegistry.getIndexer(entryClassName);
 
 		if (indexer == null) {
 			return true;
@@ -160,7 +164,7 @@ public class DefaultSearchResultPermissionFilter
 					ActionKeys.VIEW)) {
 
 				List<RelatedEntryIndexer> relatedEntryIndexers =
-					RelatedEntryIndexerRegistryUtil.getRelatedEntryIndexers(
+					_relatedEntryIndexerRegistry.getRelatedEntryIndexers(
 						entryClassName);
 
 				if (ListUtil.isNotEmpty(relatedEntryIndexers)) {
@@ -187,12 +191,10 @@ public class DefaultSearchResultPermissionFilter
 	private static final Log _log = LogFactoryUtil.getLog(
 		DefaultSearchResultPermissionFilter.class);
 
-	private static volatile FacetPostProcessor _facetPostProcessor =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			FacetPostProcessor.class, DefaultSearchResultPermissionFilter.class,
-			"_facetPostProcessor", false, true);
-
+	private final FacetPostProcessor _facetPostProcessor;
+	private final IndexerRegistry _indexerRegistry;
 	private final PermissionChecker _permissionChecker;
+	private final RelatedEntryIndexerRegistry _relatedEntryIndexerRegistry;
 	private final SearchExecutor _searchExecutor;
 
 }
