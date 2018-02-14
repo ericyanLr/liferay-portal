@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.search.configuration.SearchResultPermissionFilterFactoryConfiguration;
 import com.liferay.portal.search.internal.facet.FacetPostProcessorImpl;
 import com.liferay.portal.search.internal.permission.DefaultSearchResultPermissionFilter;
 import com.liferay.portal.search.test.util.IdempotentRetryAssert;
@@ -76,6 +77,60 @@ public abstract class BasePermissionFilteredPaginationTestCase
 		testPagination(1, 9, 3, "[[1, 9]]");
 	}
 
+	@Test
+	public void testMinimal() throws Exception {
+		index(3, filteringEntries());
+		testPagination(1, 3, 1, "[[1], [2], [3]]");
+	}
+
+	@Test
+	public void testMinimalEndFirstIndex() throws Exception {
+		index(3, filteringEntries());
+		testPagination(1, 1, 1, "[[1]]");
+	}
+
+	@Test
+	public void testMinimalEndMiddleIndex() throws Exception {
+		index(3, filteringEntries());
+		testPagination(1, 2, 1, "[[1], [2]]");
+	}
+
+	@Test
+	public void testMinimalStartLastIndex() throws Exception {
+		index(3, filteringEntries());
+		testPagination(3, 3, 1, "[[3]]");
+	}
+
+	@Test
+	public void testMinimalStartMiddleIndex() throws Exception {
+		index(3, filteringEntries());
+		testPagination(2, 3, 1, "[[2], [3]]");
+	}
+
+	@Test
+	public void testPastLast() throws Exception {
+		index(9, filteringEntries());
+		testPagination(10, 12, 3, "[[7, 8, 9]]");
+	}
+
+	@Test
+	public void testPastLastSecondIndex() throws Exception {
+		index(9, filteringEntries());
+		testPagination(11, 12, 3, "[[9]]");
+	}
+
+	@Test
+	public void testPastLastThirdIndex() throws Exception {
+		index(9, filteringEntries());
+		testPagination(12, 12, 3, "[[9]]");
+	}
+
+	@Test
+	public void testSearchQueryResultWindowLimit() throws Exception {
+		index(9, filteringEntries(1, 2, 3, 4, 5, 6, 7, 8));
+		testPagination(1, 9, 9, "[[9]]");
+	}
+
 	protected List<Integer> createEntries(int totalEntries) {
 		List<Integer> entries = new ArrayList<>(totalEntries);
 
@@ -109,12 +164,18 @@ public abstract class BasePermissionFilteredPaginationTestCase
 		RelatedEntryIndexerRegistry relatedEntryIndexerRegistry = Mockito.mock(
 			RelatedEntryIndexerRegistry.class);
 
+		SearchResultPermissionFilterFactoryConfiguration
+			searchResultPermissionFilterFactoryConfiguration = Mockito.mock(
+				SearchResultPermissionFilterFactoryConfiguration.class);
+
 		setUpSearchResultPermissionFilterMocks(
-			indexerRegistry, permissionChecker, props);
+			indexerRegistry, permissionChecker, props,
+			searchResultPermissionFilterFactoryConfiguration);
 
 		return new DefaultSearchResultPermissionFilter(
 			new FacetPostProcessorImpl(), indexerRegistry, permissionChecker,
-			props, relatedEntryIndexerRegistry, this::search);
+			props, relatedEntryIndexerRegistry, this::search,
+			searchResultPermissionFilterFactoryConfiguration);
 	}
 
 	protected Hits filteredSearch(int start, int end) throws Exception {
@@ -176,7 +237,9 @@ public abstract class BasePermissionFilteredPaginationTestCase
 
 	protected void setUpSearchResultPermissionFilterMocks(
 			IndexerRegistry indexerRegistry,
-			PermissionChecker permissionChecker, Props props)
+			PermissionChecker permissionChecker, Props props,
+			SearchResultPermissionFilterFactoryConfiguration
+				searchResultPermissionFilterFactoryConfiguration)
 		throws Exception {
 
 		Indexer indexer = Mockito.mock(Indexer.class);
@@ -221,6 +284,13 @@ public abstract class BasePermissionFilteredPaginationTestCase
 				PropsKeys.INDEX_PERMISSION_FILTER_SEARCH_AMPLIFICATION_FACTOR)
 		).thenReturn(
 			"1.5"
+		);
+
+		Mockito.when(
+			searchResultPermissionFilterFactoryConfiguration.
+				searchQueryResultWindowLimit()
+		).thenReturn(
+			3
 		);
 	}
 
