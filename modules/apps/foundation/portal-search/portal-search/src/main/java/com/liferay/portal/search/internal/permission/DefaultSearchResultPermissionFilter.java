@@ -43,8 +43,10 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.search.configuration.SearchResultPermissionFilterFactoryConfiguration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,13 +65,19 @@ public class DefaultSearchResultPermissionFilter
 		FacetPostProcessor facetPostProcessor, IndexerRegistry indexerRegistry,
 		PermissionChecker permissionChecker, Props props,
 		RelatedEntryIndexerRegistry relatedEntryIndexerRegistry,
-		SearchExecutor searchExecutor) {
+		SearchExecutor searchExecutor,
+		SearchResultPermissionFilterFactoryConfiguration
+			searchResultPermissionFilterFactoryConfiguration) {
 
 		_facetPostProcessor = facetPostProcessor;
 		_indexerRegistry = indexerRegistry;
 		_permissionChecker = permissionChecker;
 		_relatedEntryIndexerRegistry = relatedEntryIndexerRegistry;
 		_searchExecutor = searchExecutor;
+
+		_searchQueryResultWindowLimit =
+			searchResultPermissionFilterFactoryConfiguration.
+				searchQueryResultWindowLimit();
 
 		setProps(props);
 	}
@@ -123,7 +131,9 @@ public class DefaultSearchResultPermissionFilter
 		while (true) {
 			int count = end - documents.size();
 
-			int amplifiedCount = (int)Math.ceil(count * amplificationFactor);
+			int amplifiedCount = Math.min(
+				(int)Math.ceil(count * amplificationFactor),
+				_searchQueryResultWindowLimit);
 
 			int amplifiedEnd = offset + amplifiedCount;
 
@@ -225,6 +235,29 @@ public class DefaultSearchResultPermissionFilter
 	}
 
 	protected Hits getHits(SearchContext searchContext) throws SearchException {
+		if ((searchContext != null) &&
+			(searchContext.getEnd() != QueryUtil.ALL_POS)) {
+
+			int end = searchContext.getEnd();
+			int start = searchContext.getStart();
+
+			if (start == QueryUtil.ALL_POS) {
+				start = 0;
+			}
+
+			int searchResultWindow = end - start;
+
+			if (searchResultWindow > _searchQueryResultWindowLimit) {
+				throw new SearchException(
+					StringBundler.concat(
+						"The search query is requesting for a range of ",
+						String.valueOf(searchResultWindow),
+						" search results. This exceeds the currently ",
+						"configured Search Query Result Window Limit: ",
+						String.valueOf(_searchQueryResultWindowLimit)));
+			}
+		}
+
 		return _searchExecutor.search(searchContext);
 	}
 
@@ -353,5 +386,6 @@ public class DefaultSearchResultPermissionFilter
 	private Props _props;
 	private final RelatedEntryIndexerRegistry _relatedEntryIndexerRegistry;
 	private final SearchExecutor _searchExecutor;
+	private final int _searchQueryResultWindowLimit;
 
 }
