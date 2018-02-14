@@ -26,8 +26,8 @@ import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.SearchResultPermissionFilter;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Time;
 
@@ -157,6 +157,14 @@ public abstract class BaseSearchResultPermissionFilter
 
 	protected abstract boolean isGroupAdmin(SearchContext searchContext);
 
+	protected void setProps(Props props) {
+		_props = props;
+
+		_indexPermissionFilterSearchAmplificationFactor = GetterUtil.getDouble(
+			_props.get(
+				PropsKeys.INDEX_PERMISSION_FILTER_SEARCH_AMPLIFICATION_FACTOR));
+	}
+
 	protected void updateHits(
 		Hits hits, List<Document> documents, List<Float> scores, int start,
 		int end, int size, long startTime) {
@@ -179,22 +187,18 @@ public abstract class BaseSearchResultPermissionFilter
 
 	private double _getAmplificationFactor(double totalViewable, double total) {
 		if (totalViewable == 0) {
-			return _INDEX_PERMISSION_FILTER_SEARCH_AMPLIFICATION_FACTOR;
+			return _indexPermissionFilterSearchAmplificationFactor;
 		}
 
 		return Math.min(
 			1.0 / (totalViewable / total),
-			_INDEX_PERMISSION_FILTER_SEARCH_AMPLIFICATION_FACTOR);
+			_indexPermissionFilterSearchAmplificationFactor);
 	}
-
-	private static final double
-		_INDEX_PERMISSION_FILTER_SEARCH_AMPLIFICATION_FACTOR =
-			GetterUtil.getDouble(
-				PropsUtil.get(
-					PropsKeys.
-						INDEX_PERMISSION_FILTER_SEARCH_AMPLIFICATION_FACTOR));
 
 	private static final String[] _PERMISSION_SELECTED_FIELD_NAMES =
 		{Field.COMPANY_ID, Field.ENTRY_CLASS_NAME, Field.ENTRY_CLASS_PK};
+
+	private double _indexPermissionFilterSearchAmplificationFactor;
+	private Props _props;
 
 }
