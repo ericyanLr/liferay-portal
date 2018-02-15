@@ -17,7 +17,6 @@ package com.liferay.portal.search.internal.permission;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.search.SearchPaginationUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
@@ -120,7 +119,9 @@ public class DefaultSearchResultPermissionFilter
 		}
 
 		double amplificationFactor = 1.0;
+		int delta = end - start;
 		int excludedDocsSize = 0;
+		int filteredDocsCount = 0;
 		int hitsSize = 0;
 		int offset = 0;
 		long startTime = 0;
@@ -156,15 +157,28 @@ public class DefaultSearchResultPermissionFilter
 
 			excludedDocsSize += oldDocs.length - newDocs.length;
 
-			collectHits(hits, documents, scores, count);
+			filteredDocsCount += newDocs.length;
+
+			if ((filteredDocsCount > start) && (documents.size() < delta)) {
+				int filteredStart = 0;
+				int remainingDocsSize = delta - documents.size();
+
+				if (start > (filteredDocsCount - newDocs.length)) {
+					filteredStart =
+						start - (filteredDocsCount - newDocs.length);
+				}
+
+				collectHits(
+					hits, documents, scores, filteredStart, remainingDocsSize);
+			}
 
 			if ((newDocs.length >= count) ||
 				(oldDocs.length < amplifiedCount) ||
 				(amplifiedEnd >= hitsSize)) {
 
 				updateHits(
-					hits, documents, scores, start, end,
-					hitsSize - excludedDocsSize, startTime);
+					hits, documents, scores, hitsSize - excludedDocsSize,
+					startTime);
 
 				return hits;
 			}
@@ -177,7 +191,8 @@ public class DefaultSearchResultPermissionFilter
 	}
 
 	protected void collectHits(
-		Hits hits, List<Document> documents, List<Float> scores, int count) {
+		Hits hits, List<Document> documents, List<Float> scores, int start,
+		int count) {
 
 		Document[] docs = hits.getDocs();
 
@@ -185,7 +200,7 @@ public class DefaultSearchResultPermissionFilter
 			count = docs.length;
 		}
 
-		for (int i = 0; i < count; i++) {
+		for (int i = start; i < count; i++) {
 			documents.add(docs[i]);
 
 			scores.add(hits.score(i));
@@ -285,17 +300,8 @@ public class DefaultSearchResultPermissionFilter
 	}
 
 	protected void updateHits(
-		Hits hits, List<Document> documents, List<Float> scores, int start,
-		int end, int size, long startTime) {
-
-		int[] startAndEnd = SearchPaginationUtil.calculateStartAndEnd(
-			start, end, documents.size());
-
-		start = startAndEnd[0];
-		end = startAndEnd[1];
-
-		documents = documents.subList(start, end);
-		scores = scores.subList(start, end);
+		Hits hits, List<Document> documents, List<Float> scores, int size,
+		long startTime) {
 
 		hits.setDocs(documents.toArray(new Document[documents.size()]));
 		hits.setScores(ArrayUtil.toFloatArray(scores));
