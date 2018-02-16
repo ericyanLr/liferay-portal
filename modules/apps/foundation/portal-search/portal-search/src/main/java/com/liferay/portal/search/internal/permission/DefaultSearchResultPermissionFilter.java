@@ -121,12 +121,15 @@ public class DefaultSearchResultPermissionFilter
 
 		double amplificationFactor = 1.0;
 		int excludedDocsSize = 0;
+		int filteredDocsCount = 0;
 		int hitsSize = 0;
 		int offset = 0;
 		long startTime = 0;
 
 		List<Document> documents = new ArrayList<>();
 		List<Float> scores = new ArrayList<>();
+		List<Document> standbyDocuments = new ArrayList<>();
+		List<Float> standbyScores = new ArrayList<>();
 
 		while (true) {
 			int count = end - documents.size();
@@ -156,15 +159,23 @@ public class DefaultSearchResultPermissionFilter
 
 			excludedDocsSize += oldDocs.length - newDocs.length;
 
-			collectHits(hits, documents, scores, count);
+			filteredDocsCount += newDocs.length;
+
+			collectHits(
+				hits, documents, scores, standbyDocuments, standbyScores,
+				filteredDocsCount, start, end);
 
 			if ((newDocs.length >= count) ||
 				(oldDocs.length < amplifiedCount) ||
 				(amplifiedEnd >= hitsSize)) {
 
+				updateDocuments(
+					documents, scores, standbyDocuments, standbyScores,
+					filteredDocsCount, start, end);
+
 				updateHits(
-					hits, documents, scores, start, end,
-					hitsSize - excludedDocsSize, startTime);
+					hits, documents, scores, hitsSize - excludedDocsSize,
+					startTime);
 
 				return hits;
 			}
@@ -177,18 +188,51 @@ public class DefaultSearchResultPermissionFilter
 	}
 
 	protected void collectHits(
-		Hits hits, List<Document> documents, List<Float> scores, int count) {
+		Hits hits, List<Document> documents, List<Float> scores,
+		List<Document> standbyDocuments, List<Float> standbyScores,
+		int accumulatedCount, int start, int end) {
 
+		int delta = end - start;
 		Document[] docs = hits.getDocs();
 
-		if (docs.length < count) {
-			count = docs.length;
+		int remainingDocsCount = docs.length;
+
+		if ((accumulatedCount > start) && (documents.size() < delta)) {
+			int previousAccumulatedCount = accumulatedCount - docs.length;
+
+			int docsStart = 0;
+
+			if (start > previousAccumulatedCount) {
+				docsStart = start - previousAccumulatedCount;
+			}
+
+			int docsEnd = docsStart + (delta - documents.size());
+
+			if (docsEnd > docs.length) {
+				docsEnd = docs.length;
+			}
+
+			for (int i = docsStart; i < docsEnd; i++) {
+				documents.add(docs[i]);
+
+				scores.add(hits.score(i));
+			}
+
+			remainingDocsCount = docs.length - docsEnd;
+
+			if (remainingDocsCount == 0) {
+				return;
+			}
 		}
 
-		for (int i = 0; i < count; i++) {
-			documents.add(docs[i]);
+		for (int i = docs.length - remainingDocsCount; i < docs.length; i++) {
+			if (standbyDocuments.size() == delta) {
+				standbyDocuments.remove(0);
+				standbyScores.remove(0);
+			}
 
-			scores.add(hits.score(i));
+			standbyDocuments.add(docs[i]);
+			standbyScores.add(hits.score(i));
 		}
 	}
 
@@ -284,18 +328,38 @@ public class DefaultSearchResultPermissionFilter
 				PropsKeys.INDEX_PERMISSION_FILTER_SEARCH_AMPLIFICATION_FACTOR));
 	}
 
+	protected void updateDocuments(
+		List<Document> documents, List<Float> scores,
+		List<Document> standbyDocuments, List<Float> standbyScores,
+		int accumulatedCount, int start, int end) {
+
+		if ((start >= accumulatedCount) && !standbyDocuments.isEmpty()) {
+			documents.addAll(0, standbyDocuments);
+			scores.addAll(0, standbyScores);
+
+			int delta = end - start;
+			int docsStart = start - accumulatedCount;
+
+			int docsEnd = docsStart + delta;
+
+			int[] startAndEnd = SearchPaginationUtil.calculateStartAndEnd(
+				docsStart, docsEnd, documents.size());
+
+			docsStart = startAndEnd[0];
+			docsEnd = startAndEnd[1];
+
+			for (int i = 0; i < documents.size(); i++) {
+				if ((i < docsStart) || (i >= docsEnd)) {
+					documents.remove(i);
+					scores.remove(i);
+				}
+			}
+		}
+	}
+
 	protected void updateHits(
-		Hits hits, List<Document> documents, List<Float> scores, int start,
-		int end, int size, long startTime) {
-
-		int[] startAndEnd = SearchPaginationUtil.calculateStartAndEnd(
-			start, end, documents.size());
-
-		start = startAndEnd[0];
-		end = startAndEnd[1];
-
-		documents = documents.subList(start, end);
-		scores = scores.subList(start, end);
+		Hits hits, List<Document> documents, List<Float> scores, int size,
+		long startTime) {
 
 		hits.setDocs(documents.toArray(new Document[documents.size()]));
 		hits.setScores(ArrayUtil.toFloatArray(scores));
