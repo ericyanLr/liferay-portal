@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.internal.permission;
 
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.RelatedEntryIndexerRegistry;
 import com.liferay.portal.kernel.search.SearchResultPermissionFilter;
@@ -21,14 +22,20 @@ import com.liferay.portal.kernel.search.SearchResultPermissionFilterFactory;
 import com.liferay.portal.kernel.search.facet.FacetPostProcessor;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.util.Props;
+import com.liferay.portal.search.configuration.SearchResultPermissionFilterFactoryConfiguration;
 
+import java.util.Map;
+
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Eric Yan
  */
 @Component(
+	configurationPid = "com.liferay.portal.search.configuration.SearchResultPermissionFilterFactoryConfiguration",
 	immediate = true, service = SearchResultPermissionFilterFactory.class
 )
 public class SearchResultPermissionFilterFactoryImpl
@@ -40,7 +47,17 @@ public class SearchResultPermissionFilterFactoryImpl
 
 		return new DefaultSearchResultPermissionFilter(
 			_facetPostProcessor, _indexerRegistry, permissionChecker, _props,
-			_relatedEntryIndexerRegistry, searchExecutor);
+			_relatedEntryIndexerRegistry, searchExecutor,
+			_searchResultPermissionFilterFactoryConfiguration);
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_searchResultPermissionFilterFactoryConfiguration =
+			ConfigurableUtil.createConfigurable(
+				SearchResultPermissionFilterFactoryConfiguration.class,
+				properties);
 	}
 
 	@Reference
@@ -54,5 +71,8 @@ public class SearchResultPermissionFilterFactoryImpl
 
 	@Reference
 	private RelatedEntryIndexerRegistry _relatedEntryIndexerRegistry;
+
+	private volatile SearchResultPermissionFilterFactoryConfiguration
+		_searchResultPermissionFilterFactoryConfiguration;
 
 }
