@@ -128,7 +128,7 @@ public abstract class BaseIndexingTestCase {
 
 	protected abstract IndexingFixture createIndexingFixture() throws Exception;
 
-	protected Query getDefaultQuery() throws Exception {
+	protected Query getDefaultQuery() {
 		Map<String, String> map = SearchMapUtil.join(
 			toMap(Field.COMPANY_ID, String.valueOf(COMPANY_ID)),
 			toMap(Field.ENTRY_CLASS_NAME, _entryClassName));
@@ -150,12 +150,12 @@ public abstract class BaseIndexingTestCase {
 		return _indexWriter;
 	}
 
-	protected Hits search(SearchContext searchContext) throws Exception {
+	protected Hits search(SearchContext searchContext) throws SearchException {
 		return search(searchContext, getDefaultQuery());
 	}
 
 	protected Hits search(SearchContext searchContext, Query query)
-		throws Exception {
+		throws SearchException {
 
 		return _indexSearcher.search(searchContext, query);
 	}
