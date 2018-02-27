@@ -21,6 +21,7 @@ import com.liferay.portal.search.elasticsearch6.internal.connection.IndexName;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -40,6 +41,7 @@ public class Cluster2InstancesTest {
 		_testCluster.tearDown();
 	}
 
+	@Ignore
 	@Test
 	public void test2Nodes1PrimaryShard() throws Exception {
 		ElasticsearchFixture elasticsearchFixture0 = _testCluster.getNode(0);
@@ -55,6 +57,7 @@ public class Cluster2InstancesTest {
 		ClusterAssert.assert1PrimaryShardAnd2Nodes(elasticsearchFixture1);
 	}
 
+	@Ignore
 	@Test
 	public void testExpandAndShrink() throws Exception {
 		ElasticsearchFixture elasticsearchFixture0 = _testCluster.getNode(0);

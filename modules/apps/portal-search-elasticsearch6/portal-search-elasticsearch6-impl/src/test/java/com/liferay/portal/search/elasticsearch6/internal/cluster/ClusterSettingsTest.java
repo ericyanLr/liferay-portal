@@ -27,6 +27,7 @@ import org.elasticsearch.node.Node;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -44,6 +45,7 @@ public class ClusterSettingsTest {
 		_testCluster.tearDown();
 	}
 
+	@Ignore
 	@Test
 	public void testClusterSettings() throws Exception {
 		ElasticsearchFixture elasticsearchFixture = _testCluster.getNode(0);

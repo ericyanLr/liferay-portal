@@ -27,6 +27,7 @@ import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -52,6 +53,7 @@ public class ReplicasManagerImplTest {
 		_testCluster.destroyNodes();
 	}
 
+	@Ignore
 	@Test
 	public void testSystemCompanyIndexIsReplicatedAndMigrated()
 		throws Exception {
