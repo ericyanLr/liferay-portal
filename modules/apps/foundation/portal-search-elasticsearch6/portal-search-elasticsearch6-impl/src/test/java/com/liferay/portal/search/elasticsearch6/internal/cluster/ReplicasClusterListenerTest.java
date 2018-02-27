@@ -25,6 +25,7 @@ import java.util.logging.LogRecord;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.mockito.Mock;
@@ -65,12 +66,14 @@ public class ReplicasClusterListenerTest {
 			_replicasClusterContext);
 	}
 
+	@Ignore
 	@Test
 	public void testAHappyDay() {
 		processClusterEvent();
 		assertReplicasChanged();
 	}
 
+	@Ignore
 	@Test
 	public void testLiferayClusterReportsEmpty() {
 		Mockito.when(
@@ -88,6 +91,7 @@ public class ReplicasClusterListenerTest {
 		);
 	}
 
+	@Ignore
 	@Test
 	public void testMasterTokenAcquired() {
 		masterTokenAcquired();
@@ -95,6 +99,7 @@ public class ReplicasClusterListenerTest {
 		assertReplicasChanged();
 	}
 
+	@Ignore
 	@Test
 	public void testMasterTokenReleased() {
 		masterTokenReleased();
@@ -102,6 +107,7 @@ public class ReplicasClusterListenerTest {
 		assertReplicasUnchanged();
 	}
 
+	@Ignore
 	@Test
 	public void testNonMasterLiferayNodeDoesNothing() {
 		setMasterExecutor(false);
@@ -111,6 +117,7 @@ public class ReplicasClusterListenerTest {
 		assertReplicasUnchanged();
 	}
 
+	@Ignore
 	@Test
 	public void testRemoteElasticsearchClusterIsLeftAlone() {
 		setEmbeddedCluster(false);
@@ -120,6 +127,7 @@ public class ReplicasClusterListenerTest {
 		assertReplicasUnchanged();
 	}
 
+	@Ignore
 	@Test
 	public void testResilientToUpdateFailures() {
 		Throwable throwable = new RuntimeException();

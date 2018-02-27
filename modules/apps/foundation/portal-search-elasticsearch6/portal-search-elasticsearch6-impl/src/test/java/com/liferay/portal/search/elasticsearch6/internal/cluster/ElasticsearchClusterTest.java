@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.mockito.Mock;
@@ -42,6 +43,7 @@ public class ElasticsearchClusterTest {
 		_replicasClusterContext = createReplicasClusterContext();
 	}
 
+	@Ignore
 	@Test
 	public void testReplicaIndexNamesIncludeSystemCompanyId() {
 		long[] companyIds = {42, 142857};
