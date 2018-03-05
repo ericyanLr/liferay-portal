@@ -168,25 +168,30 @@ public class LiferayDocumentTypeFactory implements TypeMappingsHelper {
 
 		JSONObject sourceJSONObject = createJSONObject(source);
 
-		JSONArray sourceTemplatesJSONArray = sourceJSONObject.getJSONArray(
-			"dynamic_templates");
+		JSONObject sourceTypeJSONObject = sourceJSONObject;
 
-		if (sourceTemplatesJSONArray == null) {
-			return source;
+		if (sourceJSONObject.has(typeName)) {
+			sourceTypeJSONObject = sourceJSONObject.getJSONObject(typeName);
 		}
 
-		String mappings = getMappings(indexName, typeName);
+		JSONArray sourceTypeTemplatesJSONArray =
+			sourceTypeJSONObject.getJSONArray("dynamic_templates");
 
-		JSONObject mappingsJSONObject = createJSONObject(mappings);
+		if (sourceTypeTemplatesJSONArray != null) {
+			String mappings = getMappings(indexName, typeName);
 
-		JSONObject typeJSONObject = mappingsJSONObject.getJSONObject(typeName);
+			JSONObject mappingsJSONObject = createJSONObject(mappings);
 
-		JSONArray typeTemplatesJSONArray = typeJSONObject.getJSONArray(
-			"dynamic_templates");
+			JSONObject typeJSONObject = mappingsJSONObject.getJSONObject(
+				typeName);
 
-		sourceJSONObject.put(
-			"dynamic_templates",
-			merge(typeTemplatesJSONArray, sourceTemplatesJSONArray));
+			JSONArray typeTemplatesJSONArray = typeJSONObject.getJSONArray(
+				"dynamic_templates");
+
+			sourceTypeJSONObject.put(
+				"dynamic_templates",
+				merge(typeTemplatesJSONArray, sourceTypeTemplatesJSONArray));
+		}
 
 		return sourceJSONObject.toString();
 	}
