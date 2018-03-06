@@ -96,6 +96,34 @@ public class CompanyIndexFactoryTest {
 		indexOneDocument(field);
 
 		assertAnalyzer(field, "kuromoji_liferay_custom");
+
+		field = RandomTestUtil.randomString() + "_en";
+
+		indexOneDocument(field);
+
+		assertAnalyzer(field, "english");
+	}
+
+	@Test
+	public void testAdditionalTypeMappingsWrapped() throws Exception {
+		_companyIndexFactory.setAdditionalIndexConfigurations(
+			loadAdditionalAnalyzers());
+		_companyIndexFactory.setAdditionalTypeMappings(
+			loadAdditionalTypeMappingsWrapped());
+
+		createIndices();
+
+		String field = RandomTestUtil.randomString() + "_ja";
+
+		indexOneDocument(field);
+
+		assertAnalyzer(field, "kuromoji_liferay_custom");
+
+		field = RandomTestUtil.randomString() + "_en";
+
+		indexOneDocument(field);
+
+		assertAnalyzer(field, "english");
 	}
 
 	@Test
@@ -353,6 +381,12 @@ public class CompanyIndexFactoryTest {
 	protected String loadAdditionalTypeMappings() throws Exception {
 		return ResourceUtil.getResourceAsString(
 			getClass(), "CompanyIndexFactoryTest-additionalTypeMappings.json");
+	}
+
+	protected String loadAdditionalTypeMappingsWrapped() throws Exception {
+		return ResourceUtil.getResourceAsString(
+			getClass(),
+			"CompanyIndexFactoryTest-additionalTypeMappings-wrapped.json");
 	}
 
 	protected String loadOverrideTypeMappings() throws Exception {
