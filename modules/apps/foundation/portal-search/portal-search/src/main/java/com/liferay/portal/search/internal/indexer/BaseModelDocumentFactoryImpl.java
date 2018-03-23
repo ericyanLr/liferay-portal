@@ -20,10 +20,14 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentHelper;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistry;
+import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.search.indexer.BaseModelDocumentFactory;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Michael C. Han
@@ -35,26 +39,36 @@ public class BaseModelDocumentFactoryImpl implements BaseModelDocumentFactory {
 	public Document createDocument(BaseModel<?> baseModel) {
 		Document document = (Document)_document.clone();
 
-		String className = baseModel.getModelClassName();
+		Indexer<BaseModel<?>> indexer = indexerRegistry.getIndexer(
+			baseModel.getModelClassName());
 
-		Tuple classPKResourcePrimKeyTuple = getClassPKResourcePrimKey(
-			baseModel);
-
-		long classPK = (Long)classPKResourcePrimKeyTuple.getObject(0);
-
-		String uid = getDocumentUID(className, classPK);
-
-		document.addKeyword(Field.UID, uid);
-
-		DocumentHelper documentHelper = new DocumentHelper(document);
-
-		long resourcePrimKey = (Long)classPKResourcePrimKeyTuple.getObject(1);
-
-		documentHelper.setEntryKey(className, classPK);
-
-		if (resourcePrimKey > 0) {
-			document.addKeyword(Field.ROOT_ENTRY_CLASS_PK, resourcePrimKey);
+		if (indexer == null) {
+			return document;
 		}
+
+		try {
+			Document indexerDocument = indexer.getDocument(baseModel);
+
+			document.addKeyword(
+				Field.ENTRY_CLASS_NAME,
+				indexerDocument.get(Field.ENTRY_CLASS_NAME));
+			document.addKeyword(
+				Field.ENTRY_CLASS_PK,
+				indexerDocument.get(Field.ENTRY_CLASS_PK));
+			document.addKeyword(
+				Field.GROUP_ID,
+				indexerDocument.get(Field.GROUP_ID));
+			document.addKeyword(
+				Field.UID,
+				indexerDocument.get(Field.UID));
+
+			if (indexerDocument.hasField(Field.ROOT_ENTRY_CLASS_PK)) {
+				document.addKeyword(
+					Field.ROOT_ENTRY_CLASS_PK,
+					indexerDocument.get(Field.ROOT_ENTRY_CLASS_PK));
+			}
+		}
+		catch (SearchException e) {}
 
 		return document;
 	}
@@ -85,5 +99,8 @@ public class BaseModelDocumentFactoryImpl implements BaseModelDocumentFactory {
 	}
 
 	private final Document _document = new DocumentImpl();
+
+	@Reference
+	protected IndexerRegistry indexerRegistry;
 
 }

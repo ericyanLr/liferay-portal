@@ -14,6 +14,9 @@
 
 package com.liferay.portal.search.internal;
 
+import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.model.AssetRenderer;
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.portal.background.task.constants.BackgroundTaskContextMapConstants;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
@@ -564,6 +567,21 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 			return;
 		}
 
+		AssetEntry assetEntry = assetEntryLocalService.fetchEntry(
+			name, classPK);
+
+		if (assetEntry != null) {
+			AssetRenderer assetRenderer = assetEntry.getAssetRenderer();
+
+			BaseModel baseModel = (BaseModel) assetRenderer.getAssetObject();
+
+			Serializable primaryKeyObj = baseModel.getPrimaryKeyObj();
+
+			if (primaryKeyObj instanceof Long) {
+				classPK = (Long)primaryKeyObj;
+			}
+		}
+
 		Optional<BaseModel<?>> optional = baseModelRetriever.fetchBaseModel(
 			name, classPK);
 
@@ -612,6 +630,9 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 			baseModel, companyId, indexer.getSearchEngineId(),
 			indexer.isCommitImmediately());
 	}
+
+	@Reference
+	protected AssetEntryLocalService assetEntryLocalService;
 
 	@Reference
 	protected BaseModelRetriever baseModelRetriever;
