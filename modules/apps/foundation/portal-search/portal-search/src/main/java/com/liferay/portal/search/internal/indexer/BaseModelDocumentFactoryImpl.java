@@ -20,10 +20,14 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentHelper;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistry;
+import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.search.indexer.BaseModelDocumentFactory;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Michael C. Han
@@ -34,6 +38,38 @@ public class BaseModelDocumentFactoryImpl implements BaseModelDocumentFactory {
 	@Override
 	public Document createDocument(BaseModel<?> baseModel) {
 		Document document = (Document)_document.clone();
+
+		Indexer<BaseModel<?>> indexer = indexerRegistry.getIndexer(
+			baseModel.getModelClassName());
+
+		if (indexer != null) {
+			try {
+				Document indexerDocument = indexer.getDocument(baseModel);
+
+				if (indexerDocument != null) {
+					document.addKeyword(
+						Field.ENTRY_CLASS_NAME,
+						indexerDocument.get(Field.ENTRY_CLASS_NAME));
+					document.addKeyword(
+						Field.ENTRY_CLASS_PK,
+						indexerDocument.get(Field.ENTRY_CLASS_PK));
+					document.addKeyword(
+						Field.GROUP_ID, indexerDocument.get(Field.GROUP_ID));
+					document.addKeyword(
+						Field.UID, indexerDocument.get(Field.UID));
+
+					if (indexerDocument.hasField(Field.ROOT_ENTRY_CLASS_PK)) {
+						document.addKeyword(
+							Field.ROOT_ENTRY_CLASS_PK,
+							indexerDocument.get(Field.ROOT_ENTRY_CLASS_PK));
+					}
+
+					return document;
+				}
+			}
+			catch (SearchException se) {
+			}
+		}
 
 		String className = baseModel.getModelClassName();
 
@@ -83,6 +119,9 @@ public class BaseModelDocumentFactoryImpl implements BaseModelDocumentFactory {
 
 		return uid;
 	}
+
+	@Reference
+	protected IndexerRegistry indexerRegistry;
 
 	private final Document _document = new DocumentImpl();
 
