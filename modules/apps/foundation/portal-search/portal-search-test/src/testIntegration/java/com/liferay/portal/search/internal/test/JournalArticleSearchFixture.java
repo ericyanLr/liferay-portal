@@ -15,7 +15,6 @@
 package com.liferay.portal.search.internal.test;
 
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.search.JournalArticleIndexer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
@@ -66,7 +65,7 @@ public class JournalArticleSearchFixture {
 	}
 
 	public void reindex(JournalArticle journalArticle) throws SearchException {
-		((JournalArticleIndexer)_indexer).reindex(journalArticle);
+		((Indexer<JournalArticle>)_indexer).reindex(journalArticle);
 	}
 
 	public Document searchOnlyOne(String keywords, Locale locale) {
