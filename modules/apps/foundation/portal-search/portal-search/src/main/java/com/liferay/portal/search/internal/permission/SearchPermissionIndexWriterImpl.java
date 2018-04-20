@@ -14,13 +14,20 @@
 
 package com.liferay.portal.search.internal.permission;
 
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.search.index.UpdateDocumentIndexWriter;
 import com.liferay.portal.search.indexer.BaseModelDocumentFactory;
 import com.liferay.portal.search.permission.SearchPermissionDocumentContributor;
 import com.liferay.portal.search.permission.SearchPermissionIndexWriter;
+import com.liferay.portal.search.spi.model.index.contributor.SearchPermissionModelDocumentContributor;
 
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -38,11 +45,41 @@ public class SearchPermissionIndexWriterImpl
 
 		Document document = baseModelDocumentFactory.createDocument(baseModel);
 
+		ServiceTrackerList
+			<SearchPermissionModelDocumentContributor,
+				SearchPermissionModelDocumentContributor>
+					searchPermissionModelDocumentContributors =
+						getSearchPermissionModelDocumentContributors(baseModel);
+
+		searchPermissionModelDocumentContributors.forEach(
+			(SearchPermissionModelDocumentContributor
+				permissionModelDocumentContributor) ->
+				permissionModelDocumentContributor.contribute(
+					document, baseModel));
+
+		searchPermissionModelDocumentContributors.close();
+
 		searchPermissionDocumentContributor.addPermissionFields(
 			companyId, document);
 
 		updateDocumentIndexWriter.updateDocumentPartially(
 			searchEngineId, companyId, document, commitImmediately);
+	}
+
+	protected ServiceTrackerList
+		<SearchPermissionModelDocumentContributor,
+			SearchPermissionModelDocumentContributor>
+				getSearchPermissionModelDocumentContributors(
+					BaseModel<?> baseModel) {
+
+		Bundle bundle = FrameworkUtil.getBundle(getClass());
+
+		BundleContext bundleContext = bundle.getBundleContext();
+
+		return ServiceTrackerListFactory.open(
+			bundleContext, SearchPermissionModelDocumentContributor.class,
+			StringBundler.concat(
+				"(indexer.class.name=", baseModel.getModelClassName(), ")"));
 	}
 
 	@Reference
