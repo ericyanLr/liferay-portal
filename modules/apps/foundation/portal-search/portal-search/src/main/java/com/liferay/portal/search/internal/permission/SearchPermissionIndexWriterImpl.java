@@ -23,6 +23,7 @@ import com.liferay.portal.search.index.UpdateDocumentIndexWriter;
 import com.liferay.portal.search.indexer.BaseModelDocumentFactory;
 import com.liferay.portal.search.permission.SearchPermissionDocumentContributor;
 import com.liferay.portal.search.permission.SearchPermissionIndexWriter;
+import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
 import com.liferay.portal.search.spi.model.index.contributor.SearchPermissionModelDocumentContributor;
 
 import org.osgi.framework.Bundle;
@@ -79,7 +80,8 @@ public class SearchPermissionIndexWriterImpl
 		return ServiceTrackerListFactory.open(
 			bundleContext, SearchPermissionModelDocumentContributor.class,
 			StringBundler.concat(
-				"(indexer.class.name=", baseModel.getModelClassName(), ")"));
+				"(|(!(objectClass=", ModelDocumentContributor.class.getName(),
+				"))(indexer.class.name=", baseModel.getModelClassName(), "))"));
 	}
 
 	@Reference
