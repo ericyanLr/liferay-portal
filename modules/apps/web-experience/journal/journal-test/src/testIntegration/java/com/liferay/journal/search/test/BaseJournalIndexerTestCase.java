@@ -20,8 +20,10 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
+import com.liferay.portal.search.test.util.RoleFixture;
 import com.liferay.portal.test.rule.Inject;
 
 import java.util.ArrayList;
@@ -39,6 +41,7 @@ public abstract class BaseJournalIndexerTestCase {
 		journalFixture.setUp();
 
 		journalSearchFixture = createJournalSearchFixture();
+		roleFixture = createRoleFixture();
 	}
 
 	protected IndexedFieldsFixture createIndexedFieldsFixture() {
@@ -52,6 +55,11 @@ public abstract class BaseJournalIndexerTestCase {
 
 	protected JournalSearchFixture createJournalSearchFixture() {
 		return new JournalSearchFixture(indexerRegistry);
+	}
+
+	protected RoleFixture createRoleFixture() {
+		return new RoleFixture(
+			resourcePermissionLocalService, roleLocalService);
 	}
 
 	protected void setGroup(Group group) {
@@ -81,6 +89,11 @@ public abstract class BaseJournalIndexerTestCase {
 
 	@Inject
 	protected ResourcePermissionLocalService resourcePermissionLocalService;
+
+	protected RoleFixture roleFixture;
+
+	@Inject
+	protected RoleLocalService roleLocalService;
 
 	@Inject
 	protected SearchEngineHelper searchEngineHelper;

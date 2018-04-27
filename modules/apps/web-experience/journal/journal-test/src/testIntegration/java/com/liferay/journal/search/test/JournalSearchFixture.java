@@ -15,6 +15,7 @@
 package com.liferay.journal.search.test;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
@@ -23,6 +24,7 @@ import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
+import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.search.test.util.HitsAssert;
 
@@ -54,6 +56,13 @@ public class JournalSearchFixture {
 		queryConfig.setSelectedFieldNames(StringPool.STAR);
 
 		return searchContext;
+	}
+
+	public void reindex(BaseModel baseModel) throws SearchException {
+		Indexer indexer = _indexerRegistry.getIndexer(
+			baseModel.getModelClassName());
+
+		indexer.reindex(baseModel);
 	}
 
 	public Document searchOnlyOne(String keywords, Locale locale)

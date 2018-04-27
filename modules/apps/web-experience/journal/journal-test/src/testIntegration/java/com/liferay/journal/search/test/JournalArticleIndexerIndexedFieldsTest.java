@@ -21,8 +21,11 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
@@ -45,6 +48,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -90,6 +94,78 @@ public class JournalArticleIndexerIndexedFieldsTest
 		Map<String, String> documentMap = new HashMap<>();
 
 		populateExpectedFieldValues(journalArticle, documentMap);
+
+		assertIndexedFields(title, locale, documentMap);
+	}
+
+	@Test
+	public void testIndexedPermissionFields() throws Exception {
+		String content = RandomTestUtil.randomString();
+		Locale locale = LocaleUtil.BRAZIL;
+		String title = RandomTestUtil.randomString();
+
+		JournalArticle journalArticle = journalFixture.addJournalArticle(
+			title, locale, content, journalFixture.getServiceContext());
+
+		Map<String, String> documentMap = new HashMap<>();
+
+		populateExpectedFieldValues(journalArticle, documentMap);
+
+		assertIndexedFields(title, locale, documentMap);
+
+		roleFixture.removeResourcePermission(
+			journalArticle.getCompanyId(), RoleConstants.GUEST,
+			journalArticle.getModelClassName(),
+			ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(journalArticle.getResourcePrimKey()),
+			ActionKeys.VIEW);
+
+		String documentMapRoleId = documentMap.get(Field.ROLE_ID);
+		String expectedRoleId = String.valueOf(
+			roleFixture.getRoleId(
+				journalArticle.getCompanyId(), RoleConstants.OWNER));
+
+		Assert.assertNotEquals(documentMapRoleId, expectedRoleId);
+		Assert.assertTrue(
+			documentMap.replace(
+				Field.ROLE_ID, documentMapRoleId, expectedRoleId));
+
+		assertIndexedFields(title, locale, documentMap);
+
+		roleFixture.removeResourcePermission(
+			journalArticle.getCompanyId(), RoleConstants.SITE_MEMBER,
+			journalArticle.getModelClassName(),
+			ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(journalArticle.getResourcePrimKey()),
+			ActionKeys.VIEW);
+
+		Assert.assertTrue(documentMap.containsKey(Field.GROUP_ROLE_ID));
+
+		documentMap.remove(Field.GROUP_ROLE_ID);
+
+		Assert.assertFalse(documentMap.containsKey(Field.GROUP_ROLE_ID));
+
+		assertIndexedFields(title, locale, documentMap);
+	}
+
+	@Test
+	public void testReindex() throws Exception {
+		String content = RandomTestUtil.randomString();
+		Locale locale = LocaleUtil.BRAZIL;
+		String title = RandomTestUtil.randomString();
+
+		JournalArticle journalArticle = journalFixture.addJournalArticle(
+			title, locale, content, journalFixture.getServiceContext());
+
+		Map<String, String> documentMap = new HashMap<>();
+
+		populateExpectedFieldValues(journalArticle, documentMap);
+
+		assertIndexedFields(title, locale, documentMap);
+
+		journalSearchFixture.reindex(journalArticle);
+
+		Thread.sleep(3000);
 
 		assertIndexedFields(title, locale, documentMap);
 	}
