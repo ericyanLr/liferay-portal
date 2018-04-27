@@ -48,6 +48,7 @@ public class DLFixture {
 		List<User> users) {
 
 		_dlAppLocalService = dlAppLocalService;
+
 		_groups = groups;
 		_users = users;
 	}

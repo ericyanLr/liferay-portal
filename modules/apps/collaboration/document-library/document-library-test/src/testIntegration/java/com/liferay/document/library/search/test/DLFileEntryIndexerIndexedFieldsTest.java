@@ -20,9 +20,12 @@ import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
 import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
@@ -30,6 +33,7 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
+import com.liferay.portal.search.test.util.IdempotentRetryAssert;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerTestRule;
 
@@ -38,7 +42,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -82,16 +88,109 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 		FileEntry fileEntry = dlFixture.addFileEntry(
 			fileName_jp, dlFixture.getServiceContext());
 
-		Document document = dlSearchFixture.searchOnlyOne(
-			searchTerm, LocaleUtil.JAPAN);
+		Map<String, String> map = new HashMap<>();
 
-		indexedFieldsFixture.postProcessDocument(document);
+		populateExpectedFieldValues(fileEntry, map);
+
+		assertIndexedFields(searchTerm, LocaleUtil.JAPAN, map);
+	}
+
+	@Test
+	public void testIndexedPermissionFields() throws Exception {
+		dlFixture.updateDisplaySettings(LocaleUtil.JAPAN);
+
+		String fileName_jp = "content_search.txt";
+
+		String searchTerm = "新規";
+
+		FileEntry fileEntry = dlFixture.addFileEntry(
+			fileName_jp, dlFixture.getServiceContext());
 
 		Map<String, String> map = new HashMap<>();
 
 		populateExpectedFieldValues(fileEntry, map);
 
-		FieldValuesAssert.assertFieldValues(map, document, searchTerm);
+		assertIndexedFields(searchTerm, LocaleUtil.JAPAN, map);
+
+		roleFixture.removeResourcePermission(
+			fileEntry.getCompanyId(), RoleConstants.GUEST,
+			DLFileEntry.class.getName(), ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(fileEntry.getFileEntryId()), ActionKeys.VIEW);
+
+		Assert.assertTrue(
+			map.replace(
+				"readCount", String.valueOf(fileEntry.getReadCount()),
+				String.valueOf(fileEntry.getReadCount() + 1)));
+
+		String documentMapRoleId = map.get(Field.ROLE_ID);
+		String expectedRoleId = String.valueOf(
+			roleFixture.getRoleId(
+				fileEntry.getCompanyId(), RoleConstants.OWNER));
+
+		Assert.assertNotEquals(documentMapRoleId, expectedRoleId);
+		Assert.assertTrue(
+			map.replace(Field.ROLE_ID, documentMapRoleId, expectedRoleId));
+
+		assertIndexedFields(searchTerm, LocaleUtil.JAPAN, map);
+
+		roleFixture.removeResourcePermission(
+			fileEntry.getCompanyId(), RoleConstants.SITE_MEMBER,
+			DLFileEntry.class.getName(), ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(fileEntry.getFileEntryId()), ActionKeys.VIEW);
+
+		Assert.assertTrue(map.containsKey(Field.GROUP_ROLE_ID));
+
+		map.remove(Field.GROUP_ROLE_ID);
+
+		Assert.assertFalse(map.containsKey(Field.GROUP_ROLE_ID));
+
+		assertIndexedFields(searchTerm, LocaleUtil.JAPAN, map);
+	}
+
+	@Test
+	public void testReindex() throws Exception {
+		dlFixture.updateDisplaySettings(LocaleUtil.JAPAN);
+
+		String fileName_jp = "content_search.txt";
+
+		String searchTerm = "新規";
+
+		FileEntry fileEntry = dlFixture.addFileEntry(
+			fileName_jp, dlFixture.getServiceContext());
+
+		Map<String, String> map = new HashMap<>();
+
+		populateExpectedFieldValues(fileEntry, map);
+
+		assertIndexedFields(searchTerm, LocaleUtil.JAPAN, map);
+
+		dlSearchFixture.reindex((DLFileEntry)fileEntry.getModel());
+
+		Thread.sleep(3000);
+
+		assertIndexedFields(searchTerm, LocaleUtil.JAPAN, map);
+	}
+
+	protected void assertIndexedFields(
+			String keywords, Locale locale, Map<String, String> expectedValues)
+		throws Exception {
+
+		IdempotentRetryAssert.retryAssert(
+			3, TimeUnit.SECONDS,
+			() -> doAssertIndexedFields(keywords, locale, expectedValues));
+	}
+
+	protected Void doAssertIndexedFields(
+			String keywords, Locale locale, Map<String, String> expectedValues)
+		throws Exception {
+
+		Document document = dlSearchFixture.searchOnlyOne(keywords, locale);
+
+		indexedFieldsFixture.postProcessDocument(document);
+
+		FieldValuesAssert.assertFieldValues(expectedValues, document, keywords);
+
+		return null;
 	}
 
 	protected String getContents(FileEntry fileEntry) throws Exception {
