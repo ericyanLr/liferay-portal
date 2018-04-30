@@ -25,17 +25,24 @@ import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
+import com.liferay.portal.kernel.search.filter.RangeTermFilter;
 import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsValues;
 
+import java.text.Format;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -434,14 +441,34 @@ public class AssetSearcher extends BaseSearcher {
 			BooleanQuery fullQuery, SearchContext searchContext)
 		throws Exception {
 
+		BooleanFilter booleanFilter = fullQuery.getPreBooleanFilter();
+
+		long nowTime = GetterUtil.getLong(
+			searchContext.getAttribute("nowTime"));
+
+		if (nowTime > 0) {
+			RangeTermFilter rangeTermFilter = new RangeTermFilter(
+				Field.EXPIRATION_DATE, false, false);
+
+			Format dateFormat = FastDateFormatFactoryUtil.getSimpleDateFormat(
+				PropsUtil.get(PropsKeys.INDEX_DATE_FORMAT_PATTERN));
+
+			rangeTermFilter.setLowerBound(dateFormat.format(new Date(nowTime)));
+
+			if (booleanFilter == null) {
+				booleanFilter = new BooleanFilter();
+			}
+
+			booleanFilter.add(rangeTermFilter);
+			fullQuery.setPreBooleanFilter(booleanFilter);
+		}
+
 		boolean showInvisible = GetterUtil.getBoolean(
 			_assetEntryQuery.getAttribute("showInvisible"));
 
 		if (showInvisible) {
 			return;
 		}
-
-		BooleanFilter booleanFilter = fullQuery.getPreBooleanFilter();
 
 		if (booleanFilter == null) {
 			booleanFilter = new BooleanFilter();
