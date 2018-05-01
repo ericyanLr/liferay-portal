@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
 import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
 
+import com.liferay.portal.search.spi.model.index.contributor.SearchPermissionModelDocumentContributor;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -33,10 +34,14 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = "indexer.class.name=com.liferay.document.library.kernel.model.DLFileEntry",
-	service = ModelDocumentContributor.class
+	service = {
+		ModelDocumentContributor.class,
+		SearchPermissionModelDocumentContributor.class
+	}
 )
 public class DLFileEntryRelatedEntryModelDocumentContributor
-	implements ModelDocumentContributor<DLFileEntry> {
+	implements ModelDocumentContributor<DLFileEntry>,
+		SearchPermissionModelDocumentContributor<DLFileEntry> {
 
 	@Override
 	public void contribute(Document document, DLFileEntry dlFileEntry) {
