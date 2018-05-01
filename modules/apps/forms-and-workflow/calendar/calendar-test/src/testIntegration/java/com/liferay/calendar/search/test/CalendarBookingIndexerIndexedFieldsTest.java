@@ -20,8 +20,11 @@ import com.liferay.calendar.model.Calendar;
 import com.liferay.calendar.model.CalendarBooking;
 import com.liferay.calendar.model.CalendarResource;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -32,14 +35,21 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
+import com.liferay.portal.search.test.util.IdempotentRetryAssert;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerTestRule;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -102,49 +112,133 @@ public class CalendarBookingIndexerIndexedFieldsTest
 
 		Map<String, String> map = new HashMap<>();
 
-		map.put(
-			Field.CLASS_NAME_ID,
-			String.valueOf(portal.getClassNameId(Calendar.class)));
-
-		indexedFieldsFixture.populatePriority("0.0", map);
-
-		map.put(Field.RELATED_ENTRY, "true");
-		map.put(Field.STAGING_GROUP, "false");
-		map.put(Field.STATUS, "0");
-		map.put("viewActionId", CalendarActionKeys.VIEW_BOOKING_DETAILS);
-
-		populateTitle(originalTitle, map);
-
-		populateTranslatedTitle(translatedTitle, map);
-
-		CalendarResource calendarResource =
-			calendarBooking.getCalendarResource();
-
-		populateCalendarResource(calendarResource, map);
-
-		Calendar calendar = calendarResource.getDefaultCalendar();
-
-		populateCalendar(calendar, map);
-
-		populateCalendarBooking(calendarBooking, map);
-
-		indexedFieldsFixture.populateRoleIdFields(
-			calendarBooking.getCompanyId(), Calendar.class.getName(),
-			calendarBooking.getCalendarId(), calendarBooking.getGroupId(),
-			CalendarActionKeys.VIEW_BOOKING_DETAILS, map);
-
-		indexedFieldsFixture.populateUID(
-			calendarBooking.getModelClassName(),
-			calendarBooking.getCalendarBookingId(), map);
+		populateExpectedFieldValues(
+			calendarBooking, originalTitle, translatedTitle, map);
 
 		String keywords = "nev";
 
-		Document document = calendarSearchFixture.searchOnlyOne(
-			keywords, LocaleUtil.HUNGARY);
+		assertIndexedFields(keywords, LocaleUtil.HUNGARY, map);
+	}
 
-		indexedFieldsFixture.postProcessDocument(document);
+	@Test
+	public void testIndexedPermissionFields() throws Exception {
+		String originalTitle = "entity title";
+		String translatedTitle = "entitas neve";
 
-		FieldValuesAssert.assertFieldValues(map, document, keywords);
+		String description = StringUtil.toLowerCase(
+			RandomTestUtil.randomString());
+
+		CalendarBooking calendarBooking = addCalendarBooking(
+			new LocalizedValuesMap() {
+				{
+					put(LocaleUtil.US, originalTitle);
+					put(LocaleUtil.HUNGARY, translatedTitle);
+				}
+			},
+			new LocalizedValuesMap() {
+				{
+					put(LocaleUtil.US, originalTitle);
+					put(LocaleUtil.HUNGARY, translatedTitle);
+				}
+			},
+			new LocalizedValuesMap() {
+				{
+					put(LocaleUtil.US, description);
+					put(LocaleUtil.HUNGARY, description);
+				}
+			});
+
+		Map<String, String> map = new HashMap<>();
+
+		populateExpectedFieldValues(
+			calendarBooking, originalTitle, translatedTitle, map);
+
+		String keywords = "nev";
+
+		assertIndexedFields(keywords, LocaleUtil.HUNGARY, map);
+
+		roleFixture.setResourcePermissions(
+			calendarBooking.getCompanyId(), RoleConstants.GUEST,
+			Calendar.class.getName(), ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(calendarBooking.getCalendarId()),
+			new String[] {
+				ActionKeys.VIEW, CalendarActionKeys.VIEW_BOOKING_DETAILS
+			});
+
+		String documentMapRoleId = map.get(Field.ROLE_ID);
+
+		List<String> expectedRoleIds = Arrays.asList(
+			documentMapRoleId,
+			String.valueOf(
+				roleFixture.getRoleId(
+					calendarBooking.getCompanyId(), RoleConstants.GUEST)));
+
+		Collections.sort(expectedRoleIds);
+
+		Assert.assertNotEquals(documentMapRoleId, expectedRoleIds.toString());
+		Assert.assertTrue(
+			map.replace(
+				Field.ROLE_ID, documentMapRoleId, expectedRoleIds.toString()));
+
+		assertIndexedFields(keywords, LocaleUtil.HUNGARY, map);
+
+		roleFixture.removeResourcePermission(
+			calendarBooking.getCompanyId(), RoleConstants.SITE_MEMBER,
+			Calendar.class.getName(), ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(calendarBooking.getCalendarId()),
+			CalendarActionKeys.VIEW_BOOKING_DETAILS);
+
+		Assert.assertTrue(map.containsKey(Field.GROUP_ROLE_ID));
+
+		map.remove(Field.GROUP_ROLE_ID);
+
+		Assert.assertFalse(map.containsKey(Field.GROUP_ROLE_ID));
+
+		assertIndexedFields(keywords, LocaleUtil.HUNGARY, map);
+	}
+
+	@Test
+	public void testReindex() throws Exception {
+		String originalTitle = "entity title";
+		String translatedTitle = "entitas neve";
+
+		String description = StringUtil.toLowerCase(
+			RandomTestUtil.randomString());
+
+		CalendarBooking calendarBooking = addCalendarBooking(
+			new LocalizedValuesMap() {
+				{
+					put(LocaleUtil.US, originalTitle);
+					put(LocaleUtil.HUNGARY, translatedTitle);
+				}
+			},
+			new LocalizedValuesMap() {
+				{
+					put(LocaleUtil.US, originalTitle);
+					put(LocaleUtil.HUNGARY, translatedTitle);
+				}
+			},
+			new LocalizedValuesMap() {
+				{
+					put(LocaleUtil.US, description);
+					put(LocaleUtil.HUNGARY, description);
+				}
+			});
+
+		Map<String, String> map = new HashMap<>();
+
+		populateExpectedFieldValues(
+			calendarBooking, originalTitle, translatedTitle, map);
+
+		String keywords = "nev";
+
+		assertIndexedFields(keywords, LocaleUtil.HUNGARY, map);
+
+		calendarSearchFixture.reindex(calendarBooking);
+
+		Thread.sleep(3000);
+
+		assertIndexedFields(keywords, LocaleUtil.HUNGARY, map);
 	}
 
 	protected CalendarBooking addCalendarBooking(
@@ -161,6 +255,28 @@ public class CalendarBookingIndexerIndexedFieldsTest
 
 		return calendarFixture.addCalendarBooking(
 			titleLocalizedValuesMap, calendar, serviceContext);
+	}
+
+	protected void assertIndexedFields(
+			String keywords, Locale locale, Map<String, String> expectedValues)
+		throws Exception {
+
+		IdempotentRetryAssert.retryAssert(
+			3, TimeUnit.SECONDS,
+			() -> doAssertIndexedFields(keywords, locale, expectedValues));
+	}
+
+	protected Void doAssertIndexedFields(
+		String keywords, Locale locale, Map<String, String> expectedValues) {
+
+		Document document = calendarSearchFixture.searchOnlyOne(
+			keywords, locale);
+
+		indexedFieldsFixture.postProcessDocument(document);
+
+		FieldValuesAssert.assertFieldValues(expectedValues, document, keywords);
+
+		return null;
 	}
 
 	protected void populateCalendar(
@@ -217,6 +333,43 @@ public class CalendarBookingIndexerIndexedFieldsTest
 		indexedFieldsFixture.populateDate(Field.PUBLISH_DATE, new Date(0), map);
 
 		indexedFieldsFixture.populateExpirationDateWithForever(map);
+	}
+
+	protected void populateExpectedFieldValues(
+			CalendarBooking calendarBooking, String originalTitle,
+			String translatedTitle, Map<String, String> map)
+		throws Exception {
+
+		map.put(
+			Field.CLASS_NAME_ID,
+			String.valueOf(portal.getClassNameId(Calendar.class)));
+		map.put(Field.RELATED_ENTRY, "true");
+		map.put(Field.STAGING_GROUP, "false");
+		map.put(Field.STATUS, "0");
+		map.put("viewActionId", CalendarActionKeys.VIEW_BOOKING_DETAILS);
+
+		populateTitle(originalTitle, map);
+		populateTranslatedTitle(translatedTitle, map);
+
+		CalendarResource calendarResource =
+			calendarBooking.getCalendarResource();
+
+		populateCalendarResource(calendarResource, map);
+
+		Calendar calendar = calendarResource.getDefaultCalendar();
+
+		populateCalendar(calendar, map);
+
+		populateCalendarBooking(calendarBooking, map);
+
+		indexedFieldsFixture.populatePriority("0.0", map);
+		indexedFieldsFixture.populateRoleIdFields(
+			calendarBooking.getCompanyId(), Calendar.class.getName(),
+			calendarBooking.getCalendarId(), calendarBooking.getGroupId(),
+			CalendarActionKeys.VIEW_BOOKING_DETAILS, map);
+		indexedFieldsFixture.populateUID(
+			calendarBooking.getModelClassName(),
+			calendarBooking.getCalendarBookingId(), map);
 	}
 
 	protected void populateTitle(String title, Map<String, String> map) {
