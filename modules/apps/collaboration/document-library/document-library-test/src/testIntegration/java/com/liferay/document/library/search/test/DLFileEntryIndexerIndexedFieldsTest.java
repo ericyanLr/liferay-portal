@@ -106,6 +106,8 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 		FileEntry fileEntry = dlFixture.addFileEntry(
 			fileName_jp, dlFixture.getServiceContext());
 
+		Thread.sleep(500);
+
 		Map<String, String> map = new HashMap<>();
 
 		populateExpectedFieldValues(fileEntry, map);
@@ -116,11 +118,6 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 			fileEntry.getCompanyId(), RoleConstants.GUEST,
 			DLFileEntry.class.getName(), ResourceConstants.SCOPE_INDIVIDUAL,
 			String.valueOf(fileEntry.getFileEntryId()), ActionKeys.VIEW);
-
-		Assert.assertTrue(
-			map.replace(
-				"readCount", String.valueOf(fileEntry.getReadCount()),
-				String.valueOf(fileEntry.getReadCount() + 1)));
 
 		String documentMapRoleId = map.get(Field.ROLE_ID);
 		String expectedRoleId = String.valueOf(
