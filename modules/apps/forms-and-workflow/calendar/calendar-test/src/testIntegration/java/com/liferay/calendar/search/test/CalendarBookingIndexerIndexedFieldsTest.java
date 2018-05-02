@@ -180,6 +180,8 @@ public class CalendarBookingIndexerIndexedFieldsTest
 			map.replace(
 				Field.ROLE_ID, documentMapRoleId, expectedRoleIds.toString()));
 
+		calendarSearchFixture.reindex(calendarBooking);
+
 		assertIndexedFields(keywords, LocaleUtil.HUNGARY, map);
 
 		roleFixture.removeResourcePermission(
@@ -193,6 +195,8 @@ public class CalendarBookingIndexerIndexedFieldsTest
 		map.remove(Field.GROUP_ROLE_ID);
 
 		Assert.assertFalse(map.containsKey(Field.GROUP_ROLE_ID));
+
+		calendarSearchFixture.reindex(calendarBooking);
 
 		assertIndexedFields(keywords, LocaleUtil.HUNGARY, map);
 	}
