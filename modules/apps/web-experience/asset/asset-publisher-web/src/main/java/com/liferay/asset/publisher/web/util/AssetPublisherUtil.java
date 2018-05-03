@@ -75,6 +75,7 @@ import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -86,6 +87,7 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PrimitiveLongList;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -99,8 +101,11 @@ import com.liferay.subscription.service.SubscriptionLocalService;
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.text.Format;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -693,6 +698,13 @@ public class AssetPublisherUtil {
 
 		Map<String, Serializable> attributes =
 			assetPublisherDisplayContext.getAttributes();
+
+		Format dateFormat = FastDateFormatFactoryUtil.getSimpleDateFormat(
+			PropsUtil.get(PropsKeys.INDEX_DATE_FORMAT_PATTERN));
+
+		Date now = new Date(System.currentTimeMillis());
+
+		attributes.put("nowDate", dateFormat.format(now));
 
 		return getAssetEntryResults(
 			searchContainer, assetEntryQuery, layout, portletPreferences,

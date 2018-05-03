@@ -60,6 +60,7 @@ import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.QueryFilter;
+import com.liferay.portal.kernel.search.filter.RangeTermFilter;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.search.highlight.HighlightUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -213,6 +214,9 @@ public class JournalArticleIndexer
 		boolean showNonindexable = GetterUtil.getBoolean(
 			searchContext.getAttribute("showNonindexable"));
 
+		long nowDate = GetterUtil.getLong(
+			searchContext.getAttribute("nowDate"));
+
 		if (latest && !relatedClassName && !showNonindexable) {
 			contextBooleanFilter.addRequiredTerm("latest", Boolean.TRUE);
 		}
@@ -225,6 +229,15 @@ public class JournalArticleIndexer
 		}
 		else if (!relatedClassName && showNonindexable) {
 			contextBooleanFilter.addRequiredTerm("headListable", Boolean.TRUE);
+		}
+
+		if (nowDate > 0) {
+			RangeTermFilter rangeTermFilter = new RangeTermFilter(
+				Field.EXPIRATION_DATE, false, false);
+
+			rangeTermFilter.setLowerBound(String.valueOf(nowDate));
+
+			contextBooleanFilter.add(rangeTermFilter);
 		}
 	}
 
