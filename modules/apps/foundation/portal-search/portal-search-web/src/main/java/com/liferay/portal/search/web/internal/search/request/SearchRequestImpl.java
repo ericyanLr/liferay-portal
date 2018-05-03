@@ -24,11 +24,17 @@ import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.ScopeFacet;
 import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcher;
 import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcherManager;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.search.web.internal.util.SearchStringUtil;
 import com.liferay.portal.search.web.search.request.SearchRequest;
 import com.liferay.portal.search.web.search.request.SearchSettings;
 import com.liferay.portal.search.web.search.request.SearchSettingsContributor;
 
+import java.text.Format;
+
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -106,6 +112,13 @@ public class SearchRequestImpl implements SearchRequest {
 		SearchContext searchContext = _searchContextBuilder.getSearchContext();
 
 		searchContext.setAttribute("paginationType", "more");
+
+		Format dateFormat = FastDateFormatFactoryUtil.getSimpleDateFormat(
+			PropsUtil.get(PropsKeys.INDEX_DATE_FORMAT_PATTERN));
+
+		Date now = new Date(System.currentTimeMillis());
+
+		searchContext.setAttribute("nowDate", dateFormat.format(now));
 
 		addScopeFacet(searchContext);
 
