@@ -263,6 +263,10 @@ public interface PortletDataHandler {
 			PortletPreferences portletPreferences, String data)
 		throws PortletDataException;
 
+	public default boolean isConfigurationEnabled() {
+		return true;
+	}
+
 	public boolean isDataAlwaysStaged();
 
 	public boolean isDataLocalized();
@@ -297,6 +301,10 @@ public interface PortletDataHandler {
 	 *         <code>false</code> otherwise
 	 */
 	public boolean isRollbackOnException();
+
+	public default boolean isStaged() {
+		return true;
+	}
 
 	public default boolean isSupportsDataStrategyCopyAsNew() {
 		return true;

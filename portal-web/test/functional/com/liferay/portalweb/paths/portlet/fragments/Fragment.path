@@ -67,27 +67,42 @@
 </tr>
 <tr>
 	<td>PAGE_TEMPLATE_FRAGMENT_HEADER</td>
-	<td>//div[contains(@class,'fragment-entry-links')]/div[contains(.,'${key_fragmentName}')]</td>
+	<td>//div[contains(@class,'fragment-entry-link-wrapper')]//li[contains(.,'${key_fragmentName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PAGE_TEMPLATE_FRAGMENT_HEADER_POSITION</td>
-	<td>xpath=(//div[contains(@class,'fragment-entry-links')])/div[${key_position}]//*[contains(.,'${key_fragmentName}')]</td>
+	<td>//div[@data-position='${key_position}']//li[contains(.,'${key_fragmentName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PAGE_TEMPLATE_FRAGMENT_UP_ARROW_BUTTON</td>
-	<td>//div[contains(@class,'fragment-entry-links')]/div[contains(.,'${key_fragmentName}')]//li[contains(@class,'tbar-item')][2]/button</td>
+	<td>//div[contains(@class,'fragment-entry-link-wrapper')]//ul[contains(.,'${key_fragmentName}')]//li[contains(@class,'tbar-item')][2]/button</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PAGE_TEMPLATE_FRAGMENT_DOWN_ARROW_BUTTON</td>
-	<td>//div[contains(@class,'fragment-entry-links')]/div[contains(.,'${key_fragmentName}')]//li[contains(@class,'tbar-item')][3]/button</td>
+	<td>//div[contains(@class,'fragment-entry-link-wrapper')]//ul[contains(.,'${key_fragmentName}')]//li[contains(@class,'tbar-item')][3]/button</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PAGE_TEMPLATE_FRAGMENT_DELETE_BUTTON</td>
-	<td>//div[contains(@class,'fragment-entry-links')]/div[contains(.,'${key_fragmentName}')]//li[contains(@class,'tbar-item')][4]/button</td>
+	<td>//div[contains(@class,'fragment-entry-link-wrapper')]//ul[contains(.,'${key_fragmentName}')]//li[contains(@class,'tbar-item')][4]/button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_TEMPLATE_NAVIGATION_PORTLET</td>
+	<td>//div[contains(@class,'fragment-entry-links')][contains(.,'${key_fragmentName}')]//div[contains(@class,'portlet')][contains(.,'Navigation Menu')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_TEMPLATE_NAVIGATION_PORTLET_DISPLAY_CLASS</td>
+	<td>//div[contains(@class,'fragment-entry-links')][contains(.,'${key_fragmentName}')]//div[contains(@class,'portlet')][contains(.,'Navigation Menu')]//ul[contains(@class,'${key_displayTemplateClass}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_TEMPLATE_PORTLET_CONFIGURE</td>
+	<td>//div[contains(@class,'fragment-entry-links')][contains(.,'${key_fragmentName}')]//div[contains(@class,'portlet')]//button[contains(.,'Configure')]</td>
 	<td></td>
 </tr>
 <tr>

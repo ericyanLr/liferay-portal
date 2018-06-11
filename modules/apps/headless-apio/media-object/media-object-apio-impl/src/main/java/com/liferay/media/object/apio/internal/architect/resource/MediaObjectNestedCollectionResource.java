@@ -24,10 +24,11 @@ import com.liferay.apio.architect.representor.Representor;
 import com.liferay.apio.architect.resource.NestedCollectionResource;
 import com.liferay.apio.architect.routes.ItemRoutes;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
+import com.liferay.category.apio.architect.identifier.CategoryIdentifier;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.folder.apio.architect.identifier.FolderIdentifier;
 import com.liferay.folder.apio.architect.identifier.RootFolderIdentifier;
-import com.liferay.media.object.apio.architect.identifier.FileEntryIdentifier;
+import com.liferay.media.object.apio.architect.identifier.MediaObjectIdentifier;
 import com.liferay.media.object.apio.internal.architect.form.MediaObjectCreatorForm;
 import com.liferay.media.object.apio.internal.helper.MediaObjectHelper;
 import com.liferay.person.apio.architect.identifier.PersonIdentifier;
@@ -49,8 +50,8 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(immediate = true)
 public class MediaObjectNestedCollectionResource
-	implements NestedCollectionResource<FileEntry, Long,
-		FileEntryIdentifier, Long, RootFolderIdentifier> {
+	implements NestedCollectionResource
+		<FileEntry, Long, MediaObjectIdentifier, Long, RootFolderIdentifier> {
 
 	@Override
 	public NestedCollectionRoutes<FileEntry, Long, Long> collectionRoutes(
@@ -60,14 +61,14 @@ public class MediaObjectNestedCollectionResource
 			this::_getPageItems
 		).addCreator(
 			this::_getFileEntry,
-			_hasPermission.forAddingIn(RootFolderIdentifier.class)::apply,
+			_hasPermission.forAddingIn(RootFolderIdentifier.class),
 			MediaObjectCreatorForm::buildForm
 		).build();
 	}
 
 	@Override
 	public String getName() {
-		return "media-objects";
+		return "media-object";
 	}
 
 	@Override
@@ -105,6 +106,8 @@ public class MediaObjectNestedCollectionResource
 			"author", PersonIdentifier.class, FileEntry::getUserId
 		).addNumber(
 			"contentSize", FileEntry::getSize
+		).addRelatedCollection(
+			"categories", CategoryIdentifier.class
 		).addString(
 			"fileFormat", FileEntry::getMimeType
 		).addString(
@@ -127,7 +130,7 @@ public class MediaObjectNestedCollectionResource
 	}
 
 	private FileEntry _getFileEntry(
-			Long groupId, MediaObjectCreatorForm mediaObjectCreatorForm)
+			long groupId, MediaObjectCreatorForm mediaObjectCreatorForm)
 		throws PortalException {
 
 		return _mediaObjectHelper.addFileEntry(
@@ -135,7 +138,7 @@ public class MediaObjectNestedCollectionResource
 	}
 
 	private PageItems<FileEntry> _getPageItems(
-			Pagination pagination, Long groupId)
+			Pagination pagination, long groupId)
 		throws PortalException {
 
 		List<FileEntry> fileEntries = _dlAppService.getFileEntries(

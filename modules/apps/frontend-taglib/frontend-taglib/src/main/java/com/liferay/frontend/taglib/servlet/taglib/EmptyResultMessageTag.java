@@ -17,6 +17,8 @@ package com.liferay.frontend.taglib.servlet.taglib;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.frontend.taglib.servlet.taglib.util.EmptyResultMessageKeys;
+import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.util.IncludeTag;
 
 import java.util.List;
@@ -37,6 +39,10 @@ public class EmptyResultMessageTag extends IncludeTag {
 		EmptyResultMessageKeys.AnimationType animationType) {
 
 		_animationType = animationType;
+	}
+
+	public void setComponentId(String componentId) {
+		_componentId = componentId;
 	}
 
 	public void setDescription(String description) {
@@ -60,8 +66,9 @@ public class EmptyResultMessageTag extends IncludeTag {
 
 		_actionDropdownItems = null;
 		_animationType = EmptyResultMessageKeys.AnimationType.EMPTY;
+		_componentId = null;
 		_description = null;
-		_elementType = "element";
+		_elementType = null;
 	}
 
 	@Override
@@ -78,7 +85,14 @@ public class EmptyResultMessageTag extends IncludeTag {
 			"liferay-frontend:empty-result-message:animationTypeCssClass",
 			EmptyResultMessageKeys.getAnimationTypeCssClass(_animationType));
 		request.setAttribute(
+			"liferay-frontend:empty-result-message:componentId", _componentId);
+		request.setAttribute(
 			"liferay-frontend:empty-result-message:description", _description);
+
+		if (Validator.isNull(_elementType)) {
+			_elementType = LanguageUtil.get(request, "element");
+		}
+
 		request.setAttribute(
 			"liferay-frontend:empty-result-message:elementType", _elementType);
 	}
@@ -88,7 +102,8 @@ public class EmptyResultMessageTag extends IncludeTag {
 	private List<DropdownItem> _actionDropdownItems;
 	private EmptyResultMessageKeys.AnimationType _animationType =
 		EmptyResultMessageKeys.AnimationType.EMPTY;
+	private String _componentId;
 	private String _description;
-	private String _elementType = "element";
+	private String _elementType;
 
 }

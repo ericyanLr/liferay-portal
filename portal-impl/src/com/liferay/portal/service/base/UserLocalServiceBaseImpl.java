@@ -275,6 +275,19 @@ public abstract class UserLocalServiceBaseImpl extends BaseLocalServiceImpl
 	}
 
 	/**
+	 * Returns the user with the matching external reference code and company.
+	 *
+	 * @param companyId the primary key of the company
+	 * @param externalReferenceCode the user's external reference code
+	 * @return the matching user, or <code>null</code> if a matching user could not be found
+	 */
+	@Override
+	public User fetchUserByReferenceCode(long companyId,
+		String externalReferenceCode) {
+		return userPersistence.fetchByC_ERC(companyId, null);
+	}
+
+	/**
 	 * Returns the user with the primary key.
 	 *
 	 * @param userId the primary key of the user

@@ -34,11 +34,13 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
@@ -197,11 +199,6 @@ public class AssetDisplayPageEntryPersistenceImpl extends BasePersistenceImpl<As
 					result = assetDisplayPageEntry;
 
 					cacheResult(assetDisplayPageEntry);
-
-					if ((assetDisplayPageEntry.getAssetEntryId() != assetEntryId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_ASSETENTRYID,
-							finderArgs, assetDisplayPageEntry);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -825,6 +822,24 @@ public class AssetDisplayPageEntryPersistenceImpl extends BasePersistenceImpl<As
 
 	public AssetDisplayPageEntryPersistenceImpl() {
 		setModelClass(AssetDisplayPageEntry.class);
+
+		try {
+			Field field = BasePersistenceImpl.class.getDeclaredField(
+					"_dbColumnNames");
+
+			field.setAccessible(true);
+
+			Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+			dbColumnNames.put("type", "type_");
+
+			field.set(this, dbColumnNames);
+		}
+		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+		}
 	}
 
 	/**
@@ -1534,6 +1549,11 @@ public class AssetDisplayPageEntryPersistenceImpl extends BasePersistenceImpl<As
 	}
 
 	@Override
+	public Set<String> getBadColumnNames() {
+		return _badColumnNames;
+	}
+
+	@Override
 	protected Map<String, Integer> getTableColumnsMap() {
 		return AssetDisplayPageEntryModelImpl.TABLE_COLUMNS_MAP;
 	}
@@ -1564,4 +1584,7 @@ public class AssetDisplayPageEntryPersistenceImpl extends BasePersistenceImpl<As
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No AssetDisplayPageEntry exists with the primary key ";
 	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No AssetDisplayPageEntry exists with the key {";
 	private static final Log _log = LogFactoryUtil.getLog(AssetDisplayPageEntryPersistenceImpl.class);
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
+				"type"
+			});
 }

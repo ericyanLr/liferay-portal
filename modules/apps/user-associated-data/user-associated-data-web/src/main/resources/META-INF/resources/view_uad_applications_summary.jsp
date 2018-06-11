@@ -21,7 +21,7 @@ ViewUADApplicationsSummaryDisplay viewUADApplicationsSummaryDisplay = (ViewUADAp
 
 SearchContainer<UADApplicationSummaryDisplay> uadApplicationsSummaryDisplaySearchContainer = viewUADApplicationsSummaryDisplay.getSearchContainer();
 
-UADApplicationsSummaryManagementToolbarDisplayContext uadApplicationsSummaryManagementToolbarDisplayContext = new UADApplicationsSummaryManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, uadApplicationsSummaryDisplaySearchContainer);
+UADApplicationsSummaryManagementToolbarDisplayContext uadApplicationsSummaryManagementToolbarDisplayContext = new UADApplicationsSummaryManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, uadApplicationsSummaryDisplaySearchContainer);
 
 portletDisplay.setShowBackIcon(true);
 
@@ -33,6 +33,9 @@ backURL.setParameter("p_u_i_d", String.valueOf(selectedUser.getUserId()));
 portletDisplay.setURLBack(backURL.toString());
 
 renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", LanguageUtil.get(request, "personal-data-erasure")));
+
+String statusLabelDone = StringUtil.toUpperCase(LanguageUtil.get(request, "done"), locale);
+String statusLabelPending = StringUtil.toUpperCase(LanguageUtil.get(request, "pending"), locale);
 %>
 
 <div class="container-fluid container-fluid-max-xl container-form-lg">
@@ -63,12 +66,7 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 			<h3 class="sheet-subtitle"><liferay-ui:message key="applications" /></h3>
 
 			<clay:management-toolbar
-				filterDropdownItems="<%= uadApplicationsSummaryManagementToolbarDisplayContext.getFilterDropdownItems() %>"
-				searchContainerId="<%= uadApplicationsSummaryManagementToolbarDisplayContext.getSearchContainerId() %>"
-				selectable="<%= uadApplicationsSummaryManagementToolbarDisplayContext.getSelectable() %>"
-				showSearch="<%= uadApplicationsSummaryManagementToolbarDisplayContext.getShowSearch() %>"
-				sortingOrder="<%= uadApplicationsSummaryManagementToolbarDisplayContext.getSortingOrder() %>"
-				sortingURL="<%= uadApplicationsSummaryManagementToolbarDisplayContext.getSortingURL() %>"
+				displayContext="<%= uadApplicationsSummaryManagementToolbarDisplayContext %>"
 			/>
 
 			<liferay-ui:search-container
@@ -98,14 +96,10 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 						cssClass="table-cell-expand"
 						name="status"
 					>
-						<c:choose>
-							<c:when test="<%= uadApplicationSummaryDisplay.getCount() > 0 %>">
-								<span class="label label-warning"><liferay-ui:message key="pending" /></span>
-							</c:when>
-							<c:otherwise>
-								<span class="label label-success"><liferay-ui:message key="done" /></span>
-							</c:otherwise>
-						</c:choose>
+						<clay:label
+							label="<%= uadApplicationSummaryDisplay.hasItems() ? statusLabelPending : statusLabelDone %>"
+							style='<%= uadApplicationSummaryDisplay.hasItems() ? "warning" : "success" %>'
+						/>
 					</liferay-ui:search-container-column-text>
 
 					<liferay-ui:search-container-column-jsp

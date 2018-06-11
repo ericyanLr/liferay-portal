@@ -77,7 +77,7 @@
 		<column name="classTypeId" type="long" />
 		<column accessor="true" name="name" type="String" />
 		<column name="type" type="int" />
-		<column name="htmlPreviewEntryId" type="long" />
+		<column name="previewFileEntryId" type="long" />
 		<column name="defaultTemplate" type="boolean" />
 		<column name="layoutPrototypeId" type="long" />
 		<column name="status" type="int" />
@@ -115,6 +115,11 @@
 			<finder-column name="groupId" />
 			<finder-column name="layoutPageTemplateCollectionId" />
 			<finder-column case-sensitive="false" comparator="LIKE" name="name" />
+		</finder>
+		<finder name="G_L_T" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="layoutPageTemplateCollectionId" />
+			<finder-column name="type" />
 		</finder>
 		<finder name="G_L_S" return-type="Collection">
 			<finder-column name="groupId" />

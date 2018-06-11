@@ -23,8 +23,8 @@ String url = GetterUtil.getString((String)request.getAttribute("liferay-social-b
 %>
 
 <clay:link
-	buttonStyle="secondary"
-	elementClasses="btn-outline-borderless btn-sm lfr-portal-tooltip"
+	buttonStyle="outline-secondary"
+	elementClasses="btn-monospaced btn-outline-borderless btn-sm lfr-portal-tooltip"
 	href="<%= socialBookmark.getPostURL(title, url) %>"
 	icon="twitter"
 	title="<%= socialBookmark.getName(locale) %>"

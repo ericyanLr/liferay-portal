@@ -17,6 +17,7 @@ package com.liferay.exportimport.internal.staging;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.changeset.model.ChangesetCollection;
+import com.liferay.changeset.model.ChangesetEntry;
 import com.liferay.changeset.service.ChangesetCollectionLocalService;
 import com.liferay.changeset.service.ChangesetEntryLocalService;
 import com.liferay.document.library.kernel.exception.DuplicateFileEntryException;
@@ -38,32 +39,35 @@ import com.liferay.exportimport.kernel.exception.LARFileSizeException;
 import com.liferay.exportimport.kernel.exception.LARTypeException;
 import com.liferay.exportimport.kernel.exception.LayoutImportException;
 import com.liferay.exportimport.kernel.exception.MissingReferenceException;
-import com.liferay.exportimport.kernel.exception.RemoteExportException;
+import com.liferay.exportimport.kernel.lar.ExportImportClassedModelUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.MissingReference;
 import com.liferay.exportimport.kernel.lar.MissingReferences;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
+import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.service.StagingLocalService;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.kernel.staging.StagingConstants;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepositoryHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
 import com.liferay.portal.kernel.exception.LayoutPrototypeException;
 import com.liferay.portal.kernel.exception.LocaleException;
-import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutBranchException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutRevisionException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.PortletIdException;
-import com.liferay.portal.kernel.exception.RemoteOptionsException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -76,8 +80,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.model.BaseModel;
-import com.liferay.portal.kernel.model.ClassName;
-import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutBranch;
@@ -90,11 +92,10 @@ import com.liferay.portal.kernel.model.RecentLayoutSetBranch;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.WorkflowInstanceLink;
+import com.liferay.portal.kernel.model.WorkflowedModel;
 import com.liferay.portal.kernel.model.adapter.StagedTheme;
 import com.liferay.portal.kernel.scheduler.SchedulerEngineHelperUtil;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
-import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.auth.RemoteAuthException;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -120,13 +121,14 @@ import com.liferay.portal.kernel.servlet.ServletResponseConstants;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadRequestSizeException;
 import com.liferay.portal.kernel.upload.UploadServletRequestConfigurationHelperUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -139,7 +141,6 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.workflow.WorkflowTaskManagerUtil;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.service.http.ClassNameServiceHttp;
 import com.liferay.portal.service.http.GroupServiceHttp;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.exportimport.service.http.StagingServiceHttp;
@@ -163,7 +164,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -198,13 +198,48 @@ public class StagingImpl implements Staging {
 
 		StagedGroupedModel stagedGroupedModel = (StagedGroupedModel)model;
 
+		if (stagedGroupedModel instanceof WorkflowedModel) {
+			WorkflowedModel workflowedModel =
+				(WorkflowedModel)stagedGroupedModel;
+
+			StagedModelDataHandler stagedModelDataHandler =
+				StagedModelDataHandlerRegistryUtil.getStagedModelDataHandler(
+					ExportImportClassedModelUtil.getClassName(
+						stagedGroupedModel));
+
+			int[] exportableStatuses =
+				stagedModelDataHandler.getExportableStatuses();
+
+			if (!ArrayUtil.contains(
+					exportableStatuses, workflowedModel.getStatus())) {
+
+				return;
+			}
+		}
+
+		if (_stagedModelRepositoryHelper.isStagedModelInTrash(
+				stagedGroupedModel)) {
+
+			removeModelFromChangesetCollection(model);
+
+			return;
+		}
+
 		long classNameId = _classNameLocalService.getClassNameId(
 			stagedGroupedModel.getModelClassName());
 		long classPK = (long)stagedGroupedModel.getPrimaryKeyObj();
 
 		long groupId = stagedGroupedModel.getGroupId();
 
-		Group group = _groupLocalService.getGroup(groupId);
+		if (groupId <= 0) {
+			return;
+		}
+
+		Group group = _groupLocalService.fetchGroup(groupId);
+
+		if (group == null) {
+			return;
+		}
 
 		StagingGroupHelper stagingGroupHelper =
 			StagingGroupHelperUtil.getStagingGroupHelper();
@@ -345,7 +380,7 @@ public class StagingImpl implements Staging {
 			new String[] {Boolean.TRUE.toString()});
 
 		Map<String, Serializable> publishLayoutLocalSettingsMap =
-			ExportImportConfigurationSettingsMapFactory.
+			_exportImportConfigurationSettingsMapFactory.
 				buildPublishLayoutLocalSettingsMap(
 					user, sourceGroupId, targetGroupId, privateLayout,
 					layoutIds, parameterMap);
@@ -437,9 +472,9 @@ public class StagingImpl implements Staging {
 		boolean secureConnection = MapUtil.getBoolean(
 			settingsMap, "secureConnection");
 
-		validateRemoteGroup(
-			exportImportConfiguration.getGroupId(), targetGroupId,
-			remoteAddress, remotePort, remotePathContext, secureConnection);
+		_groupLocalService.validateRemote(
+			exportImportConfiguration.getGroupId(), remoteAddress, remotePort,
+			remotePathContext, secureConnection, targetGroupId);
 
 		boolean remotePrivateLayout = MapUtil.getBoolean(
 			settingsMap, "remotePrivateLayout");
@@ -505,9 +540,9 @@ public class StagingImpl implements Staging {
 			long remoteGroupId, boolean remotePrivateLayout)
 		throws PortalException {
 
-		validateRemoteGroup(
-			sourceGroupId, remoteGroupId, remoteAddress, remotePort,
-			remotePathContext, secureConnection);
+		_groupLocalService.validateRemote(
+			sourceGroupId, remoteAddress, remotePort, remotePathContext,
+			secureConnection, remoteGroupId);
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
@@ -515,7 +550,7 @@ public class StagingImpl implements Staging {
 		User user = permissionChecker.getUser();
 
 		Map<String, Serializable> publishLayoutRemoteSettingsMap =
-			ExportImportConfigurationSettingsMapFactory.
+			_exportImportConfigurationSettingsMapFactory.
 				buildPublishLayoutRemoteSettingsMap(
 					user.getUserId(), sourceGroupId, privateLayout, layoutIdMap,
 					parameterMap, remoteAddress, remotePort, remotePathContext,
@@ -2117,6 +2152,47 @@ public class StagingImpl implements Staging {
 	}
 
 	@Override
+	public void populateLastPublishDateCounts(
+			PortletDataContext portletDataContext, String[] classNames)
+		throws PortalException {
+
+		ManifestSummary manifestSummary =
+			portletDataContext.getManifestSummary();
+
+		ChangesetCollection changesetCollection =
+			_changesetCollectionLocalService.fetchChangesetCollection(
+				portletDataContext.getScopeGroupId(),
+				StagingConstants.RANGE_FROM_LAST_PUBLISH_DATE_CHANGESET_NAME);
+
+		for (String className : classNames) {
+			StagedModelType stagedModelType = new StagedModelType(className);
+
+			long modelAdditionCount = manifestSummary.getModelAdditionCount(
+				stagedModelType);
+
+			if (modelAdditionCount > -1) {
+				continue;
+			}
+
+			if (changesetCollection != null) {
+				modelAdditionCount =
+					_changesetEntryLocalService.getChangesetEntriesCount(
+						changesetCollection.getChangesetCollectionId(),
+						_portal.getClassNameId(className));
+
+				manifestSummary.addModelAdditionCount(
+					stagedModelType, modelAdditionCount);
+			}
+
+			long modelDeletionCount = _exportImportHelper.getModelDeletionCount(
+				portletDataContext, stagedModelType);
+
+			manifestSummary.addModelDeletionCount(
+				stagedModelType, modelDeletionCount);
+		}
+	}
+
+	@Override
 	public long publishLayout(
 			long userId, long plid, long liveGroupId, boolean includeChildren)
 		throws PortalException {
@@ -2240,7 +2316,7 @@ public class StagingImpl implements Staging {
 		User user = _userLocalService.getUser(userId);
 
 		Map<String, Serializable> publishLayoutLocalSettingsMap =
-			ExportImportConfigurationSettingsMapFactory.
+			_exportImportConfigurationSettingsMapFactory.
 				buildPublishLayoutLocalSettingsMap(
 					user, sourceGroupId, targetGroupId, privateLayout,
 					layoutIds, parameterMap);
@@ -2368,7 +2444,7 @@ public class StagingImpl implements Staging {
 				GetterUtil.getBoolean(
 					typeSettingsProperties.getProperty("secureConnection")));
 
-			validateRemote(
+			_groupLocalService.validateRemote(
 				sourceGroupId, remoteAddress, remotePort, remotePathContext,
 				secureConnection, sourceGroup.getRemoteLiveGroupId());
 
@@ -2417,7 +2493,7 @@ public class StagingImpl implements Staging {
 		User user = _userLocalService.getUser(userId);
 
 		Map<String, Serializable> publishPortletSettingsMap =
-			ExportImportConfigurationSettingsMapFactory.
+			_exportImportConfigurationSettingsMapFactory.
 				buildPublishPortletSettingsMap(
 					userId, sourceGroupId, sourcePlid, targetGroupId,
 					targetPlid, portletId, parameterMap, user.getLocale(),
@@ -2512,7 +2588,7 @@ public class StagingImpl implements Staging {
 				new String[] {Boolean.TRUE.toString()});
 
 			publishLayoutLocalSettingsMap =
-				ExportImportConfigurationSettingsMapFactory.
+				_exportImportConfigurationSettingsMapFactory.
 					buildPublishLayoutLocalSettingsMap(
 						user, sourceGroupId, targetGroupId, privateLayout,
 						layoutIds, parameterMap);
@@ -2653,7 +2729,7 @@ public class StagingImpl implements Staging {
 				portletRequest, "remotePrivateLayout");
 
 			publishLayoutRemoteSettingsMap =
-				ExportImportConfigurationSettingsMapFactory.
+				_exportImportConfigurationSettingsMapFactory.
 					buildPublishLayoutRemoteSettingsMap(
 						user.getUserId(), groupId, privateLayout, layoutIdMap,
 						parameterMap, remoteAddress, remotePort,
@@ -2664,7 +2740,7 @@ public class StagingImpl implements Staging {
 
 		remoteAddress = stripProtocolFromRemoteAddress(remoteAddress);
 
-		validateRemote(
+		_groupLocalService.validateRemote(
 			groupId, remoteAddress, remotePort, remotePathContext,
 			secureConnection, remoteGroupId);
 
@@ -2692,6 +2768,43 @@ public class StagingImpl implements Staging {
 		return doCopyRemoteLayouts(
 			exportImportConfiguration, remoteAddress, remotePort,
 			remotePathContext, secureConnection, remotePrivateLayout);
+	}
+
+	@Override
+	public <T extends BaseModel> void removeModelFromChangesetCollection(
+			T model)
+		throws PortalException {
+
+		if (!(model instanceof StagedGroupedModel)) {
+			return;
+		}
+
+		StagedGroupedModel stagedGroupedModel = (StagedGroupedModel)model;
+
+		ChangesetCollection changesetCollection =
+			_changesetCollectionLocalService.fetchChangesetCollection(
+				stagedGroupedModel.getGroupId(),
+				StagingConstants.RANGE_FROM_LAST_PUBLISH_DATE_CHANGESET_NAME);
+
+		if (changesetCollection == null) {
+			return;
+		}
+
+		long classNameId = _classNameLocalService.getClassNameId(
+			stagedGroupedModel.getModelClassName());
+		long classPK = (long)stagedGroupedModel.getPrimaryKeyObj();
+
+		ChangesetEntry changesetEntry =
+			_changesetEntryLocalService.fetchChangesetEntry(
+				changesetCollection.getChangesetCollectionId(), classNameId,
+				classPK);
+
+		if (changesetEntry == null) {
+			return;
+		}
+
+		_changesetEntryLocalService.deleteChangesetEntry(
+			changesetEntry.getChangesetEntryId());
 	}
 
 	@Override
@@ -2860,7 +2973,7 @@ public class StagingImpl implements Staging {
 			GetterUtil.getLong(
 				groupTypeSettingsProperties.getProperty("remoteGroupId")));
 
-		validateRemote(
+		_groupLocalService.validateRemote(
 			groupId, remoteAddress, remotePort, remotePathContext,
 			secureConnection, remoteGroupId);
 
@@ -3218,6 +3331,12 @@ public class StagingImpl implements Staging {
 		}
 	}
 
+	/**
+	 * @deprecated As of 5.0.0, replaced by {@link
+	 *             GroupLocalService#validateRemote(long, String, int, String,
+	 *             boolean, long)}
+	 */
+	@Deprecated
 	@Override
 	public void validateRemote(
 			long groupId, String remoteAddress, int remotePort,
@@ -3225,43 +3344,9 @@ public class StagingImpl implements Staging {
 			long remoteGroupId)
 		throws PortalException {
 
-		RemoteOptionsException roe = null;
-
-		if (!Validator.isDomain(remoteAddress) &&
-			!Validator.isIPAddress(remoteAddress)) {
-
-			roe = new RemoteOptionsException(
-				RemoteOptionsException.REMOTE_ADDRESS);
-
-			roe.setRemoteAddress(remoteAddress);
-
-			throw roe;
-		}
-
-		if ((remotePort < 1) || (remotePort > 65535)) {
-			roe = new RemoteOptionsException(
-				RemoteOptionsException.REMOTE_PORT);
-
-			roe.setRemotePort(remotePort);
-
-			throw roe;
-		}
-
-		if (Validator.isNotNull(remotePathContext) &&
-			(!remotePathContext.startsWith(StringPool.FORWARD_SLASH) ||
-			 remotePathContext.endsWith(StringPool.FORWARD_SLASH))) {
-
-			roe = new RemoteOptionsException(
-				RemoteOptionsException.REMOTE_PATH_CONTEXT);
-
-			roe.setRemotePathContext(remotePathContext);
-
-			throw roe;
-		}
-
-		validateRemoteGroup(
-			groupId, remoteGroupId, remoteAddress, remotePort,
-			remotePathContext, secureConnection);
+		_groupLocalService.validateRemote(
+			groupId, remoteAddress, remotePort, remotePathContext,
+			secureConnection, remoteGroupId);
 	}
 
 	/**
@@ -3398,10 +3483,13 @@ public class StagingImpl implements Staging {
 		throws PortalException {
 
 		if (ExportImportThreadLocal.isLayoutStagingInProcess()) {
-			LayoutRevision layoutRevision =
-				_layoutRevisionLocalService.fetchLastLayoutRevision(plid, true);
+			List<LayoutRevision> layoutRevisions =
+				_layoutRevisionLocalService.getLayoutRevisions(
+					layoutSetBranchId, plid, true);
 
-			if (layoutRevision != null) {
+			if (ListUtil.isNotEmpty(layoutRevisions)) {
+				LayoutRevision layoutRevision = layoutRevisions.get(0);
+
 				return layoutRevision.getLayoutRevisionId();
 			}
 			else {
@@ -3534,17 +3622,6 @@ public class StagingImpl implements Staging {
 		return ParamUtil.getString(
 			portletRequest, param,
 			GetterUtil.getString(group.getTypeSettingsProperty(param)));
-	}
-
-	protected boolean isCompanyGroup(HttpPrincipal httpPrincipal, Group group) {
-		ClassName className = ClassNameServiceHttp.fetchByClassNameId(
-			httpPrincipal, group.getClassNameId());
-
-		if (Objects.equals(className.getClassName(), Company.class.getName())) {
-			return true;
-		}
-
-		return false;
 	}
 
 	protected boolean isLayoutRevisionIncomplete(
@@ -3909,128 +3986,6 @@ public class StagingImpl implements Staging {
 		WorkflowInstanceLinkLocalService workflowInstanceLinkLocalService) {
 	}
 
-	protected void validateRemoteGroup(
-			long groupId, long remoteGroupId, String remoteAddress,
-			int remotePort, String remotePathContext, boolean secureConnection)
-		throws PortalException {
-
-		if (remoteGroupId <= 0) {
-			RemoteOptionsException roe = new RemoteOptionsException(
-				RemoteOptionsException.REMOTE_GROUP_ID);
-
-			roe.setRemoteGroupId(remoteGroupId);
-
-			throw roe;
-		}
-
-		Thread currentThread = Thread.currentThread();
-
-		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		User user = permissionChecker.getUser();
-
-		String remoteURL = buildRemoteURL(
-			remoteAddress, remotePort, remotePathContext, secureConnection);
-
-		HttpPrincipal httpPrincipal = new HttpPrincipal(
-			remoteURL, user.getLogin(), user.getPassword(),
-			user.isPasswordEncrypted());
-
-		try {
-			currentThread.setContextClassLoader(
-				PortalClassLoaderUtil.getClassLoader());
-
-			// Ping the remote host and verify that the remote group exists in
-			// the same company as the remote user
-
-			GroupServiceHttp.checkRemoteStagingGroup(
-				httpPrincipal, remoteGroupId);
-
-			// Ensure that the local group and the remote group are not the same
-			// group and that they are either both company groups or both not
-			// company groups
-
-			Group group = _groupLocalService.getGroup(groupId);
-
-			Group remoteGroup = GroupServiceHttp.getGroup(
-				httpPrincipal, remoteGroupId);
-
-			if (group.isCompany() ^
-				isCompanyGroup(httpPrincipal, remoteGroup)) {
-
-				RemoteExportException ree = new RemoteExportException(
-					RemoteExportException.INVALID_GROUP);
-
-				ree.setGroupId(remoteGroupId);
-
-				throw ree;
-			}
-		}
-		catch (NoSuchGroupException nsge) {
-
-			// LPS-52675
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(nsge, nsge);
-			}
-
-			RemoteExportException ree = new RemoteExportException(
-				RemoteExportException.NO_GROUP);
-
-			ree.setGroupId(remoteGroupId);
-
-			throw ree;
-		}
-		catch (PrincipalException pe) {
-
-			// LPS-52675
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
-			}
-
-			RemoteExportException ree = new RemoteExportException(
-				RemoteExportException.NO_PERMISSIONS);
-
-			ree.setGroupId(remoteGroupId);
-
-			throw ree;
-		}
-		catch (RemoteAuthException rae) {
-
-			// LPS-52675
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(rae, rae);
-			}
-
-			rae.setURL(remoteURL);
-
-			throw rae;
-		}
-		catch (SystemException se) {
-
-			// LPS-52675
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(se, se);
-			}
-
-			RemoteExportException ree = new RemoteExportException(
-				RemoteExportException.BAD_CONNECTION, se.getMessage());
-
-			ree.setURL(remoteURL);
-
-			throw ree;
-		}
-		finally {
-			currentThread.setContextClassLoader(contextClassLoader);
-		}
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(StagingImpl.class);
 
 	@Reference
@@ -4055,6 +4010,10 @@ public class StagingImpl implements Staging {
 	@Reference
 	private ExportImportConfigurationParameterMapFactory
 		_exportImportConfigurationParameterMapFactory;
+
+	@Reference
+	private ExportImportConfigurationSettingsMapFactory
+		_exportImportConfigurationSettingsMapFactory;
 
 	@Reference
 	private ExportImportHelper _exportImportHelper;
@@ -4095,6 +4054,9 @@ public class StagingImpl implements Staging {
 	@Reference
 	private RecentLayoutSetBranchLocalService
 		_recentLayoutSetBranchLocalService;
+
+	@Reference
+	private StagedModelRepositoryHelper _stagedModelRepositoryHelper;
 
 	@Reference
 	private StagingLocalService _stagingLocalService;

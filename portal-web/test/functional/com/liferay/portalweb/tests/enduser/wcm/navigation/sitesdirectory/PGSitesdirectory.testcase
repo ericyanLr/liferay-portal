@@ -1,5 +1,4 @@
 <definition component-name="portal-wcm">
-	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="testray.component.names" value="Navigation" />
 	<property name="testray.main.component.name" value="Navigation" />
@@ -40,7 +39,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -70,7 +69,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -91,7 +90,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -112,7 +111,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -153,7 +152,7 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute function="AssertTextEquals" locator1="Message#INFO" value1="No sites were found." />
+		<execute function="AssertTextEquals" locator1="Message#INFO_2" value1="No sites were found." />
 
 		<execute macro="SitesDirectory#configureSetupPG">
 			<var name="directoryDisplayStyle" value="List Hierarchy" />

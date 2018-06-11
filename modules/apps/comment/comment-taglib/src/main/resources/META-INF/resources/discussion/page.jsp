@@ -277,8 +277,10 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 				window,
 				'<%= randomNamespace %>hideEditor',
 				function(editorName, formId) {
-					if (window[editorName]) {
-						window[editorName].dispose();
+					var editor = window['<%= namespace %>' + editorName];
+
+					if (editor) {
+						editor.destroy();
 					}
 
 					<%= randomNamespace %>hideEl(formId);
@@ -303,6 +305,7 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 											{
 												id: randomId,
 												message: '<%= UnicodeLanguageUtil.get(resourceBundle, "your-request-completed-successfully") %>',
+												title: '<%= UnicodeLanguageUtil.get(resourceBundle, "success") %>',
 												type: 'success'
 											}
 										);
@@ -431,6 +434,7 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 									{
 										id: '<%= randomNamespace %>',
 										message: '<%= UnicodeLanguageUtil.get(resourceBundle, "your-request-failed-to-complete") %>',
+										title: '<%= UnicodeLanguageUtil.get(resourceBundle, "error") %>',
 										type: 'danger'
 									}
 								);
@@ -471,6 +475,7 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 										{
 											id: '<%= randomNamespace %>',
 											message: errorKey,
+											title: '<%= UnicodeLanguageUtil.get(resourceBundle, "error") %>',
 											type: 'danger'
 										}
 									);
@@ -492,30 +497,96 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 			Liferay.provide(
 				window,
 				'<%= randomNamespace %>showEditor',
-				function(editorName, formId) {
-					window[editorName].create();
+				function(formId, options) {
+					if (!window['<%= namespace %>' + options.name]) {
 
-					var html = window[editorName].getHTML();
+						<%
+						String editorURL = GetterUtil.getString(request.getAttribute("liferay-comment:discussion:editorURL"));
 
-					Liferay.Util.toggleDisabled('#' + editorName.replace('Body', 'Button'), html === '');
+						editorURL = HttpUtil.addParameter(editorURL, "namespace", namespace);
+						%>
 
-					<%= randomNamespace %>showEl(formId);
+						$.ajax(
+							'<%= editorURL %>',
+							{
+								data: Liferay.Util.ns('<%= namespace %>', options),
+								error: function() {
+									<%= randomNamespace %>showStatusMessage(
+										{
+											id: <%= randomNamespace %>,
+											message: '<%= UnicodeLanguageUtil.get(resourceBundle, "your-request-failed-to-complete") %>',
+											type: 'danger'
+										}
+									);
+								},
+								success: function(data) {
+									var editorWrapper = $('#' + formId + ' .editor-wrapper');
+
+									editorWrapper.html(data);
+
+									Liferay.Util.toggleDisabled('#' + options.name.replace('Body', 'Button'), options.contents === '');
+
+									<%= randomNamespace %>showEl(formId);
+								}
+							}
+						);
+					}
 				}
 			);
 
 			Liferay.provide(
 				window,
-				'<%= randomNamespace %>showStatusMessage',
-				function(data) {
-					new Liferay.Alert(
+				'<%= randomNamespace %>showPostReplyEditor',
+				function(index) {
+					<%= randomNamespace %>showEditor(
+						'<%= namespace + randomNamespace %>' + 'postReplyForm' + index,
 						{
-							'delay.hide': 5000,
-							message: data.message,
-							type: data.type
+							name: '<%= randomNamespace %>' + 'postReplyBody' + index,
+							onChangeMethod: '<%= randomNamespace %>' + index + 'ReplyOnChange',
+							placeholder: 'type-your-comment-here'
 						}
-					).render('#' + data.id + 'discussionStatusMessages');
-				},
-				['liferay-alert']
+					);
+
+					<%= randomNamespace %>hideEditor(
+						'<%= randomNamespace %>' + 'editReplyBody' + index,
+						'<%= namespace + randomNamespace %>' + 'editForm' + index
+					);
+
+					<%= randomNamespace %>showEl('<%= namespace + randomNamespace %>' + 'discussionMessage' + index);
+				}
+			);
+
+			window.<%= randomNamespace %>showStatusMessage = Liferay.lazyLoad(
+				'frontend-js-web/liferay/toast/commands/OpenToast.es',
+				function(toastCommands, data) {
+					toastCommands.openToast(data);
+				}
+			);
+
+			Liferay.provide(
+				window,
+				'<%= randomNamespace %>showEditReplyEditor',
+				function(index) {
+					var discussionId = '<%= namespace + randomNamespace %>' + 'discussionMessage' + index;
+
+					var contents = $('#' + discussionId).html();
+
+					<%= randomNamespace %>showEditor(
+						'<%= namespace + randomNamespace %>' + 'editForm' + index,
+						{
+							contents: contents,
+							name: '<%= randomNamespace %>' + 'editReplyBody' + index,
+							onChangeMethod: '<%= randomNamespace %>' + index + 'EditOnChange'
+						}
+					);
+
+					<%= randomNamespace %>hideEditor(
+						'<%= randomNamespace %>' + 'postReplyBody' + index,
+						'<%= namespace + randomNamespace %>' + 'postReplyForm' + index
+					);
+
+					<%= randomNamespace %>hideEl(discussionId);
+				}
 			);
 
 			Liferay.provide(
@@ -604,6 +675,7 @@ CommentSectionDisplayContext commentSectionDisplayContext = CommentDisplayContex
 									{
 										id: <%= randomNamespace %>,
 										message: '<%= UnicodeLanguageUtil.get(resourceBundle, "your-request-failed-to-complete") %>',
+										title: '<%= UnicodeLanguageUtil.get(resourceBundle, "error") %>',
 										type: 'danger'
 									}
 								);

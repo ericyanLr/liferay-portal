@@ -17,8 +17,6 @@ package com.liferay.site.admin.web.internal.display.context;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -59,8 +57,8 @@ import com.liferay.portlet.usersadmin.search.GroupSearch;
 import com.liferay.site.admin.web.internal.constants.SiteAdminPortletKeys;
 import com.liferay.site.admin.web.internal.display.context.comparator.SiteInitializerNameComparator;
 import com.liferay.site.constants.SiteWebKeys;
-import com.liferay.site.initializer.GroupInitializer;
-import com.liferay.site.initializer.GroupInitializerRegistry;
+import com.liferay.site.initializer.SiteInitializer;
+import com.liferay.site.initializer.SiteInitializerRegistry;
 import com.liferay.site.util.GroupSearchProvider;
 
 import java.util.ArrayList;
@@ -87,9 +85,9 @@ public class SiteAdminDisplayContext {
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
 
-		_groupInitializerRegistry =
-			(GroupInitializerRegistry)request.getAttribute(
-				SiteWebKeys.GROUP_INITIALIZER_REGISTRY);
+		_siteInitializerRegistry =
+			(SiteInitializerRegistry)request.getAttribute(
+				SiteWebKeys.SITE_INITIALIZER_REGISTRY);
 
 		_groupSearchProvider = (GroupSearchProvider)request.getAttribute(
 			SiteWebKeys.GROUP_SEARCH_PROVIDER);
@@ -211,21 +209,6 @@ public class SiteAdminDisplayContext {
 		return _groupId;
 	}
 
-	public List<NavigationItem> getNavigationItems() {
-		return new NavigationItemList() {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(true);
-						navigationItem.setHref(
-							_liferayPortletResponse.createRenderURL());
-						navigationItem.setLabel(
-							LanguageUtil.get(_request, "sites"));
-					});
-			}
-		};
-	}
-
 	public String getOrderByType() {
 		if (Validator.isNotNull(_orderByType)) {
 			return _orderByType;
@@ -307,15 +290,15 @@ public class SiteAdminDisplayContext {
 					layoutSetPrototype, themeDisplay.getLocale()));
 		}
 
-		List<GroupInitializer> groupInitializers =
-			_groupInitializerRegistry.getGroupInitializers(
+		List<SiteInitializer> siteInitializers =
+			_siteInitializerRegistry.getSiteInitializers(
 				themeDisplay.getCompanyId());
 
-		for (GroupInitializer groupInitializer : groupInitializers) {
+		for (SiteInitializer siteInitializer : siteInitializers) {
 			SiteInitializerItemDisplayContext
 				siteInitializerItemDisplayContext =
 					new SiteInitializerItemDisplayContext(
-						groupInitializer, themeDisplay.getLocale());
+						siteInitializer, themeDisplay.getLocale());
 
 			siteInitializerItemDisplayContexts.add(
 				siteInitializerItemDisplayContext);
@@ -509,7 +492,6 @@ public class SiteAdminDisplayContext {
 	private String _displayStyle;
 	private Group _group;
 	private long _groupId;
-	private final GroupInitializerRegistry _groupInitializerRegistry;
 	private final GroupSearchProvider _groupSearchProvider;
 	private String _keywords;
 	private final LiferayPortletRequest _liferayPortletRequest;
@@ -517,5 +499,6 @@ public class SiteAdminDisplayContext {
 	private String _orderByCol;
 	private String _orderByType;
 	private final HttpServletRequest _request;
+	private final SiteInitializerRegistry _siteInitializerRegistry;
 
 }

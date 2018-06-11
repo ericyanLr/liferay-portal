@@ -247,6 +247,19 @@ public abstract class UserGroupLocalServiceBaseImpl extends BaseLocalServiceImpl
 	}
 
 	/**
+	 * Returns the user group with the matching external reference code and company.
+	 *
+	 * @param companyId the primary key of the company
+	 * @param externalReferenceCode the user group's external reference code
+	 * @return the matching user group, or <code>null</code> if a matching user group could not be found
+	 */
+	@Override
+	public UserGroup fetchUserGroupByReferenceCode(long companyId,
+		String externalReferenceCode) {
+		return userGroupPersistence.fetchByC_ERC(companyId, null);
+	}
+
+	/**
 	 * Returns the user group with the primary key.
 	 *
 	 * @param userGroupId the primary key of the user group

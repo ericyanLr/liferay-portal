@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateException;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -33,6 +34,7 @@ import com.liferay.taglib.util.ParamAndPropertyAncestorTagImpl;
 import java.io.IOException;
 
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,6 +54,12 @@ public class TemplateRendererTag extends ParamAndPropertyAncestorTagImpl {
 
 		try {
 			prepareContext(context);
+
+			Locale locale = (Locale)context.get("locale");
+
+			if (locale == null) {
+				context.put("locale", LocaleUtil.getMostRelevantLocale());
+			}
 
 			if (isRenderTemplate()) {
 				renderTemplate(jspWriter, context);
@@ -92,7 +100,19 @@ public class TemplateRendererTag extends ParamAndPropertyAncestorTagImpl {
 	}
 
 	public boolean getHydrate() {
-		return _hydrate;
+		if (_hydrate != null) {
+			return _hydrate;
+		}
+
+		Map<String, Object> context = getContext();
+
+		if (Validator.isNotNull(_componentId) || Validator.isNotNull(_module) ||
+			Validator.isNotNull(context.get("data"))) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public String getModule() {
@@ -125,7 +145,12 @@ public class TemplateRendererTag extends ParamAndPropertyAncestorTagImpl {
 	}
 
 	public void setContext(Map<String, Object> context) {
-		_context = context;
+		if (context instanceof SoyContext) {
+			_context = context;
+		}
+		else {
+			_context = SoyContextFactoryUtil.createSoyContext(context);
+		}
 	}
 
 	public void setDependencies(Set<String> dependencies) {
@@ -149,7 +174,7 @@ public class TemplateRendererTag extends ParamAndPropertyAncestorTagImpl {
 			_componentId = null;
 			_context = null;
 			_dependencies = null;
-			_hydrate = true;
+			_hydrate = null;
 			_module = null;
 			_templateNamespace = null;
 		}
@@ -241,7 +266,7 @@ public class TemplateRendererTag extends ParamAndPropertyAncestorTagImpl {
 	private String _componentId;
 	private Map<String, Object> _context;
 	private Set<String> _dependencies;
-	private boolean _hydrate = true;
+	private Boolean _hydrate;
 	private String _module;
 	private Template _template;
 	private String _templateNamespace;

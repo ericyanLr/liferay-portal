@@ -1022,6 +1022,19 @@ public class UserLocalServiceUtil {
 	}
 
 	/**
+	* Returns the user with the matching external reference code and company.
+	*
+	* @param companyId the primary key of the company
+	* @param externalReferenceCode the user's external reference code
+	* @return the matching user, or <code>null</code> if a matching user could not be found
+	*/
+	public static com.liferay.portal.kernel.model.User fetchUserByReferenceCode(
+		long companyId, String externalReferenceCode) {
+		return getService()
+				   .fetchUserByReferenceCode(companyId, externalReferenceCode);
+	}
+
+	/**
 	* Returns the user with the screen name.
 	*
 	* @param companyId the primary key of the user's company

@@ -17,9 +17,20 @@
 <%@ include file="/init.jsp" %>
 
 <%
-FragmentsEditorContext fragmentsEditorContext = new FragmentsEditorContext(request, renderResponse, Layout.class.getName(), layoutsAdminDisplayContext.getSelPlid(), false);
+String redirect = ParamUtil.getString(request, "redirect");
+
+if (Validator.isNull(redirect)) {
+	PortletURL backURL = renderResponse.createRenderURL();
+
+	redirect = backURL.toString();
+}
+
+FragmentsEditorDisplayContext fragmentsEditorDisplayContext = new FragmentsEditorDisplayContext(request, renderResponse, Layout.class.getName(), layoutsAdminDisplayContext.getSelPlid(), false);
 
 Layout selLayout = layoutsAdminDisplayContext.getSelLayout();
+
+portletDisplay.setShowBackIcon(true);
+portletDisplay.setURLBack(redirect);
 
 renderResponse.setTitle(selLayout.getName(locale));
 %>
@@ -28,8 +39,8 @@ renderResponse.setTitle(selLayout.getName(locale));
 	editorName="alloyeditor"
 />
 
-<soy:template-renderer
-	context="<%= fragmentsEditorContext.getEditorContext() %>"
+<soy:component-renderer
+	context="<%= fragmentsEditorDisplayContext.getEditorContext() %>"
 	module="layout-admin-web/js/fragments_editor/FragmentsEditor.es"
 	templateNamespace="com.liferay.layout.admin.web.FragmentsEditor.render"
 />

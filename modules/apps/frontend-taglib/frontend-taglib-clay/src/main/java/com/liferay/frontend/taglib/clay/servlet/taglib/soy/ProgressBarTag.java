@@ -21,8 +21,13 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.soy.base.BaseClayTag;
  */
 public class ProgressBarTag extends BaseClayTag {
 
-	public ProgressBarTag() {
-		super("progress-bar", "ClayProgressBar", true);
+	@Override
+	public int doStartTag() {
+		setComponentBaseName("ClayProgressBar");
+		setHydrate(true);
+		setModuleBaseName("progress-bar");
+
+		return super.doStartTag();
 	}
 
 	public void setMaxValue(int maxValue) {

@@ -404,6 +404,20 @@ public class UserGroupLocalServiceUtil {
 	}
 
 	/**
+	* Returns the user group with the matching external reference code and company.
+	*
+	* @param companyId the primary key of the company
+	* @param externalReferenceCode the user group's external reference code
+	* @return the matching user group, or <code>null</code> if a matching user group could not be found
+	*/
+	public static com.liferay.portal.kernel.model.UserGroup fetchUserGroupByReferenceCode(
+		long companyId, String externalReferenceCode) {
+		return getService()
+				   .fetchUserGroupByReferenceCode(companyId,
+			externalReferenceCode);
+	}
+
+	/**
 	* Returns the user group with the matching UUID and company.
 	*
 	* @param uuid the user group's UUID

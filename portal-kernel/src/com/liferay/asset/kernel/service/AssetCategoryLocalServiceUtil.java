@@ -295,6 +295,20 @@ public class AssetCategoryLocalServiceUtil {
 	}
 
 	/**
+	* Returns the asset category with the matching external reference code and company.
+	*
+	* @param companyId the primary key of the company
+	* @param externalReferenceCode the asset category's external reference code
+	* @return the matching asset category, or <code>null</code> if a matching asset category could not be found
+	*/
+	public static com.liferay.asset.kernel.model.AssetCategory fetchAssetCategoryByReferenceCode(
+		long companyId, String externalReferenceCode) {
+		return getService()
+				   .fetchAssetCategoryByReferenceCode(companyId,
+			externalReferenceCode);
+	}
+
+	/**
 	* Returns the asset category matching the UUID and group.
 	*
 	* @param uuid the asset category's UUID

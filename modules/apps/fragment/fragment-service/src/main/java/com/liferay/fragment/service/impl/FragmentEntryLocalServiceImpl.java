@@ -21,14 +21,13 @@ import com.liferay.fragment.exception.RequiredFragmentEntryException;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
 import com.liferay.fragment.service.base.FragmentEntryLocalServiceBaseImpl;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
-import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -56,8 +55,19 @@ public class FragmentEntryLocalServiceImpl
 		throws PortalException {
 
 		return addFragmentEntry(
-			userId, groupId, fragmentCollectionId, StringPool.BLANK, name,
+			userId, groupId, fragmentCollectionId, StringPool.BLANK, name, 0,
 			status, serviceContext);
+	}
+
+	@Override
+	public FragmentEntry addFragmentEntry(
+			long userId, long groupId, long fragmentCollectionId, String name,
+			long previewFileEntryId, int status, ServiceContext serviceContext)
+		throws PortalException {
+
+		return addFragmentEntry(
+			userId, groupId, fragmentCollectionId, StringPool.BLANK, name,
+			previewFileEntryId, status, serviceContext);
 	}
 
 	@Override
@@ -67,18 +77,30 @@ public class FragmentEntryLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
+		return addFragmentEntry(
+			userId, groupId, fragmentCollectionId, fragmentEntryKey, name, 0,
+			status, serviceContext);
+	}
+
+	@Override
+	public FragmentEntry addFragmentEntry(
+			long userId, long groupId, long fragmentCollectionId,
+			String fragmentEntryKey, String name, long previewFileEntryId,
+			int status, ServiceContext serviceContext)
+		throws PortalException {
+
 		// Fragment entry
 
 		User user = userLocalService.getUser(userId);
 
+		validate(name);
+
 		if (Validator.isNull(fragmentEntryKey)) {
-			fragmentEntryKey = String.valueOf(counterLocalService.increment());
-		}
-		else {
-			fragmentEntryKey = _getFragmentEntryKey(fragmentEntryKey);
+			fragmentEntryKey = _generateFragmentEntryKey(groupId, name);
 		}
 
-		validate(name);
+		fragmentEntryKey = _getFragmentEntryKey(fragmentEntryKey);
+
 		validateFragmentEntryKey(groupId, fragmentEntryKey);
 
 		long fragmentEntryId = counterLocalService.increment();
@@ -96,16 +118,13 @@ public class FragmentEntryLocalServiceImpl
 		fragmentEntry.setFragmentCollectionId(fragmentCollectionId);
 		fragmentEntry.setFragmentEntryKey(fragmentEntryKey);
 		fragmentEntry.setName(name);
+		fragmentEntry.setPreviewFileEntryId(previewFileEntryId);
 		fragmentEntry.setStatus(status);
 		fragmentEntry.setStatusByUserId(userId);
 		fragmentEntry.setStatusByUserName(user.getFullName());
 		fragmentEntry.setStatusDate(new Date());
 
 		fragmentEntryPersistence.update(fragmentEntry);
-
-		// Resources
-
-		resourceLocalService.addModelResources(fragmentEntry, serviceContext);
 
 		return fragmentEntry;
 	}
@@ -124,9 +143,34 @@ public class FragmentEntryLocalServiceImpl
 
 	@Override
 	public FragmentEntry addFragmentEntry(
+			long userId, long groupId, long fragmentCollectionId, String name,
+			String css, String html, String js, long previewFileEntryId,
+			int status, ServiceContext serviceContext)
+		throws PortalException {
+
+		return addFragmentEntry(
+			userId, groupId, fragmentCollectionId, StringPool.BLANK, name, css,
+			html, js, previewFileEntryId, status, serviceContext);
+	}
+
+	@Override
+	public FragmentEntry addFragmentEntry(
 			long userId, long groupId, long fragmentCollectionId,
 			String fragmentEntryKey, String name, String css, String html,
 			String js, int status, ServiceContext serviceContext)
+		throws PortalException {
+
+		return addFragmentEntry(
+			userId, groupId, fragmentCollectionId, fragmentEntryKey, name, css,
+			html, js, 0, status, serviceContext);
+	}
+
+	@Override
+	public FragmentEntry addFragmentEntry(
+			long userId, long groupId, long fragmentCollectionId,
+			String fragmentEntryKey, String name, String css, String html,
+			String js, long previewFileEntryId, int status,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		// Fragment entry
@@ -167,16 +211,13 @@ public class FragmentEntryLocalServiceImpl
 		fragmentEntry.setCss(css);
 		fragmentEntry.setHtml(html);
 		fragmentEntry.setJs(js);
+		fragmentEntry.setPreviewFileEntryId(previewFileEntryId);
 		fragmentEntry.setStatus(status);
 		fragmentEntry.setStatusByUserId(userId);
 		fragmentEntry.setStatusByUserName(user.getFullName());
 		fragmentEntry.setStatusDate(new Date());
 
 		fragmentEntryPersistence.update(fragmentEntry);
-
-		// Resources
-
-		resourceLocalService.addModelResources(fragmentEntry, serviceContext);
 
 		return fragmentEntry;
 	}
@@ -195,13 +236,6 @@ public class FragmentEntryLocalServiceImpl
 		}
 
 		fragmentEntryPersistence.remove(fragmentEntry);
-
-		// Resources
-
-		resourceLocalService.deleteResource(
-			fragmentEntry.getCompanyId(), FragmentEntry.class.getName(),
-			ResourceConstants.SCOPE_INDIVIDUAL,
-			fragmentEntry.getFragmentEntryId());
 
 		return fragmentEntry;
 	}
@@ -289,8 +323,38 @@ public class FragmentEntryLocalServiceImpl
 
 	@Override
 	public FragmentEntry updateFragmentEntry(
+			long fragmentEntryId, long previewFileEntryId)
+		throws PortalException {
+
+		FragmentEntry fragmentEntry = fragmentEntryPersistence.findByPrimaryKey(
+			fragmentEntryId);
+
+		fragmentEntry.setModifiedDate(new Date());
+		fragmentEntry.setPreviewFileEntryId(previewFileEntryId);
+
+		fragmentEntryPersistence.update(fragmentEntry);
+
+		return fragmentEntry;
+	}
+
+	@Override
+	public FragmentEntry updateFragmentEntry(
 			long userId, long fragmentEntryId, String name, String css,
-			String html, String js, int status, ServiceContext serviceContext)
+			String html, String js, int status)
+		throws PortalException {
+
+		FragmentEntry fragmentEntry = fragmentEntryPersistence.findByPrimaryKey(
+			fragmentEntryId);
+
+		return updateFragmentEntry(
+			userId, fragmentEntryId, name, css, html, js,
+			fragmentEntry.getPreviewFileEntryId(), status);
+	}
+
+	@Override
+	public FragmentEntry updateFragmentEntry(
+			long userId, long fragmentEntryId, String name, String css,
+			String html, String js, long previewFileEntryId, int status)
 		throws PortalException {
 
 		FragmentEntry fragmentEntry = fragmentEntryPersistence.findByPrimaryKey(
@@ -311,6 +375,7 @@ public class FragmentEntryLocalServiceImpl
 		fragmentEntry.setCss(css);
 		fragmentEntry.setHtml(html);
 		fragmentEntry.setJs(js);
+		fragmentEntry.setPreviewFileEntryId(previewFileEntryId);
 		fragmentEntry.setStatus(status);
 		fragmentEntry.setStatusByUserId(userId);
 		fragmentEntry.setStatusByUserName(user.getFullName());
@@ -371,18 +436,26 @@ public class FragmentEntryLocalServiceImpl
 		}
 	}
 
-	private String _getContent(FragmentEntry fragmentEntry) {
-		StringBundler sb = new StringBundler(7);
+	private String _generateFragmentEntryKey(long groupId, String name) {
+		String fragmentEntryKey = _getFragmentEntryKey(name);
 
-		sb.append("<html><head><style>");
-		sb.append(fragmentEntry.getCss());
-		sb.append("</style><script>");
-		sb.append(fragmentEntry.getJs());
-		sb.append("</script></head><body>");
-		sb.append(fragmentEntry.getHtml());
-		sb.append("</body></html>");
+		fragmentEntryKey = StringUtil.replace(
+			fragmentEntryKey, CharPool.SPACE, CharPool.DASH);
 
-		return sb.toString();
+		String curFragmentEntryKey = fragmentEntryKey;
+
+		int count = 0;
+
+		while (true) {
+			FragmentEntry fragmentEntry = fragmentEntryPersistence.fetchByG_FEK(
+				groupId, curFragmentEntryKey);
+
+			if (fragmentEntry == null) {
+				return curFragmentEntryKey;
+			}
+
+			curFragmentEntryKey = fragmentEntryKey + CharPool.DASH + count++;
+		}
 	}
 
 	private String _getFragmentEntryKey(String fragmentEntryKey) {

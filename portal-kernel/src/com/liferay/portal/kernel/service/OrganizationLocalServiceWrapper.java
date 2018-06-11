@@ -403,6 +403,20 @@ public class OrganizationLocalServiceWrapper implements OrganizationLocalService
 	}
 
 	/**
+	* Returns the organization with the matching external reference code and company.
+	*
+	* @param companyId the primary key of the company
+	* @param externalReferenceCode the organization's external reference code
+	* @return the matching organization, or <code>null</code> if a matching organization could not be found
+	*/
+	@Override
+	public com.liferay.portal.kernel.model.Organization fetchOrganizationByReferenceCode(
+		long companyId, String externalReferenceCode) {
+		return _organizationLocalService.fetchOrganizationByReferenceCode(companyId,
+			externalReferenceCode);
+	}
+
+	/**
 	* Returns the organization with the matching UUID and company.
 	*
 	* @param uuid the organization's UUID

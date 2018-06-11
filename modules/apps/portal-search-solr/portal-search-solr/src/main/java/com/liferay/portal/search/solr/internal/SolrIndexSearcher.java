@@ -53,6 +53,7 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.search.constants.SearchContextAttributes;
 import com.liferay.portal.search.solr.configuration.SolrConfiguration;
 import com.liferay.portal.search.solr.connection.SolrClientManager;
 import com.liferay.portal.search.solr.facet.FacetProcessor;
@@ -64,6 +65,7 @@ import com.liferay.portal.search.solr.stats.StatsTranslator;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -276,7 +278,7 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 
 		solrQuery.addHighlightField(fieldName);
 
-		String localizedFieldName = DocumentImpl.getLocalizedName(
+		String localizedFieldName = Field.getLocalizedName(
 			queryConfig.getLocale(), fieldName);
 
 		solrQuery.addHighlightField(localizedFieldName);
@@ -301,7 +303,8 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 		}
 
 		boolean luceneSyntax = GetterUtil.getBoolean(
-			searchContext.getAttribute("luceneSyntax"));
+			searchContext.getAttribute(
+				SearchContextAttributes.ATTRIBUTE_KEY_LUCENE_SYNTAX));
 
 		if (!luceneSyntax) {
 			solrQuery.setHighlightRequireFieldMatch(
@@ -344,8 +347,7 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 		Document document, Map<String, List<String>> highlights,
 		String fieldName, Locale locale) {
 
-		String snippetFieldName = DocumentImpl.getLocalizedName(
-			locale, fieldName);
+		String snippetFieldName = Field.getLocalizedName(locale, fieldName);
 
 		List<String> list = highlights.get(snippetFieldName);
 
@@ -532,6 +534,26 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 		return solrClient.query(solrQuery, METHOD.POST);
 	}
 
+	protected FacetCollector getFacetCollector(
+		Facet facet, Map<String, FacetField> facetFieldsMap,
+		QueryResponse queryResponse) {
+
+		String fieldName = facet.getFieldName();
+
+		FacetCollector facetCollector = null;
+
+		if (facet instanceof RangeFacet) {
+			facetCollector = new SolrFacetQueryCollector(
+				fieldName, queryResponse.getFacetQuery());
+		}
+		else {
+			facetCollector = new SolrFacetFieldCollector(
+				fieldName, facetFieldsMap.get(fieldName));
+		}
+
+		return facetCollector;
+	}
+
 	protected String getSortFieldName(Sort sort, String scoreFieldName) {
 		String sortFieldName = sort.getFieldName();
 
@@ -539,7 +561,7 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 			return sortFieldName;
 		}
 
-		return DocumentImpl.getSortFieldName(sort, scoreFieldName);
+		return Field.getSortFieldName(sort, scoreFieldName);
 	}
 
 	protected Hits processResponse(
@@ -668,29 +690,25 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 	protected void updateFacetCollectors(
 		QueryResponse queryResponse, SearchContext searchContext) {
 
-		Map<String, Facet> facetsMap = searchContext.getFacets();
-
 		List<FacetField> facetFields = queryResponse.getFacetFields();
 
 		if (ListUtil.isEmpty(facetFields)) {
 			return;
 		}
 
+		Map<String, FacetField> facetFieldsMap = new HashMap<>();
+
 		for (FacetField facetField : facetFields) {
-			Facet facet = facetsMap.get(facetField.getName());
+			facetFieldsMap.put(facetField.getName(), facetField);
+		}
 
-			FacetCollector facetCollector = null;
+		Map<String, Facet> facetsMap = searchContext.getFacets();
 
-			if (facet instanceof RangeFacet) {
-				facetCollector = new SolrFacetQueryCollector(
-					facetField.getName(), queryResponse.getFacetQuery());
+		for (Facet facet : facetsMap.values()) {
+			if (!facet.isStatic()) {
+				facet.setFacetCollector(
+					getFacetCollector(facet, facetFieldsMap, queryResponse));
 			}
-			else {
-				facetCollector = new SolrFacetFieldCollector(
-					facetField.getName(), facetField);
-			}
-
-			facet.setFacetCollector(facetCollector);
 		}
 	}
 

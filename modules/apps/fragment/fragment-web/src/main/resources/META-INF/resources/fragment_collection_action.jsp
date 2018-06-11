@@ -26,9 +26,9 @@ FragmentCollection fragmentCollection = fragmentDisplayContext.getFragmentCollec
 	markupView="lexicon"
 	message="<%= StringPool.BLANK %>"
 	showWhenSingleIcon="<%= true %>"
-	triggerCssClass="btn btn-monospaced btn-outline-borderless btn-outline-secondary"
+	triggerCssClass="btn btn-unstyled text-secondary"
 >
-	<c:if test="<%= FragmentCollectionPermission.contains(permissionChecker, fragmentCollection, ActionKeys.UPDATE) %>">
+	<c:if test="<%= FragmentPermission.contains(permissionChecker, scopeGroupId, FragmentActionKeys.MANAGE_FRAGMENT_ENTRIES) %>">
 		<portlet:renderURL var="editFragmentCollectionURL">
 			<portlet:param name="mvcRenderCommandName" value="/fragment/edit_fragment_collection" />
 			<portlet:param name="redirect" value="<%= fragmentDisplayContext.getRedirect() %>" />
@@ -41,23 +41,6 @@ FragmentCollection fragmentCollection = fragmentDisplayContext.getFragmentCollec
 		/>
 	</c:if>
 
-	<c:if test="<%= FragmentCollectionPermission.contains(permissionChecker, fragmentCollection, ActionKeys.PERMISSIONS) %>">
-		<liferay-security:permissionsURL
-			modelResource="<%= FragmentCollection.class.getName() %>"
-			modelResourceDescription="<%= fragmentCollection.getName() %>"
-			resourcePrimKey="<%= String.valueOf(fragmentCollection.getFragmentCollectionId()) %>"
-			var="fragmentCollectionPermissionsURL"
-			windowState="<%= LiferayWindowState.POP_UP.toString() %>"
-		/>
-
-		<liferay-ui:icon
-			message="permissions"
-			method="get"
-			url="<%= fragmentCollectionPermissionsURL %>"
-			useDialog="<%= true %>"
-		/>
-	</c:if>
-
 	<portlet:resourceURL id="/fragment/export_fragment_collections" var="exportFragmentCollectionsURL">
 		<portlet:param name="fragmentCollectionId" value="<%= String.valueOf(fragmentCollection.getFragmentCollectionId()) %>" />
 	</portlet:resourceURL>
@@ -67,7 +50,7 @@ FragmentCollection fragmentCollection = fragmentDisplayContext.getFragmentCollec
 		url="<%= exportFragmentCollectionsURL %>"
 	/>
 
-	<c:if test="<%= FragmentCollectionPermission.contains(permissionChecker, fragmentCollection, ActionKeys.UPDATE) %>">
+	<c:if test="<%= FragmentPermission.contains(permissionChecker, scopeGroupId, FragmentActionKeys.MANAGE_FRAGMENT_ENTRIES) %>">
 
 		<%
 		Map<String, Object> importFragmentEntriesData = new HashMap<String, Object>();
@@ -81,9 +64,7 @@ FragmentCollection fragmentCollection = fragmentDisplayContext.getFragmentCollec
 			message="import"
 			url="javascript:;"
 		/>
-	</c:if>
 
-	<c:if test="<%= FragmentCollectionPermission.contains(permissionChecker, fragmentCollection, ActionKeys.DELETE) %>">
 		<portlet:renderURL var="redirectURL">
 			<portlet:param name="mvcRenderCommandName" value="/fragment/view" />
 		</portlet:renderURL>

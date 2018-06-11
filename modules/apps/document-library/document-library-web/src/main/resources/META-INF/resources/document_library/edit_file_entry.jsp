@@ -363,7 +363,7 @@ if (portletTitleBasedNavigation) {
 											if ((curDLFileEntryType.getFileEntryTypeId() == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT) || (fileEntryTypeId == curDLFileEntryType.getFileEntryTypeId()) || DLFileEntryTypePermission.contains(permissionChecker, curDLFileEntryType, ActionKeys.VIEW)) {
 										%>
 
-											<aui:option label="<%= HtmlUtil.escape(curDLFileEntryType.getName(locale)) %>" selected="<%= (fileEntryTypeId == curDLFileEntryType.getPrimaryKey()) %>" value="<%= curDLFileEntryType.getPrimaryKey() %>" />
+											<aui:option label="<%= HtmlUtil.escape(curDLFileEntryType.getName(locale)) %>" selected="<%= fileEntryTypeId == curDLFileEntryType.getPrimaryKey() %>" value="<%= curDLFileEntryType.getPrimaryKey() %>" />
 
 										<%
 											}
@@ -434,14 +434,14 @@ if (portletTitleBasedNavigation) {
 					<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="versioning">
 						<aui:input label="customize-the-version-number-increment-and-describe-my-changes" name="updateVersionDetails" type="toggle-switch" value="<%= updateVersionDetails %>" />
 
-						<div id="<portlet:namespace />versionDetails" style="<%= (updateVersionDetails) ? StringPool.BLANK : "display: none" %>">
+						<div id="<portlet:namespace />versionDetails" style="<%= updateVersionDetails ? StringPool.BLANK : "display: none" %>">
 							<aui:input checked="<%= majorVersion %>" label="major-version" name="majorVersion" type="radio" value="<%= true %>" />
 
 							<aui:input checked="<%= !majorVersion %>" label="minor-version" name="majorVersion" type="radio" value="<%= false %>" />
 
 							<aui:model-context />
 
-							<aui:input label="version-notes" name="changeLog" type="textarea" />
+							<aui:input label="version-notes" maxLength="75" name="changeLog" />
 
 							<aui:model-context bean="<%= fileVersion %>" model="<%= DLFileVersion.class %>" />
 						</div>

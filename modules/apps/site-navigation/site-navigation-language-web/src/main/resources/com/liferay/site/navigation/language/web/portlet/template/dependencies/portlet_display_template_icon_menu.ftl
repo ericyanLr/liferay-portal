@@ -12,14 +12,18 @@
 		>
 			<#list entries as entry>
 				<#if !entry.isSelected() && !entry.isDisabled()>
+					<#assign
+						entryLocale = entry.getLocale()
 
-					<#assign normalizedDefaultLanguageId = stringUtil.toLowerCase(stringUtil.replace(entry.getLanguageId(), "_", "-")) />
+						displayName = entry.getLongDisplayName() + "-" + entryLocale.getDisplayCountry(entryLocale)
+						normalizedDefaultLanguageId = stringUtil.toLowerCase(stringUtil.replace(entry.getLanguageId(), "_", "-"))
+					/>
 
 					<@liferay_ui["icon"]
 						icon=normalizedDefaultLanguageId
 						iconCssClass="inline-item inline-item-before"
 						markupView="lexicon"
-						message=normalizedDefaultLanguageId
+						message=displayName
 						url=entry.getURL()
 					/>
 				</#if>

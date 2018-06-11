@@ -41,7 +41,11 @@ if (configurationModel.isFactory()) {
 
 PortalUtil.addPortletBreadcrumbEntry(request, portletDisplay.getPortletDisplayName(), String.valueOf(renderResponse.createRenderURL()));
 
-String categoryDisplayName = LanguageUtil.get(request, "category." + configurationModel.getCategory());
+ConfigurationCategoryMenuDisplay configurationCategoryMenuDisplay = (ConfigurationCategoryMenuDisplay)request.getAttribute(ConfigurationAdminWebKeys.CONFIGURATION_CATEGORY_MENU_DISPLAY);
+
+ConfigurationCategoryDisplay configurationCategoryDisplay = configurationCategoryMenuDisplay.getConfigurationCategoryDisplay();
+
+String categoryDisplayName = HtmlUtil.escape(configurationCategoryDisplay.getCategoryLabel(locale));
 
 PortletURL viewCategoryURL = renderResponse.createRenderURL();
 
@@ -60,16 +64,6 @@ String configurationModelName = (componentResourceBundle != null) ? LanguageUtil
 
 if (configurationModel.isFactory() && !configurationModel.isCompanyFactory()) {
 	PortalUtil.addPortletBreadcrumbEntry(request, configurationModelName, viewFactoryInstancesURL.toString());
-
-	if (configurationModel.hasConfiguration()) {
-		PortalUtil.addPortletBreadcrumbEntry(request, configurationModel.getLabel(), null);
-	}
-	else {
-		PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "add"), null);
-	}
-}
-else {
-	PortalUtil.addPortletBreadcrumbEntry(request, configurationModelName, null);
 }
 
 portletDisplay.setShowBackIcon(true);
@@ -114,8 +108,24 @@ renderResponse.setTitle(categoryDisplayName);
 					<aui:input name="factoryPid" type="hidden" value="<%= configurationModel.getFactoryPid() %>" />
 					<aui:input name="pid" type="hidden" value="<%= configurationModel.getID() %>" />
 
+					<%
+					String configurationTitle;
+
+					if (configurationModel.isFactory() && !configurationModel.isCompanyFactory()) {
+						if (configurationModel.hasConfiguration()) {
+							configurationTitle = configurationModel.getLabel();
+						}
+						else {
+							configurationTitle = LanguageUtil.get(request, "add");
+						}
+					}
+					else {
+						configurationTitle = (componentResourceBundle != null) ? LanguageUtil.get(componentResourceBundle, configurationModel.getName()) : configurationModel.getName();
+					}
+					%>
+
 					<h2>
-						<%= (componentResourceBundle != null) ? LanguageUtil.get(componentResourceBundle, configurationModel.getName()) : configurationModel.getName() %>
+						<%= configurationTitle %>
 
 						<c:if test="<%= configurationModel.hasConfiguration() %>">
 							<liferay-ui:icon-menu

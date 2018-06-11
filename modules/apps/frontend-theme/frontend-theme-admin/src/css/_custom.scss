@@ -2,6 +2,7 @@
 @import "components/group-item";
 @import "components/sidebar";
 @import "components/splitter";
+@import "components/table";
 @import "portlet/portlet";
 
 body {
@@ -12,7 +13,7 @@ body {
 	padding: 0;
 
 	.portlet-layout {
-		margin: 0 0 75px;
+		margin: 0 0 25px;
 
 		.portlet-column {
 			padding: 0;

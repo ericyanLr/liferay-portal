@@ -302,7 +302,9 @@ public class GitWorkingDirectory {
 		Branch tempBranch = null;
 
 		try {
-			if (branchName.equals(currentBranch.getName())) {
+			if ((currentBranch == null) ||
+				branchName.equals(currentBranch.getName())) {
+
 				String tempBranchName = "temp-" + System.currentTimeMillis();
 
 				tempBranch = createLocalBranch(tempBranchName);
@@ -343,7 +345,7 @@ public class GitWorkingDirectory {
 			}
 		}
 
-		return getBranch(branchName, null);
+		return getBranch(branchName, null, true);
 	}
 
 	public String createPullRequest(
@@ -520,12 +522,25 @@ public class GitWorkingDirectory {
 	}
 
 	public Branch getBranch(String branchName, Remote remote) {
+		return getBranch(branchName, remote, false);
+	}
+
+	public Branch getBranch(
+		String branchName, Remote remote, boolean required) {
+
 		if (branchName.equals("HEAD") && (remote == null)) {
 			ExecutionResult executionResult = executeBashCommands(
 				_MAX_RETRIES, _RETRY_DELAY, _TIMEOUT,
 				"git rev-parse --abbrev-ref " + branchName);
 
 			if (executionResult.getExitValue() != 0) {
+				if (required) {
+					throw new RuntimeException(
+						JenkinsResultsParserUtil.combine(
+							"Unable to find required local branch ",
+							branchName));
+				}
+
 				return null;
 			}
 
@@ -536,6 +551,13 @@ public class GitWorkingDirectory {
 			branchName = branchName.trim();
 
 			if (branchName.isEmpty()) {
+				if (required) {
+					throw new RuntimeException(
+						JenkinsResultsParserUtil.combine(
+							"Unable to find required local branch ",
+							branchName));
+				}
+
 				return null;
 			}
 
@@ -548,6 +570,13 @@ public class GitWorkingDirectory {
 			if (branchName.equals(branch.getName())) {
 				return branch;
 			}
+		}
+
+		if (required) {
+			throw new RuntimeException(
+				JenkinsResultsParserUtil.combine(
+					"Unable to find required branch ", branchName,
+					" from remote URL " + remote.getRemoteURL()));
 		}
 
 		return null;
@@ -810,13 +839,18 @@ public class GitWorkingDirectory {
 	public Branch getLocalRebasedPullRequestBranch(PullRequest pullRequest) {
 		Branch currentBranch = getCurrentBranch();
 
-		String currentBranchName = currentBranch.getName();
+		String currentBranchName = null;
+
+		if (currentBranch != null) {
+			currentBranchName = currentBranch.getName();
+		}
 
 		Branch tempBranch = null;
 		Remote senderTempRemote = null;
 
 		try {
-			if (currentBranchName.equals(
+			if ((currentBranchName == null) ||
+				currentBranchName.equals(
 					pullRequest.getLocalSenderBranchName())) {
 
 				tempBranch = createLocalBranch(
@@ -830,7 +864,7 @@ public class GitWorkingDirectory {
 				pullRequest.getSenderRemoteURL());
 
 			Branch remoteSenderBranch = getBranch(
-				pullRequest.getSenderBranchName(), senderTempRemote);
+				pullRequest.getSenderBranchName(), senderTempRemote, true);
 
 			fetch(null, remoteSenderBranch);
 
@@ -841,7 +875,7 @@ public class GitWorkingDirectory {
 			Remote upstreamRemote = getRemote("upstream");
 
 			Branch remoteUpstreamBranch = getBranch(
-				pullRequest.getUpstreamBranchName(), upstreamRemote);
+				pullRequest.getUpstreamBranchName(), upstreamRemote, true);
 
 			if (!localSHAExists(remoteUpstreamBranch.getSHA())) {
 				fetch(null, remoteUpstreamBranch);
@@ -871,27 +905,49 @@ public class GitWorkingDirectory {
 	}
 
 	public List<File> getModifiedFilesList() {
-		return getModifiedFilesList(null);
+		return getModifiedFilesList(null, false);
+	}
+
+	public List<File> getModifiedFilesList(boolean checkUnstagedFiles) {
+		return getModifiedFilesList(null, checkUnstagedFiles);
 	}
 
 	public List<File> getModifiedFilesList(String grepPredicateString) {
+		return getModifiedFilesList(grepPredicateString, false);
+	}
+
+	public List<File> getModifiedFilesList(
+		String grepPredicateString, boolean checkUnstagedFiles) {
+
 		List<File> modifiedFiles = new ArrayList<>();
 
 		Branch currentBranch = getCurrentBranch();
 
-		String bashCommand = JenkinsResultsParserUtil.combine(
-			"git diff --diff-filter=AM --name-only ",
+		if (currentBranch == null) {
+			throw new RuntimeException(
+				"Unable to determine the current branch");
+		}
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("git diff --diff-filter=AM --name-only ");
+
+		sb.append(
 			_getMergeBaseCommitSHA(
-				currentBranch, getBranch(_upstreamBranchName, null)),
-			" ", currentBranch.getSHA());
+				currentBranch, getBranch(_upstreamBranchName, null, true)));
+
+		if (!checkUnstagedFiles) {
+			sb.append(" ");
+			sb.append(currentBranch.getSHA());
+		}
 
 		if ((grepPredicateString != null) && !grepPredicateString.isEmpty()) {
-			bashCommand = JenkinsResultsParserUtil.combine(
-				bashCommand, " | grep ", grepPredicateString);
+			sb.append(" | grep ");
+			sb.append(grepPredicateString);
 		}
 
 		ExecutionResult executionResult = executeBashCommands(
-			_MAX_RETRIES, _RETRY_DELAY, _TIMEOUT, bashCommand);
+			_MAX_RETRIES, _RETRY_DELAY, _TIMEOUT, sb.toString());
 
 		if (executionResult.getExitValue() == 1) {
 			return modifiedFiles;
@@ -1158,6 +1214,13 @@ public class GitWorkingDirectory {
 
 	public boolean pushToRemote(boolean force, Remote remote) {
 		Branch currentBranch = getCurrentBranch();
+
+		if (currentBranch == null) {
+			throw new RuntimeException(
+				JenkinsResultsParserUtil.combine(
+					"Unable to push current branch to remote branch ",
+					"because the current branch is invalid"));
+		}
 
 		return pushToRemote(
 			force, currentBranch, currentBranch.getName(), remote);

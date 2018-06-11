@@ -14,6 +14,9 @@
 
 package com.liferay.document.library.internal.exportimport.data.handler;
 
+import com.liferay.changeset.model.ChangesetCollection;
+import com.liferay.changeset.service.ChangesetCollectionLocalService;
+import com.liferay.changeset.service.ChangesetEntryLocalService;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
 import com.liferay.document.library.kernel.model.DLFolder;
@@ -23,11 +26,13 @@ import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.kernel.staging.StagingConstants;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -35,6 +40,7 @@ import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.RepositoryEntry;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.RepositoryLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.trash.TrashHandler;
@@ -87,6 +93,31 @@ public class FolderStagedModelDataHandler
 	}
 
 	@Override
+	public void exportStagedModel(
+			PortletDataContext portletDataContext, Folder folder)
+		throws PortletDataException {
+
+		super.exportStagedModel(portletDataContext, folder);
+
+		if (ExportImportThreadLocal.isStagingInProcess()) {
+			ChangesetCollection changesetCollection =
+				_changesetCollectionLocalService.fetchChangesetCollection(
+					portletDataContext.getScopeGroupId(),
+					StagingConstants.
+						RANGE_FROM_LAST_PUBLISH_DATE_CHANGESET_NAME);
+
+			if (changesetCollection != null) {
+				long classNameId = _classNameLocalService.getClassNameId(
+					DLFolder.class);
+
+				_changesetEntryLocalService.deleteEntry(
+					changesetCollection.getChangesetCollectionId(), classNameId,
+					folder.getFolderId());
+			}
+		}
+	}
+
+	@Override
 	public Folder fetchStagedModelByUuidAndGroupId(String uuid, long groupId) {
 		DLFolder dlFolder = _dlFolderLocalService.fetchFolder(uuid, groupId);
 
@@ -104,7 +135,7 @@ public class FolderStagedModelDataHandler
 		List<DLFolder> dlFolders =
 			_dlFolderLocalService.getDLFoldersByUuidAndCompanyId(
 				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<DLFolder>());
+				new StagedModelModifiedDateComparator<>());
 
 		List<Folder> folders = new ArrayList<>();
 
@@ -158,9 +189,6 @@ public class FolderStagedModelDataHandler
 				portletDataContext, folder, repository,
 				PortletDataContext.REFERENCE_TYPE_STRONG);
 
-			portletDataContext.addClassedModel(
-				folderElement, folderPath, folder);
-
 			boolean rootFolder = false;
 
 			if (folder.getFolderId() == repository.getDlFolderId()) {
@@ -194,9 +222,8 @@ public class FolderStagedModelDataHandler
 
 	@Override
 	protected void doImportMissingReference(
-			PortletDataContext portletDataContext, String uuid, long groupId,
-			long folderId)
-		throws Exception {
+		PortletDataContext portletDataContext, String uuid, long groupId,
+		long folderId) {
 
 		Folder existingFolder = fetchMissingReference(uuid, groupId);
 
@@ -395,9 +422,8 @@ public class FolderStagedModelDataHandler
 	}
 
 	protected String getFolderName(
-			String uuid, long groupId, long parentFolderId, String name,
-			int count)
-		throws Exception {
+		String uuid, long groupId, long parentFolderId, String name,
+		int count) {
 
 		DLFolder dlFolder = _dlFolderLocalService.fetchFolder(
 			groupId, parentFolderId, name);
@@ -420,9 +446,8 @@ public class FolderStagedModelDataHandler
 	}
 
 	protected void importFolderFileEntryTypes(
-			PortletDataContext portletDataContext, Element folderElement,
-			Folder folder, Folder importedFolder, ServiceContext serviceContext)
-		throws Exception {
+		PortletDataContext portletDataContext, Element folderElement,
+		Folder folder, Folder importedFolder, ServiceContext serviceContext) {
 
 		if (!folder.isDefaultRepository()) {
 			return;
@@ -493,32 +518,6 @@ public class FolderStagedModelDataHandler
 		}
 	}
 
-	@Reference(unbind = "-")
-	protected void setDLAppLocalService(DLAppLocalService dlAppLocalService) {
-		_dlAppLocalService = dlAppLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDLFileEntryTypeLocalService(
-		DLFileEntryTypeLocalService dlFileEntryTypeLocalService) {
-
-		_dlFileEntryTypeLocalService = dlFileEntryTypeLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDLFolderLocalService(
-		DLFolderLocalService dlFolderLocalService) {
-
-		_dlFolderLocalService = dlFolderLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setRepositoryLocalService(
-		RepositoryLocalService repositoryLocalService) {
-
-		_repositoryLocalService = repositoryLocalService;
-	}
-
 	@Override
 	protected void validateExport(
 			PortletDataContext portletDataContext, Folder folder)
@@ -557,13 +556,28 @@ public class FolderStagedModelDataHandler
 		}
 	}
 
+	@Reference
+	private ChangesetCollectionLocalService _changesetCollectionLocalService;
+
+	@Reference
+	private ChangesetEntryLocalService _changesetEntryLocalService;
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
 	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
 	private DLFileEntryTypeLocalService _dlFileEntryTypeLocalService;
+
+	@Reference
 	private DLFolderLocalService _dlFolderLocalService;
 
 	@Reference
 	private Portal _portal;
 
+	@Reference
 	private RepositoryLocalService _repositoryLocalService;
 
 }

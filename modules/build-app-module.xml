@@ -40,6 +40,7 @@
 			<available file="hotfix" />
 			<available file=".lfrbuild-app-server-lib" />
 			<available file=".lfrbuild-portal-pre" />
+			<available file=".lfrbuild-releng-ignore" />
 			<contains string="${basedir}" substring="modules-compat-data" />
 			<contains string="${basedir}" substring="required-dependencies" />
 		</or>
@@ -59,13 +60,6 @@
 
 	<condition property="download.artifact.wsdd">
 		<available file=".lfrbuild-deploy-wsdd" />
-	</condition>
-
-	<condition property="replace.artifact.sources.license.text">
-		<and>
-			<istrue value="${current.branch.private}" />
-			<istrue value="${download.artifact.sources}" />
-		</and>
 	</condition>
 
 	<target if="artifact.hotfix" name="copy-hotfix-artifact">
@@ -158,22 +152,35 @@
 		<mkdir dir="${dist.dir}/sources" />
 
 		<if>
-			<contains string="${basedir}" substring="private${file.separator}" />
+			<isset property="artifact.sources.url" />
 			<then>
-				<get
-					dest="${dist.dir}/sources"
-					password="${build.repository.private.password}"
-					src="${artifact.sources.url}"
-					username="${build.repository.private.username}"
-				/>
+				<if>
+					<contains string="${basedir}" substring="private${file.separator}" />
+					<then>
+						<get
+							dest="${dist.dir}/sources"
+							password="${build.repository.private.password}"
+							src="${artifact.sources.url}"
+							username="${build.repository.private.username}"
+						/>
+					</then>
+					<else>
+						<get
+							dest="${dist.dir}/sources"
+							src="${artifact.sources.url}"
+						/>
+					</else>
+				</if>
 			</then>
-			<else>
-				<get
-					dest="${dist.dir}/sources"
-					src="${artifact.sources.url}"
-				/>
-			</else>
 		</if>
+
+		<condition property="replace.artifact.sources.license.text">
+			<and>
+				<isset property="artifact.sources.url" />
+				<istrue value="${current.branch.private}" />
+				<istrue value="${download.artifact.sources}" />
+			</and>
+		</condition>
 	</target>
 
 	<target depends="get-artifact-properties" if="download.artifact.wsdd" name="download-artifact-wsdd" unless="artifact.exclude">
@@ -282,7 +289,7 @@
 		<property file="bnd.bnd" />
 
 		<condition property="artifact.location.dest" value="${osgi.dir}/marketplace/${Bundle-SymbolicName}-${Bundle-Version}.jar">
-			<equals arg1="${lp.version}" arg2="7.0.0" />
+			<equals arg1="${lp.version.major}" arg2="7.0" />
 		</condition>
 
 		<condition property="artifact.location.dest" value="${osgi.dir}/marketplace/${lpkg.title.prefix}${liferay.releng.app.title} - SPI/${Bundle-SymbolicName}-${Bundle-Version}.jar">
@@ -509,7 +516,7 @@
 		<echo append="true" file="${dist.dir}/ticket.list.tmp">${artifact.change.log.ticket.list} </echo>
 	</target>
 
-	<target depends="download-artifact-sources" if="replace.artifact.sources.license.text" name="replace-artifact-sources-license-text">
+	<target depends="download-artifact-sources" if="replace.artifact.sources.license.text" name="replace-artifact-sources-license-text" unless="artifact.exclude">
 		<delete dir="tmp" />
 
 		<mkdir dir="tmp" />

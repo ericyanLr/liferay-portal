@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.servlet.MultiSessionMessages;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -102,11 +103,12 @@ public class SuccessTag extends IncludeTag implements BodyTag {
 
 		Map<String, String> values = new HashMap<>();
 
-		values.put("message", message);
 		values.put("pathThemeImages", themeDisplay.getPathThemeImages());
 		values.put("title", LanguageUtil.get(resourceBundle, "success"));
 
 		if (_embed) {
+			values.put("message", HtmlUtil.escape(message));
+
 			String result = StringUtil.replace(
 				_CONTENT_EMBED_TMPL, StringPool.DOLLAR, StringPool.DOLLAR,
 				values);
@@ -116,14 +118,16 @@ public class SuccessTag extends IncludeTag implements BodyTag {
 			jspWriter.write(result);
 		}
 		else {
+			values.put("message", HtmlUtil.escapeJS(message));
+
 			String result = StringUtil.replace(
 				_CONTENT_TOAST_TMPL, StringPool.DOLLAR, StringPool.DOLLAR,
 				values);
 
 			ScriptTag.doTag(
 				null,
-				"metal-dom/src/all/dom as dom,clay-alert@2.0.2/lib/ClayToast " +
-					"as ClayToast",
+				"metal-dom/src/all/dom as dom,clay-alert/src/ClayToast as " +
+					"ClayToast",
 				null, result, getBodyContent(), pageContext);
 		}
 
@@ -158,7 +162,7 @@ public class SuccessTag extends IncludeTag implements BodyTag {
 	protected void cleanUp() {
 		super.cleanUp();
 
-		_embed = true;
+		_embed = false;
 		_hasMessage = false;
 		_key = null;
 		_message = null;
@@ -198,7 +202,7 @@ public class SuccessTag extends IncludeTag implements BodyTag {
 
 	private static final String _PAGE = "/html/taglib/ui/success/page.jsp";
 
-	private boolean _embed = true;
+	private boolean _embed;
 	private boolean _hasMessage;
 	private String _key;
 	private String _message;

@@ -18,7 +18,9 @@ import com.liferay.poshi.runner.util.Dom4JUtil;
 import com.liferay.poshi.runner.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,20 +30,57 @@ import org.dom4j.tree.DefaultAttribute;
 /**
  * @author Yi-Chen Tsai
  */
-public class PoshiProseScenario {
+public class PoshiProseScenario extends BasePoshiProse {
 
 	public PoshiProseScenario(String poshiProseScenarioString) {
-		Matcher matcher = _scenarioPattern.matcher(poshiProseScenarioString);
+		poshiProseScenarioString = filterCommentLines(poshiProseScenarioString);
 
-		if (!matcher.find()) {
-			throw new RuntimeException(
-				"Prose scenario does not match pattern " +
-					_scenarioPattern.pattern() + "\n" +
-						poshiProseScenarioString);
+		Matcher setupMatcher = _setupPattern.matcher(poshiProseScenarioString);
+
+		String tags = null;
+
+		if (setupMatcher.find()) {
+			_scenarioContent = setupMatcher.group("content");
+			_scenarioName = null;
+			_type = Type.Setup;
+			tags = setupMatcher.group("tags");
+		}
+		else {
+			Matcher teardownMatcher = _teardownPattern.matcher(
+				poshiProseScenarioString);
+
+			if (teardownMatcher.find()) {
+				_scenarioContent = teardownMatcher.group("content");
+				_scenarioName = null;
+				_type = Type.Teardown;
+				tags = teardownMatcher.group("tags");
+			}
+			else {
+				Matcher scenarioMatcher = _scenarioPattern.matcher(
+					poshiProseScenarioString);
+
+				if (!scenarioMatcher.find()) {
+					throw new RuntimeException(
+						"Prose scenario does not match pattern " +
+							_scenarioPattern.pattern() + "\n" +
+								poshiProseScenarioString);
+				}
+
+				_scenarioContent = scenarioMatcher.group("content");
+				_scenarioName = scenarioMatcher.group("name");
+				_type = Type.Scenario;
+				tags = scenarioMatcher.group("tags");
+			}
 		}
 
-		_scenarioName = matcher.group("name");
-		_scenarioContent = matcher.group("content");
+		if (tags != null) {
+			Matcher tagMatcher = tagPattern.matcher(tags);
+
+			while (tagMatcher.find()) {
+				_tagMap.put(
+					tagMatcher.group("tagName"), tagMatcher.group("tagValue"));
+			}
+		}
 
 		List<String> poshiProseStatementStrings = StringUtil.split(
 			_scenarioContent, PoshiProseStatement.KEYWORDS);
@@ -52,9 +91,25 @@ public class PoshiProseScenario {
 		}
 	}
 
+	@Override
 	public Element toElement() {
-		Element commandElement = Dom4JUtil.getNewElement(
-			"command", null, new DefaultAttribute("name", _scenarioName));
+		Element commandElement;
+
+		if (_type == Type.Setup) {
+			commandElement = Dom4JUtil.getNewElement("set-up");
+		}
+		else if (_type == Type.Teardown) {
+			commandElement = Dom4JUtil.getNewElement("tear-down");
+		}
+		else {
+			commandElement = Dom4JUtil.getNewElement(
+				"command", null, new DefaultAttribute("name", _scenarioName));
+		}
+
+		for (Map.Entry<String, String> entry : _tagMap.entrySet()) {
+			commandElement.add(
+				new DefaultAttribute(entry.getKey(), entry.getValue()));
+		}
 
 		for (PoshiProseStatement poshiProseStatement : _poshiProseStatements) {
 			commandElement.add(poshiProseStatement.toElement());
@@ -63,13 +118,27 @@ public class PoshiProseScenario {
 		return commandElement;
 	}
 
-	protected static final String[] KEYWORDS = {"Scenario"};
+	protected static final String[] KEYWORDS =
+		{"Setup", "Scenario", "Teardown"};
+
+	protected enum Type {
+
+		Scenario, Setup, Teardown
+
+	}
 
 	private final List<PoshiProseStatement> _poshiProseStatements =
 		new ArrayList<>();
 	private final String _scenarioContent;
 	private final String _scenarioName;
 	private final Pattern _scenarioPattern = Pattern.compile(
-		"Scenario:[\\s]*(?<name>\\w+)[^\\w]*(?<content>[\\s\\S]*)");
+		"(?s)Scenario:\\s*(?<name>\\w([ \\w]*\\w)?)\\s*" +
+			"(?<tags>(@.*?\".*?\"\\s*)+)*(?<content>[^\\s].*)");
+	private final Pattern _setupPattern = Pattern.compile(
+		"(?s)Setup:\\s*(?<tags>(@.*?\".*?\"\\s*)+)*(?<content>[^\\s].*)");
+	private final Map<String, String> _tagMap = new LinkedHashMap<>();
+	private final Pattern _teardownPattern = Pattern.compile(
+		"(?s)Teardown:\\s*(?<tags>(@.*?\".*?\"\\s*)+)*(?<content>[^\\s].*)");
+	private final Type _type;
 
 }

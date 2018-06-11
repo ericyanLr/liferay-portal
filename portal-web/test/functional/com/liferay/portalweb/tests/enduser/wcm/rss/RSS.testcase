@@ -1,4 +1,6 @@
 <definition component-name="portal-rss">
+	<property name="osgi.module.configuration.file.names" value="com.liferay.rss.web.internal.configuration.RSSWebCacheConfiguration.config" />
+	<property name="osgi.module.configurations" value="com.liferay.portlet.display-category=&quot;category.cms&quot;" />
 	<property name="portal.release" value="true" />
 	<property name="portal.upstream" value="true" />
 	<property name="testray.main.component.name" value="RSS" />
@@ -21,7 +23,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -189,9 +191,22 @@
 		<property name="portal.acceptance" value="quarantine" />
 		<property name="testray.component.names" value="RSS" />
 
-		<execute macro="Navigator#gotoSitePage">
-			<var name="pageName" value="Site Page Name" />
-			<var name="siteName" value="Site Name" />
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Welcome" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
+			<var name="pageName" value="Page Name" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Page Name" />
 		</execute>
 
 		<execute macro="Portlet#addPG">
@@ -214,9 +229,8 @@
 
 		<execute macro="PortletEntry#save" />
 
-		<execute macro="Navigator#gotoSitePage">
-			<var name="pageName" value="Site Page Name" />
-			<var name="siteName" value="Site Name" />
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Page Name" />
 		</execute>
 
 		<execute macro="RSSPortlet#viewDisplayFeedTitle">
@@ -473,7 +487,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -600,7 +614,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -697,7 +711,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -759,7 +773,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">

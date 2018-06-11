@@ -67,17 +67,17 @@ JournalFileUploadsConfiguration journalFileUploadsConfiguration = (JournalFileUp
 			</c:if>
 
 			<aui:col width="<%= (smallImage && (article != null)) ? 50 : 100 %>">
-				<aui:fieldset>
+				<liferay-frontend:fieldset>
 					<aui:input cssClass="lfr-journal-small-image-type" ignoreRequestValue="<%= changeStructure %>" inlineField="<%= true %>" label="small-image-url" name="smallImageType" type="radio" />
 
 					<aui:input cssClass="lfr-journal-small-image-value" ignoreRequestValue="<%= changeStructure %>" inlineField="<%= true %>" label="" name="smallImageURL" title="small-image-url" />
-				</aui:fieldset>
+				</liferay-frontend:fieldset>
 
-				<aui:fieldset>
+				<liferay-frontend:fieldset>
 					<aui:input cssClass="lfr-journal-small-image-type" ignoreRequestValue="<%= changeStructure %>" inlineField="<%= true %>" label="small-image" name="smallImageType" type="radio" />
 
 					<aui:input cssClass="lfr-journal-small-image-value" ignoreRequestValue="<%= changeStructure %>" inlineField="<%= true %>" label="" name="smallFile" type="file" />
-				</aui:fieldset>
+				</liferay-frontend:fieldset>
 			</aui:col>
 		</aui:row>
 	</div>
@@ -144,7 +144,7 @@ JournalFileUploadsConfiguration journalFileUploadsConfiguration = (JournalFileUp
 
 	setTimeout(
 		function() {
-			selectSmallImageType('<%= (article != null) && Validator.isNotNull(article.getSmallImageURL()) ? 0 : 1 %>');
+			selectSmallImageType('<%= ((article != null) && Validator.isNotNull(article.getSmallImageURL())) ? 0 : 1 %>');
 		},
 		0
 	);

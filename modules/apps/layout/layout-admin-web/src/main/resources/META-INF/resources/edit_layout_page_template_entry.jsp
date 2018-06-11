@@ -21,7 +21,7 @@ String redirect = ParamUtil.getString(request, "redirect");
 
 LayoutPageTemplateDisplayContext layoutPageTemplateDisplayContext = new LayoutPageTemplateDisplayContext(renderRequest, renderResponse, request);
 
-FragmentsEditorContext fragmentsEditorContext = new FragmentsEditorContext(request, renderResponse, LayoutPageTemplateEntry.class.getName(), layoutPageTemplateDisplayContext.getLayoutPageTemplateEntryId(), layoutPageTemplateDisplayContext.isDisplayPage());
+FragmentsEditorDisplayContext fragmentsEditorDisplayContext = new FragmentsEditorDisplayContext(request, renderResponse, LayoutPageTemplateEntry.class.getName(), layoutPageTemplateDisplayContext.getLayoutPageTemplateEntryId(), layoutPageTemplateDisplayContext.isDisplayPage());
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
@@ -33,8 +33,8 @@ renderResponse.setTitle(layoutPageTemplateDisplayContext.getLayoutPageTemplateEn
 	editorName="alloyeditor"
 />
 
-<soy:template-renderer
-	context="<%= fragmentsEditorContext.getEditorContext() %>"
+<soy:component-renderer
+	context="<%= fragmentsEditorDisplayContext.getEditorContext() %>"
 	module="layout-admin-web/js/fragments_editor/FragmentsEditor.es"
 	templateNamespace="com.liferay.layout.admin.web.FragmentsEditor.render"
 />

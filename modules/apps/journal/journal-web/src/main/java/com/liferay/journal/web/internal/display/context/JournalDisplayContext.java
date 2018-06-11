@@ -74,7 +74,6 @@ import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
-import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexer;
@@ -358,8 +357,10 @@ public class JournalDisplayContext {
 					WebKeys.THEME_DISPLAY);
 
 				setHelpText(
-					"you-can-customize-this-menu-or-see-all-you-have-by-" +
-						"clicking-more");
+					LanguageUtil.get(
+						_request,
+						"you-can-customize-this-menu-or-see-all-you-have-by-" +
+							"clicking-more"));
 
 				if (JournalFolderPermission.contains(
 						themeDisplay.getPermissionChecker(),
@@ -805,7 +806,9 @@ public class JournalDisplayContext {
 							LanguageUtil.get(_request, "templates"));
 					});
 
-				if (PortalUtil.isRSSFeedsEnabled()) {
+				if (_journalWebConfiguration.showFeeds() &&
+					PortalUtil.isRSSFeedsEnabled()) {
+
 					add(
 						navigationItem -> {
 							navigationItem.setActive(
@@ -1121,7 +1124,7 @@ public class JournalDisplayContext {
 				}
 				else if (Objects.equals(getOrderByCol(), "id")) {
 					sort = new Sort(
-						DocumentImpl.getSortableFieldName(Field.ARTICLE_ID),
+						Field.getSortableFieldName(Field.ARTICLE_ID),
 						Sort.STRING_TYPE, !orderByAsc);
 				}
 				else if (Objects.equals(getOrderByCol(), "modified-date")) {

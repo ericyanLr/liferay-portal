@@ -16,9 +16,10 @@ package com.liferay.jenkins.results.parser.test.clazz.group;
 
 import com.google.common.collect.Lists;
 
+import com.liferay.jenkins.results.parser.CentralMergePullRequestJob;
 import com.liferay.jenkins.results.parser.GitWorkingDirectory;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
-import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
+import com.liferay.jenkins.results.parser.PortalTestClassJob;
 
 import java.io.File;
 import java.io.IOException;
@@ -279,10 +280,16 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected JUnitBatchTestClassGroup(
-		String batchName, PortalGitWorkingDirectory portalGitWorkingDirectory,
-		String testSuiteName) {
+		String batchName, PortalTestClassJob portalTestClassJob) {
 
-		super(batchName, portalGitWorkingDirectory, testSuiteName);
+		super(batchName, portalTestClassJob);
+
+		if (portalTestClassJob instanceof CentralMergePullRequestJob) {
+			_includeUnstagedTestClassFiles = true;
+		}
+		else {
+			_includeUnstagedTestClassFiles = false;
+		}
 
 		_setAutoBalanceTestFiles();
 
@@ -506,7 +513,7 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		return JenkinsResultsParserUtil.getProperty(
-			portalTestProperties, "test.class.names.excludes");
+			jobProperties, "test.class.names.excludes");
 	}
 
 	private String _getTestClassNamesIncludesPropertyValue() {
@@ -518,7 +525,7 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		return JenkinsResultsParserUtil.getProperty(
-			portalTestProperties, "test.class.names.includes");
+			jobProperties, "test.class.names.includes");
 	}
 
 	private List<PathMatcher> _getTestClassNamesPathMatchers(
@@ -565,7 +572,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		List<File> modifiedJavaFilesList =
-			portalGitWorkingDirectory.getModifiedFilesList(".java");
+			portalGitWorkingDirectory.getModifiedFilesList(
+				".java", _includeUnstagedTestClassFiles);
 
 		if (!_autoBalanceTestFiles.isEmpty() &&
 			!modifiedJavaFilesList.isEmpty()) {
@@ -606,7 +614,10 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 			return;
 		}
 
-		List<String> testClassNamesIncludesRelativeGlobs = Arrays.asList(
+		List<String> testClassNamesIncludesRelativeGlobs = new ArrayList<>();
+
+		Collections.addAll(
+			testClassNamesIncludesRelativeGlobs,
 			testClassNamesIncludesPropertyValue.split(","));
 
 		if (testRelevantChanges) {
@@ -635,6 +646,7 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 	private final List<File> _autoBalanceTestFiles = new ArrayList<>();
 	private boolean _includeAutoBalanceTests;
+	private final boolean _includeUnstagedTestClassFiles;
 	private final Pattern _packagePathPattern = Pattern.compile(
 		".*/(?<packagePath>com/.*)");
 

@@ -54,12 +54,12 @@ if (!portletName.equals(PortletKeys.SERVER_ADMIN)) {
 }
 %>
 
-<liferay-ui:success embed="<%= false %>" key="permissionDeleted" message="the-permission-was-deleted" />
-<liferay-ui:success embed="<%= false %>" key="permissionsUpdated" message="the-role-permissions-were-updated" />
+<liferay-ui:success key="permissionDeleted" message="the-permission-was-deleted" />
+<liferay-ui:success key="permissionsUpdated" message="the-role-permissions-were-updated" />
 
 <liferay-util:include page="/edit_role_tabs.jsp" servletContext="<%= application %>" />
 
-<aui:container cssClass="container-fluid-1280" id="permissionContainer">
+<aui:container cssClass="container-fluid container-fluid-max-xl container-form-lg" id="permissionContainer">
 	<aui:row>
 		<c:if test="<%= !portletName.equals(PortletKeys.SERVER_ADMIN) %>">
 			<aui:col width="<%= 25 %>">
@@ -67,7 +67,7 @@ if (!portletName.equals(PortletKeys.SERVER_ADMIN)) {
 			</aui:col>
 		</c:if>
 
-		<aui:col id="permissionContentContainer" width="<%= portletName.equals(PortletKeys.SERVER_ADMIN) ? 100 : 75 %>">
+		<aui:col cssClass="lfr-permission-content-container" id="permissionContentContainer" width="<%= portletName.equals(PortletKeys.SERVER_ADMIN) ? 100 : 75 %>">
 			<c:choose>
 				<c:when test="<%= cmd.equals(Constants.VIEW) %>">
 					<liferay-util:include page="/edit_role_permissions_summary.jsp" servletContext="<%= application %>" />
@@ -126,8 +126,6 @@ if (!portletName.equals(PortletKeys.SERVER_ADMIN)) {
 <aui:script use="aui-io-request,aui-loading-mask-deprecated,aui-parse-content,aui-toggler,autocomplete-base,autocomplete-filters,liferay-notification">
 	var AParseContent = A.Plugin.ParseContent;
 
-	var notification;
-
 	var permissionNavigationDataContainer = A.one('#<portlet:namespace />permissionNavigationDataContainer');
 
 	var togglerDelegate;
@@ -162,7 +160,7 @@ if (!portletName.equals(PortletKeys.SERVER_ADMIN)) {
 					results.push(
 						{
 							data: item.text().trim(),
-							node: item.ancestor()
+							node: item
 						}
 					);
 				}
@@ -179,7 +177,7 @@ if (!portletName.equals(PortletKeys.SERVER_ADMIN)) {
 			return noResultsNode;
 		};
 
-		var permissionNavigationItems = permissionNavigationDataContainer.all('.permission-navigation-item');
+		var permissionNavigationItems = permissionNavigationDataContainer.all('.permission-navigation-item-container');
 
 		var permissionNavigationSectionsNode = permissionNavigationDataContainer.all('.permission-navigation-section');
 
@@ -213,7 +211,7 @@ if (!portletName.equals(PortletKeys.SERVER_ADMIN)) {
 			function(event) {
 				permissionNavigationItems.each(
 					function(item, index, collection) {
-						item.ancestor().addClass('hide');
+						item.addClass('hide');
 					}
 				);
 
@@ -318,7 +316,7 @@ if (!portletName.equals(PortletKeys.SERVER_ADMIN)) {
 							originalSelectedValues = checkedNodes.val();
 						}
 					}
-				)
+				);
 			},
 			'.permission-navigation-link'
 		);

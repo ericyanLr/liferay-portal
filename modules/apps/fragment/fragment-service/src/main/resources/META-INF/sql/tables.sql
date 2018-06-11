@@ -25,7 +25,7 @@ create table FragmentEntry (
 	css STRING null,
 	html STRING null,
 	js STRING null,
-	htmlPreviewEntryId LONG,
+	previewFileEntryId LONG,
 	status INTEGER,
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
@@ -51,5 +51,6 @@ create table FragmentEntryLink (
 	editableValues STRING null,
 	position INTEGER,
 	lastPropagationDate DATE null,
-	namespace VARCHAR(75) null
+	namespace VARCHAR(75) null,
+	lastPublishDate DATE null
 );

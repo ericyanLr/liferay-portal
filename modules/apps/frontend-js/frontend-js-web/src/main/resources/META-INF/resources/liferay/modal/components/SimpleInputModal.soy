@@ -64,18 +64,18 @@
 						{/let}
 
 						<input {$mainFieldAttributes} />
-					</div>
 
-					{if $_errorMessage}
-						<form class="form-feedback-item">
-							<span class="form-feedback-indicator">
-								<svg class="lexicon-icon">
-									<use xlink:href="{$spritemap}#exclamation-full"></use>
-								</svg>
-							</span>
-							{$_errorMessage}
-						</form>
-					{/if}
+						{if $_errorMessage}
+							<form class="form-feedback-item">
+								<span class="form-feedback-indicator">
+									<svg class="lexicon-icon">
+										<use xlink:href="{$spritemap}#exclamation-full"></use>
+									</svg>
+								</span>
+								{$_errorMessage}
+							</form>
+						{/if}
+					</div>
 
 					{if $checkboxFieldName and $checkboxFieldLabel}
 						<div class="form-check">
@@ -103,25 +103,6 @@
 			{param events: ['visibleChanged': $_handleModalVisibleChanged] /}
 
 			{param footer kind="html"}
-				{let $submitButtonCssClasses kind="text"}
-					btn btn-primary
-
-					{if $_loadingResponse}
-						{sp}loading
-					{/if}
-				{/let}
-
-				{let $submitButtonAttributes kind="attributes"}
-					{if $_loadingResponse}disabled{/if}
-					class="{$submitButtonCssClasses}"
-					data-onclick="{$_handleFormSubmit}"
-				{/let}
-
-				<button {$submitButtonAttributes}>
-					<span class="loading-icon linear"></span>
-					{msg desc=""}submit{/msg}
-				</button>
-
 				{let $cancelButtonAttributes kind="attributes"}
 					{if $_loadingResponse}disabled{/if}
 					class="btn btn-secondary"
@@ -131,6 +112,22 @@
 
 				<button {$cancelButtonAttributes}>
 					{msg desc=""}cancel{/msg}
+				</button>
+
+				{let $submitButtonAttributes kind="attributes"}
+					{if $_loadingResponse}disabled{/if}
+					class="btn btn-primary"
+					data-onclick="{$_handleFormSubmit}"
+				{/let}
+
+				<button {$submitButtonAttributes}>
+					{if $_loadingResponse}
+						<span class="inline-item inline-item-before">
+							<span aria-hidden="true" class="loading-animation"></span>
+						</span>
+					{/if}
+
+					{msg desc=""}save{/msg}
 				</button>
 			{/param}
 

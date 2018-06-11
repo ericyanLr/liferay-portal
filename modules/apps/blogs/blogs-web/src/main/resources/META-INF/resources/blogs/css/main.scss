@@ -186,18 +186,6 @@
 
 	.entry-content {
 		margin-bottom: 60px;
-
-		h4 {
-			margin-top: 0;
-
-			a {
-				color: inherit;
-
-				&:hover {
-					text-decoration: none;
-				}
-			}
-		}
 	}
 
 	.entry-metadata {
@@ -312,6 +300,10 @@
 	#blogsCommentsPanelContainer {
 		border-width: 0;
 	}
+
+	.widget-metadata.categories {
+		margin-bottom: 1.5rem;
+	}
 }
 
 .firefox .portlet-blogs fieldset.input-container {
@@ -330,12 +322,20 @@
 	}
 
 	.edit-entry {
-		h3 {
-			color: #2B4259;
+		.cover-image-caption .alloy-editor {
+			color: #A7A9BC;
 		}
 
-		.cover-image-caption .alloy-editor {
-			color: #868889;
+		.entry-title, .entry-content {
+			.alloy-editor-placeholder {
+				color: #272833;
+			}
+		}
+
+		.entry-subtitle {
+			.alloy-editor-placeholder {
+				color: #A7A9BC;
+			}
 		}
 	}
 
@@ -357,10 +357,6 @@
 		}
 
 		h2 {
-			.alloy-editor-placeholder {
-				color: #32A8E6;
-			}
-
 			& > a {
 				color: inherit;
 				font-weight: bold;

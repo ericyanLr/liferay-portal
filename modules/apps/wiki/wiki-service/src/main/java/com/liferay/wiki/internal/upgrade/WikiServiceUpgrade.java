@@ -23,7 +23,9 @@ import com.liferay.wiki.internal.upgrade.v1_0_0.UpgradePortletId;
 import com.liferay.wiki.internal.upgrade.v1_0_0.UpgradePortletPreferences;
 import com.liferay.wiki.internal.upgrade.v1_0_0.UpgradePortletSettings;
 import com.liferay.wiki.internal.upgrade.v1_0_0.UpgradeSchema;
+import com.liferay.wiki.internal.upgrade.v1_0_0.UpgradeWikiPage;
 import com.liferay.wiki.internal.upgrade.v1_0_0.UpgradeWikiPageResource;
+import com.liferay.wiki.internal.upgrade.v1_1_0.UpgradeWikiNode;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -46,8 +48,10 @@ public class WikiServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"0.0.3", "1.0.0", new UpgradeCompanyId(),
 			new UpgradeLastPublishDate(), new UpgradePortletPreferences(),
-			new UpgradePortletSettings(_settingsFactory),
+			new UpgradePortletSettings(_settingsFactory), new UpgradeWikiPage(),
 			new UpgradeWikiPageResource());
+
+		registry.register("1.0.0", "1.1.0", new UpgradeWikiNode());
 	}
 
 	@Reference(unbind = "-")

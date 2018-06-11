@@ -21,6 +21,8 @@ import java.io.IOException;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import org.dom4j.Attribute;
 import org.dom4j.CDATA;
 import org.dom4j.Element;
@@ -42,10 +44,10 @@ public class VarPoshiElement extends PoshiElement {
 
 	@Override
 	public PoshiElement clone(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		if (_isElementType(readableSyntax)) {
-			return new VarPoshiElement(parentPoshiElement, readableSyntax);
+		if (_isElementType(poshiScript)) {
+			return new VarPoshiElement(parentPoshiElement, poshiScript);
 		}
 
 		return null;
@@ -70,23 +72,23 @@ public class VarPoshiElement extends PoshiElement {
 	}
 
 	@Override
-	public void parseReadableSyntax(String readableSyntax) {
-		if (readableSyntax.startsWith("static")) {
+	public void parsePoshiScript(String poshiScript) {
+		if (poshiScript.startsWith("static")) {
 			addAttribute("static", "true");
 
-			readableSyntax = readableSyntax.replaceFirst("static", "");
+			poshiScript = poshiScript.replaceFirst("static", "");
 
-			readableSyntax = readableSyntax.trim();
+			poshiScript = poshiScript.trim();
 		}
 
-		String name = getNameFromAssignment(readableSyntax);
+		String name = getNameFromAssignment(poshiScript);
 
 		addAttribute("name", name);
 
-		String value = getValueFromAssignment(readableSyntax);
+		String value = getValueFromAssignment(poshiScript);
 
 		if (value.startsWith("\'\'\'")) {
-			addCDATA(getReadableEscapedContent(value));
+			addCDATA(getPoshiScriptEscapedContent(value));
 
 			return;
 		}
@@ -94,7 +96,7 @@ public class VarPoshiElement extends PoshiElement {
 		if (value.endsWith("\"") && value.startsWith("\"")) {
 			value = getQuotedContent(value);
 
-			value = value.replace("&quot;", "\"");
+			value = StringEscapeUtils.unescapeXml(value);
 
 			addAttribute("value", value);
 
@@ -111,7 +113,7 @@ public class VarPoshiElement extends PoshiElement {
 	}
 
 	@Override
-	public String toReadableSyntax() {
+	public String toPoshiScript() {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("\n\t");
@@ -147,7 +149,7 @@ public class VarPoshiElement extends PoshiElement {
 				}
 			}
 			else {
-				value = value.replaceAll("\"", "&quot;");
+				value = StringEscapeUtils.escapeXml10(value);
 
 				if (parentElement instanceof ExecutePoshiElement) {
 					value = value.replace("\\", "\\\\");
@@ -178,9 +180,9 @@ public class VarPoshiElement extends PoshiElement {
 	}
 
 	protected VarPoshiElement(
-		PoshiElement parentPoshiElement, String readableSyntax) {
+		PoshiElement parentPoshiElement, String poshiScript) {
 
-		this(_ELEMENT_NAME, parentPoshiElement, readableSyntax);
+		this(_ELEMENT_NAME, parentPoshiElement, poshiScript);
 	}
 
 	protected VarPoshiElement(String name, Element element) {
@@ -198,9 +200,9 @@ public class VarPoshiElement extends PoshiElement {
 	}
 
 	protected VarPoshiElement(
-		String name, PoshiElement parentPoshiElement, String readableSyntax) {
+		String name, PoshiElement parentPoshiElement, String poshiScript) {
 
-		super(name, parentPoshiElement, readableSyntax);
+		super(name, parentPoshiElement, poshiScript);
 	}
 
 	@Override
@@ -240,24 +242,24 @@ public class VarPoshiElement extends PoshiElement {
 
 	protected String valueAttributeName;
 
-	private boolean _isElementType(String readableSyntax) {
-		readableSyntax = readableSyntax.trim();
+	private boolean _isElementType(String poshiScript) {
+		poshiScript = poshiScript.trim();
 
-		if (!isBalancedReadableSyntax(readableSyntax)) {
+		if (!isBalancedPoshiScript(poshiScript)) {
 			return false;
 		}
 
-		if (!readableSyntax.endsWith(";")) {
+		if (!poshiScript.endsWith(";")) {
 			return false;
 		}
 
-		if (!readableSyntax.startsWith("static var") &&
-			!readableSyntax.startsWith("var ")) {
+		if (!poshiScript.startsWith("static var") &&
+			!poshiScript.startsWith("var ")) {
 
 			return false;
 		}
 
-		if (readableSyntax.contains(" = return(")) {
+		if (isMacroReturnVar(poshiScript)) {
 			return false;
 		}
 

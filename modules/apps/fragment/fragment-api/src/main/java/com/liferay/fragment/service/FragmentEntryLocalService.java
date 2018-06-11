@@ -76,8 +76,17 @@ public interface FragmentEntryLocalService extends BaseLocalService,
 		ServiceContext serviceContext) throws PortalException;
 
 	public FragmentEntry addFragmentEntry(long userId, long groupId,
+		long fragmentCollectionId, String name, long previewFileEntryId,
+		int status, ServiceContext serviceContext) throws PortalException;
+
+	public FragmentEntry addFragmentEntry(long userId, long groupId,
 		long fragmentCollectionId, String fragmentEntryKey, String name,
 		int status, ServiceContext serviceContext) throws PortalException;
+
+	public FragmentEntry addFragmentEntry(long userId, long groupId,
+		long fragmentCollectionId, String fragmentEntryKey, String name,
+		long previewFileEntryId, int status, ServiceContext serviceContext)
+		throws PortalException;
 
 	public FragmentEntry addFragmentEntry(long userId, long groupId,
 		long fragmentCollectionId, String name, String css, String html,
@@ -85,9 +94,19 @@ public interface FragmentEntryLocalService extends BaseLocalService,
 		throws PortalException;
 
 	public FragmentEntry addFragmentEntry(long userId, long groupId,
+		long fragmentCollectionId, String name, String css, String html,
+		String js, long previewFileEntryId, int status,
+		ServiceContext serviceContext) throws PortalException;
+
+	public FragmentEntry addFragmentEntry(long userId, long groupId,
 		long fragmentCollectionId, String fragmentEntryKey, String name,
 		String css, String html, String js, int status,
 		ServiceContext serviceContext) throws PortalException;
+
+	public FragmentEntry addFragmentEntry(long userId, long groupId,
+		long fragmentCollectionId, String fragmentEntryKey, String name,
+		String css, String html, String js, long previewFileEntryId,
+		int status, ServiceContext serviceContext) throws PortalException;
 
 	/**
 	* Creates a new fragment entry with the primary key. Does not add the fragment entry to the database.
@@ -281,9 +300,16 @@ public interface FragmentEntryLocalService extends BaseLocalService,
 	@Indexable(type = IndexableType.REINDEX)
 	public FragmentEntry updateFragmentEntry(FragmentEntry fragmentEntry);
 
+	public FragmentEntry updateFragmentEntry(long fragmentEntryId,
+		long previewFileEntryId) throws PortalException;
+
 	public FragmentEntry updateFragmentEntry(long userId, long fragmentEntryId,
-		String name, String css, String html, String js, int status,
-		ServiceContext serviceContext) throws PortalException;
+		String name, String css, String html, String js, int status)
+		throws PortalException;
+
+	public FragmentEntry updateFragmentEntry(long userId, long fragmentEntryId,
+		String name, String css, String html, String js,
+		long previewFileEntryId, int status) throws PortalException;
 
 	public FragmentEntry updateFragmentEntry(long fragmentEntryId, String name)
 		throws PortalException;

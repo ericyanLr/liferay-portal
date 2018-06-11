@@ -1966,6 +1966,22 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 		portletModel.setHeaderPortletJavaScript(headerPortletJavaScriptList);
 
+		List<String> headerRequestAttributePrefixes = new ArrayList<>();
+
+		for (Element headerRequestAttributePrefixElement :
+				portletElement.elements("header-request-attribute-prefix")) {
+
+			headerRequestAttributePrefixes.add(
+				headerRequestAttributePrefixElement.getText());
+		}
+
+		portletModel.setHeaderRequestAttributePrefixes(
+			headerRequestAttributePrefixes);
+		portletModel.setHeaderTimeout(
+			GetterUtil.getInteger(
+				portletElement.elementText("header-timeout"),
+				portletModel.getHeaderTimeout()));
+
 		List<String> footerPortalCssList = new ArrayList<>();
 
 		for (Element footerPortalCssElement :
@@ -2416,6 +2432,28 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			containerRuntimeOptions.put(
 				containerRuntimeOptionPrefix.concat(name),
 				values.toArray(new String[values.size()]));
+		}
+
+		portletModel.setAsyncSupported(
+			GetterUtil.getBoolean(
+				portletElement.elementText("async-supported")));
+
+		Element multipartConfigElement = portletElement.element(
+			"multipart-config");
+
+		if (multipartConfigElement != null) {
+			portletModel.setMultipartFileSizeThreshold(
+				GetterUtil.getInteger(
+					multipartConfigElement.elementText("file-size-threshold")));
+			portletModel.setMultipartLocation(
+				multipartConfigElement.elementText("location"));
+			portletModel.setMultipartMaxFileSize(
+				GetterUtil.getLong(
+					multipartConfigElement.elementText("max-file-size"), -1L));
+			portletModel.setMultipartMaxRequestSize(
+				GetterUtil.getLong(
+					multipartConfigElement.elementText("max-request-size"),
+					-1L));
 		}
 
 		portletsMap.put(portletId, portletModel);

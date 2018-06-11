@@ -84,7 +84,9 @@ if (forcePost && (portletURL != null)) {
 	<div class="pagination-bar" data-qa-id="paginator" id="<%= namespace + id %>">
 		<c:if test="<%= deltaConfigurable %>">
 			<div class="dropdown pagination-items-per-page">
-				<a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;" type="button"><liferay-ui:message arguments="<%= delta %>" key="x-entries" /><span class="icon-sort"></span></a>
+				<a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;" role="button"><liferay-ui:message arguments="<%= delta %>" key="x-entries" />
+					<aui:icon image="caret-double-l" markupView="lexicon" />
+				</a>
 
 				<ul class="dropdown-menu dropdown-menu-top">
 
@@ -115,7 +117,7 @@ if (forcePost && (portletURL != null)) {
 
 		<ul class="pagination">
 			<li class="<%= (cur > 1) ? StringPool.BLANK : "disabled" %>">
-				<a href="<%= (cur > 1) ? _getHREF(formName, namespace + curParam, cur - 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= (cur > 1 && forcePost) ? _getOnClick(namespace, curParam, cur -1) : "" %>"><span class="icon-caret-left"></span></a>
+				<a href="<%= (cur > 1) ? _getHREF(formName, namespace + curParam, cur - 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= ((cur > 1) && forcePost) ? _getOnClick(namespace, curParam, cur -1) : "" %>"><span class="icon-caret-left"></span></a>
 			</li>
 
 			<c:choose>
@@ -289,7 +291,7 @@ if (forcePost && (portletURL != null)) {
 			</c:choose>
 
 			<li class="<%= (cur < pages) ? StringPool.BLANK : "disabled" %>">
-				<a href="<%= (cur < pages) ? _getHREF(formName, namespace + curParam, cur + 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= (cur < pages && forcePost) ? _getOnClick(namespace, curParam, cur + 1) : "" %>"><span class="icon-caret-right"></span></a>
+				<a href="<%= (cur < pages) ? _getHREF(formName, namespace + curParam, cur + 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= ((cur < pages) && forcePost) ? _getOnClick(namespace, curParam, cur + 1) : "" %>"><span class="icon-caret-right"></span></a>
 			</li>
 		</ul>
 	</div>

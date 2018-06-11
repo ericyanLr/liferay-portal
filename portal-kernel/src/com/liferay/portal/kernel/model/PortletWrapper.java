@@ -642,6 +642,33 @@ public class PortletWrapper implements Portlet, ModelWrapper<Portlet> {
 	}
 
 	/**
+	* Returns a list of attribute name prefixes that will be referenced after
+	* the HEADER_PHASE completes for each portlet. Header request attributes
+	* that have names starting with any of the prefixes will be copied from the
+	* header request to the subsequent render request.
+	*
+	* @return a list of attribute name prefixes that will be referenced after
+	the HEADER_PHASE completes for each portlet. Header request
+	attributes that have names starting with any of the prefixes will
+	be copied from the header request to the subsequent render
+	request.
+	*/
+	@Override
+	public java.util.List<String> getHeaderRequestAttributePrefixes() {
+		return _portlet.getHeaderRequestAttributePrefixes();
+	}
+
+	/**
+	* Returns the header timeout of the portlet.
+	*
+	* @return the header timeout of the portlet
+	*/
+	@Override
+	public int getHeaderTimeout() {
+		return _portlet.getHeaderTimeout();
+	}
+
+	/**
 	* Returns the icon of the portlet.
 	*
 	* @return the icon of the portlet
@@ -760,6 +787,46 @@ public class PortletWrapper implements Portlet, ModelWrapper<Portlet> {
 	@Override
 	public boolean getMaximizeHelp() {
 		return _portlet.getMaximizeHelp();
+	}
+
+	/**
+	* Returns the maximum size of buffered bytes before storing occurs.
+	*
+	* @return the maximum size of buffered bytes before storing occurs
+	*/
+	@Override
+	public int getMultipartFileSizeThreshold() {
+		return _portlet.getMultipartFileSizeThreshold();
+	}
+
+	/**
+	* Returns the directory for storing uploaded files.
+	*
+	* @return the directory for storing uploaded files
+	*/
+	@Override
+	public String getMultipartLocation() {
+		return _portlet.getMultipartLocation();
+	}
+
+	/**
+	* Returns the maximum number of bytes permitted for an uploaded file.
+	*
+	* @return the maximum number of bytes permitted for an uploaded file
+	*/
+	@Override
+	public long getMultipartMaxFileSize() {
+		return _portlet.getMultipartMaxFileSize();
+	}
+
+	/**
+	* Returns the maximum number of bytes permitted for a multipart request.
+	*
+	* @return the maximum number of bytes permitted for a multipart request
+	*/
+	@Override
+	public long getMultipartMaxRequestSize() {
+		return _portlet.getMultipartMaxRequestSize();
 	}
 
 	/**
@@ -1883,6 +1950,18 @@ public class PortletWrapper implements Portlet, ModelWrapper<Portlet> {
 		return _portlet.isAjaxable();
 	}
 
+	/**
+	* Returns <code>true</code> if the portlet supports asynchronous processing
+	* in resource requests.
+	*
+	* @return <code>true</code> if the portlet supports asynchrounous
+	processing in resource requests
+	*/
+	@Override
+	public boolean isAsyncSupported() {
+		return _portlet.isAsyncSupported();
+	}
+
 	@Override
 	public boolean isCachedModel() {
 		return _portlet.isCachedModel();
@@ -2274,6 +2353,18 @@ public class PortletWrapper implements Portlet, ModelWrapper<Portlet> {
 	}
 
 	/**
+	* Set to <code>true</code> if the portlet supports asynchronous processing
+	* in resource requests.
+	*
+	* @param asyncSupported boolean value for whether the portlet supports
+	asynchronous processing in resource requests
+	*/
+	@Override
+	public void setAsyncSupported(boolean asyncSupported) {
+		_portlet.setAsyncSupported(asyncSupported);
+	}
+
+	/**
 	* Sets the names of the classes that represent atom collection adapters
 	* associated with the portlet.
 	*
@@ -2594,6 +2685,34 @@ public class PortletWrapper implements Portlet, ModelWrapper<Portlet> {
 	}
 
 	/**
+	* Sets a list of attribute name prefixes that will be referenced after the
+	* HEADER_PHASE completes for each portlet. Header request attributes that
+	* have names starting with any of the prefixes will be copied from the
+	* header request to the subsequent render request.
+	*
+	* @param headerRequestAttributePrefixes a list of attribute name prefixes
+	that will be referenced after the HEADER_PHASE completes for each
+	portlet. Header request attributes that have names starting with
+	any of the prefixes will be copied from the header request to the
+	subsequent render request.
+	*/
+	@Override
+	public void setHeaderRequestAttributePrefixes(
+		java.util.List<String> headerRequestAttributePrefixes) {
+		_portlet.setHeaderRequestAttributePrefixes(headerRequestAttributePrefixes);
+	}
+
+	/**
+	* Sets the header timeout of the portlet.
+	*
+	* @param headerTimeout the header timeout of the portlet
+	*/
+	@Override
+	public void setHeaderTimeout(int headerTimeout) {
+		_portlet.setHeaderTimeout(headerTimeout);
+	}
+
+	/**
 	* Sets the icon of the portlet.
 	*
 	* @param icon the icon of the portlet
@@ -2693,6 +2812,49 @@ public class PortletWrapper implements Portlet, ModelWrapper<Portlet> {
 	@Override
 	public void setMaximizeHelp(boolean maximizeHelp) {
 		_portlet.setMaximizeHelp(maximizeHelp);
+	}
+
+	/**
+	* Sets the maximum size of buffered bytes before storing occurs.
+	*
+	* @param multipartFileSizeThreshold the maximum size of buffered bytes
+	before storing occurs
+	*/
+	@Override
+	public void setMultipartFileSizeThreshold(int multipartFileSizeThreshold) {
+		_portlet.setMultipartFileSizeThreshold(multipartFileSizeThreshold);
+	}
+
+	/**
+	* Sets the directory for storing uploaded files.
+	*
+	* @param multipartLocation the directory for storing uploaded files
+	*/
+	@Override
+	public void setMultipartLocation(String multipartLocation) {
+		_portlet.setMultipartLocation(multipartLocation);
+	}
+
+	/**
+	* Sets the maximum number of bytes permitted for an uploaded file.
+	*
+	* @param multipartMaxFileSize the maximum number of bytes permitted for an
+	uploaded file
+	*/
+	@Override
+	public void setMultipartMaxFileSize(long multipartMaxFileSize) {
+		_portlet.setMultipartMaxFileSize(multipartMaxFileSize);
+	}
+
+	/**
+	* Sets the maximum number of bytes permitted for a multipart request.
+	*
+	* @param multipartMaxRequestSize the maximum number of bytes permitted for
+	a multipart request
+	*/
+	@Override
+	public void setMultipartMaxRequestSize(long multipartMaxRequestSize) {
+		_portlet.setMultipartMaxRequestSize(multipartMaxRequestSize);
 	}
 
 	/**

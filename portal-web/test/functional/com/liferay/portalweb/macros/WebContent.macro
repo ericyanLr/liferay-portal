@@ -238,7 +238,9 @@
 
 		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
 
-		<execute function="AssertTextEquals" locator1="Message#ERROR_FIELD_REQUIRED" value1="This field is required." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please enter a valid title." />
+
+		<execute macro="Alert#viewRequestFailedToComplete" />
 
 		<if>
 			<isset var="webContentContent" />
@@ -1220,8 +1222,8 @@
 
 		<execute function="Click" locator1="WC#ENTRY_DESCRIPTIVE_MENULIST_ICON" />
 
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="MenuItem#ANY_MENU_ITEM" value1="Move to the Recycle Bin">
-			<var name="key_menuItem" value="Move to the Recycle Bin" />
+		<execute function="AssertClick#assertPartialTextClickAt" locator1="MenuItem#ANY_MENU_ITEM" value1="Move to Recycle Bin">
+			<var name="key_menuItem" value="Move to Recycle Bin" />
 		</execute>
 
 		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />

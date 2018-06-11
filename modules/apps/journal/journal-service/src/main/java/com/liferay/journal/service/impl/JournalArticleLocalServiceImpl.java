@@ -5555,7 +5555,7 @@ public class JournalArticleLocalServiceImpl
 		Map<String, String> urlTitleMap = _getURLTitleMap(
 			groupId, article.getResourcePrimKey(), friendlyURLMap);
 
-		String urlTitle = friendlyURLMap.get(locale);
+		String urlTitle = urlTitleMap.get(LocaleUtil.toLanguageId(locale));
 
 		if (Validator.isNull(urlTitle)) {
 			throw new ArticleFriendlyURLException();
@@ -5810,7 +5810,7 @@ public class JournalArticleLocalServiceImpl
 			expirationDateMonth, expirationDateDay, expirationDateYear,
 			expirationDateHour, expirationDateMinute, neverExpire,
 			reviewDateMonth, reviewDateDay, reviewDateYear, reviewDateHour,
-			reviewDateMinute, neverReview, article.getIndexable(),
+			reviewDateMinute, neverReview, article.isIndexable(),
 			article.isSmallImage(), article.getSmallImageURL(), null, null,
 			null, serviceContext);
 	}
@@ -6087,8 +6087,8 @@ public class JournalArticleLocalServiceImpl
 			article.setDisplayDate(oldArticle.getDisplayDate());
 			article.setExpirationDate(oldArticle.getExpirationDate());
 			article.setReviewDate(oldArticle.getReviewDate());
-			article.setIndexable(oldArticle.getIndexable());
-			article.setSmallImage(oldArticle.getSmallImage());
+			article.setIndexable(oldArticle.isIndexable());
+			article.setSmallImage(oldArticle.isSmallImage());
 			article.setSmallImageId(oldArticle.getSmallImageId());
 
 			if (article.getSmallImageId() == 0) {
@@ -7657,7 +7657,8 @@ public class JournalArticleLocalServiceImpl
 	}
 
 	protected String getURLViewInContext(
-		JournalArticle article, ServiceContext serviceContext) {
+		JournalArticle article, String portletId,
+		ServiceContext serviceContext) {
 
 		LiferayPortletRequest liferayPortletRequest =
 			serviceContext.getLiferayPortletRequest();
@@ -7669,6 +7670,9 @@ public class JournalArticleLocalServiceImpl
 		String urlViewInContext = StringPool.BLANK;
 
 		try {
+			String defaultArticleURL = PortalUtil.getControlPanelFullURL(
+				article.getGroupId(), portletId, null);
+
 			AssetRendererFactory<JournalArticle> assetRendererFactory =
 				AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClass(
 					JournalArticle.class);
@@ -7678,7 +7682,7 @@ public class JournalArticleLocalServiceImpl
 					article, AssetRendererFactory.TYPE_LATEST_APPROVED);
 
 			urlViewInContext = assetRenderer.getURLViewInContext(
-				liferayPortletRequest, null, serviceContext.getCurrentURL());
+				liferayPortletRequest, null, defaultArticleURL);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -7745,19 +7749,13 @@ public class JournalArticleLocalServiceImpl
 		String portletId = PortletProviderUtil.getPortletId(
 			JournalArticle.class.getName(), PortletProvider.Action.EDIT);
 
-		String articleURL = PortalUtil.getControlPanelFullURL(
-			article.getGroupId(), portletId, null);
-
-		if (Validator.isNull(articleURL)) {
-			return;
-		}
+		String articleURL = getURLViewInContext(
+			article, portletId, serviceContext);
 
 		JournalGroupServiceConfiguration journalGroupServiceConfiguration =
 			getJournalGroupServiceConfiguration(article.getGroupId());
 
 		String articleTitle = article.getTitle(serviceContext.getLanguageId());
-
-		articleURL = getURLViewInContext(article, serviceContext);
 
 		if (action.equals("add") &&
 			journalGroupServiceConfiguration.emailArticleAddedEnabled()) {

@@ -23,6 +23,7 @@ import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.site.navigation.exception.InvalidSiteNavigationMenuItemOrderException;
 import com.liferay.site.navigation.exception.InvalidSiteNavigationMenuItemTypeException;
 import com.liferay.site.navigation.exception.SiteNavigationMenuItemNameException;
+import com.liferay.site.navigation.model.SiteNavigationMenu;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 import com.liferay.site.navigation.service.base.SiteNavigationMenuItemLocalServiceBaseImpl;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemType;
@@ -64,12 +65,11 @@ public class SiteNavigationMenuItemLocalServiceImpl
 		SiteNavigationMenuItem siteNavigationMenuItem =
 			siteNavigationMenuItemPersistence.create(siteNavigationMenuItemId);
 
+		siteNavigationMenuItem.setUuid(serviceContext.getUuid());
 		siteNavigationMenuItem.setGroupId(groupId);
 		siteNavigationMenuItem.setCompanyId(user.getCompanyId());
 		siteNavigationMenuItem.setUserId(userId);
 		siteNavigationMenuItem.setUserName(user.getFullName());
-		siteNavigationMenuItem.setCreateDate(
-			serviceContext.getCreateDate(new Date()));
 		siteNavigationMenuItem.setSiteNavigationMenuId(siteNavigationMenuId);
 		siteNavigationMenuItem.setParentSiteNavigationMenuItemId(
 			parentSiteNavigationMenuItemId);
@@ -91,9 +91,8 @@ public class SiteNavigationMenuItemLocalServiceImpl
 		throws PortalException {
 
 		int siteNavigationMenuItemCount =
-			siteNavigationMenuItemPersistence.
-				countByParentSiteNavigationMenuItemId(
-					parentSiteNavigationMenuItemId);
+			siteNavigationMenuItemPersistence.countByS_P(
+				siteNavigationMenuId, parentSiteNavigationMenuItemId);
 
 		return addSiteNavigationMenuItem(
 			userId, groupId, siteNavigationMenuId,
@@ -109,14 +108,46 @@ public class SiteNavigationMenuItemLocalServiceImpl
 		SiteNavigationMenuItem siteNavigationMenuItem =
 			getSiteNavigationMenuItem(siteNavigationMenuItemId);
 
-		List<SiteNavigationMenuItem> siteNavigationMenuItems =
-			getChildSiteNavigationMenuItems(siteNavigationMenuItemId);
+		long parentSiteNavigationMenuItemId =
+			siteNavigationMenuItem.getParentSiteNavigationMenuItemId();
 
-		for (SiteNavigationMenuItem childSiteNavigationMenuItem :
-				siteNavigationMenuItems) {
+		List<SiteNavigationMenuItem> siteNavigationMenuItems =
+			getSiteNavigationMenuItems(
+				siteNavigationMenuItem.getSiteNavigationMenuId(),
+				siteNavigationMenuItemId);
+
+		if (!siteNavigationMenuItems.isEmpty()) {
+			List<SiteNavigationMenuItem> siblingsSiteNavigationMenuItems =
+				getSiteNavigationMenuItems(
+					siteNavigationMenuItem.getSiteNavigationMenuId(),
+					parentSiteNavigationMenuItemId);
+
+			for (SiteNavigationMenuItem siblingSiteNavigationMenuItem :
+					siblingsSiteNavigationMenuItems) {
+
+				if (siblingSiteNavigationMenuItem.getOrder() <=
+						siteNavigationMenuItem.getOrder()) {
+
+					continue;
+				}
+
+				siblingSiteNavigationMenuItem.setOrder(
+					siteNavigationMenuItems.size() +
+						siteNavigationMenuItem.getOrder());
+
+				siteNavigationMenuItemPersistence.update(
+					siblingSiteNavigationMenuItem);
+			}
+		}
+
+		for (int i = 0; i < siteNavigationMenuItems.size(); i++) {
+			SiteNavigationMenuItem childSiteNavigationMenuItem =
+				siteNavigationMenuItems.get(i);
 
 			childSiteNavigationMenuItem.setParentSiteNavigationMenuItemId(
 				siteNavigationMenuItem.getParentSiteNavigationMenuItemId());
+			childSiteNavigationMenuItem.setOrder(
+				siteNavigationMenuItem.getOrder() + i);
 
 			siteNavigationMenuItemPersistence.update(
 				childSiteNavigationMenuItem);
@@ -127,21 +158,20 @@ public class SiteNavigationMenuItemLocalServiceImpl
 	}
 
 	@Override
-	public void deleteSiteNavigationMenuItems(long siteNavigationMenuId)
-		throws PortalException {
-
+	public void deleteSiteNavigationMenuItems(long siteNavigationMenuId) {
 		siteNavigationMenuItemPersistence.removeBySiteNavigationMenuId(
 			siteNavigationMenuId);
 	}
 
 	@Override
-	public List<SiteNavigationMenuItem> getChildSiteNavigationMenuItems(
-		long parentSiteNavigationMenuItemId) {
+	public void deleteSiteNavigationMenuItemsByGroupId(long groupId) {
+		List<SiteNavigationMenu> siteNavigationMenus =
+			siteNavigationMenuPersistence.findByGroupId(groupId);
 
-		return siteNavigationMenuItemPersistence.
-			findByParentSiteNavigationMenuItemId(
-				parentSiteNavigationMenuItemId, QueryUtil.ALL_POS,
-				QueryUtil.ALL_POS, new SiteNavigationMenuItemOrderComparator());
+		for (SiteNavigationMenu siteNavigationMenu : siteNavigationMenus) {
+			siteNavigationMenuItemPersistence.removeBySiteNavigationMenuId(
+				siteNavigationMenu.getSiteNavigationMenuId());
+		}
 	}
 
 	@Override
@@ -170,11 +200,13 @@ public class SiteNavigationMenuItemLocalServiceImpl
 
 		// Site navigation menu item
 
-		validate(siteNavigationMenuItemId, parentSiteNavigationMenuItemId);
-
 		SiteNavigationMenuItem siteNavigationMenuItem =
 			siteNavigationMenuItemPersistence.fetchByPrimaryKey(
 				siteNavigationMenuItemId);
+
+		validate(
+			siteNavigationMenuItem.getSiteNavigationMenuId(),
+			siteNavigationMenuItemId, parentSiteNavigationMenuItemId);
 
 		long oldParentSiteNavigationMenuItemId =
 			siteNavigationMenuItem.getParentSiteNavigationMenuItemId();
@@ -233,6 +265,29 @@ public class SiteNavigationMenuItemLocalServiceImpl
 
 	@Override
 	public SiteNavigationMenuItem updateSiteNavigationMenuItem(
+			long userId, long siteNavigationMenuItemId, long groupId,
+			long siteNavigationMenuId, long parentSiteNavigationMenuItemId,
+			String type, int order, String typeSettings)
+		throws PortalException {
+
+		SiteNavigationMenuItem siteNavigationMenuItem =
+			siteNavigationMenuItemPersistence.findByPrimaryKey(
+				siteNavigationMenuItemId);
+
+		siteNavigationMenuItem.setGroupId(groupId);
+		siteNavigationMenuItem.setUserId(userId);
+		siteNavigationMenuItem.setSiteNavigationMenuId(siteNavigationMenuId);
+		siteNavigationMenuItem.setParentSiteNavigationMenuItemId(
+			parentSiteNavigationMenuItemId);
+		siteNavigationMenuItem.setType(type);
+		siteNavigationMenuItem.setTypeSettings(typeSettings);
+		siteNavigationMenuItem.setOrder(order);
+
+		return siteNavigationMenuItemPersistence.update(siteNavigationMenuItem);
+	}
+
+	@Override
+	public SiteNavigationMenuItem updateSiteNavigationMenuItem(
 			long userId, long siteNavigationMenuItemId, String typeSettings,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -256,10 +311,10 @@ public class SiteNavigationMenuItemLocalServiceImpl
 
 		validateName(name);
 
-		siteNavigationMenuItem.setModifiedDate(
-			serviceContext.getModifiedDate(new Date()));
 		siteNavigationMenuItem.setUserId(userId);
 		siteNavigationMenuItem.setUserName(user.getFullName());
+		siteNavigationMenuItem.setModifiedDate(
+			serviceContext.getModifiedDate(new Date()));
 		siteNavigationMenuItem.setName(name);
 		siteNavigationMenuItem.setTypeSettings(typeSettings);
 
@@ -269,11 +324,13 @@ public class SiteNavigationMenuItemLocalServiceImpl
 	}
 
 	protected void validate(
-			long siteNavigationMenuItemId, long parentSiteNavigationMenuItemId)
+			long siteNavigationMenuId, long siteNavigationMenuItemId,
+			long parentSiteNavigationMenuItemId)
 		throws PortalException {
 
 		List<SiteNavigationMenuItem> siteNavigationMenuItems =
-			getChildSiteNavigationMenuItems(siteNavigationMenuItemId);
+			getSiteNavigationMenuItems(
+				siteNavigationMenuId, siteNavigationMenuItemId);
 
 		for (SiteNavigationMenuItem siteNavigationMenuItem :
 				siteNavigationMenuItems) {
@@ -285,7 +342,9 @@ public class SiteNavigationMenuItemLocalServiceImpl
 				throw new InvalidSiteNavigationMenuItemOrderException();
 			}
 
-			validate(siteNavigationMenuItemId, parentSiteNavigationMenuItemId);
+			validate(
+				siteNavigationMenuId, siteNavigationMenuItemId,
+				parentSiteNavigationMenuItemId);
 		}
 	}
 

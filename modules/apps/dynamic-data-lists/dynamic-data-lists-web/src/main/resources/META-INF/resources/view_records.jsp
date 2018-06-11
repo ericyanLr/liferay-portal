@@ -22,6 +22,12 @@ long formDDMTemplateId = ParamUtil.getLong(request, "formDDMTemplateId");
 DDLViewRecordsDisplayContext ddlViewRecordsDisplayContext = new DDLViewRecordsDisplayContext(liferayPortletRequest, liferayPortletResponse, formDDMTemplateId);
 
 PortletURL portletURL = ddlViewRecordsDisplayContext.getPortletURL();
+
+if (!ddlDisplayContext.isAdminPortlet()) {
+	DDLRecordSet recordSet = ddlDisplayContext.getRecordSet();
+
+	renderResponse.setTitle(recordSet.getName(locale));
+}
 %>
 
 <c:if test="<%= ddlViewRecordsDisplayContext.isAdminPortlet() %>">

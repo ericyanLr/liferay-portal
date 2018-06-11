@@ -14,7 +14,7 @@
 	</command>
 
 	<command name="activateCP">
-		<execute function="Click" locator1="Dropdown#FILTER" />
+		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
 		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Inactive">
 			<var name="key_menuItem" value="Inactive" />
@@ -253,9 +253,11 @@
 			<var name="userScreenName" value="${userScreenName}" />
 		</execute>
 
-		<execute macro="UserNavigator#gotoProfileAndPrivateArea" />
+		<execute macro="UserNavigator#gotoProfileAndDashboard" />
 
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#PERSONAL_SITE_MY_DASHBOARD_LABEL" value1="My Dashboard" />
+		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#PERSONAL_SITE_LABEL" value1="DASHBOARD">
+			<var name="key_subtitle" value="Dashboard" />
+		</execute>
 
 		<execute function="Select" locator1="UsersAndOrganizationsEditUser#PERSONAL_SITE_MY_DASHBOARD" value1="${siteTemplateName}" />
 
@@ -367,9 +369,7 @@
 
 		<execute macro="Button#clickSave" />
 
-		<execute macro="Alert#viewRequestFailedToComplete" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The screen name you requested is reserved." />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_1" value1="The screen name you requested is reserved." />
 	</command>
 
 	<command name="addScreenNameNumberSiteIdCP">
@@ -449,106 +449,6 @@
 		<execute macro="Alert#viewSuccessMessage" />
 
 		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="advancedSearchCP">
-		<execute function="Click" locator1="NavBar#SEARCH_TOGGLE_ADVANCED" />
-
-		<if>
-			<equals arg1="${userAdvancedSearch}" arg2="First Name" />
-			<then>
-				<execute function="Type" locator1="AdvancedSearch#FIRST_NAME_FIELD" value1="${userFirstName}" />
-
-				<execute function="KeyPress" locator1="AdvancedSearch#FIRST_NAME_FIELD" value1="\RETURN" />
-
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-				<execute function="Type" locator1="AdvancedSearch#FIRST_NAME_FIELD" value1="${userFirstName}1" />
-
-				<execute function="KeyPress" locator1="AdvancedSearch#FIRST_NAME_FIELD" value1="\RETURN" />
-
-				<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-			</then>
-			<elseif>
-				<equals arg1="${userAdvancedSearch}" arg2="Middle Name" />
-				<then>
-					<execute function="Type" locator1="AdvancedSearch#MIDDLE_NAME_FIELD" value1="${userMiddleName}" />
-
-					<execute function="KeyPress" locator1="AdvancedSearch#MIDDLE_NAME_FIELD" value1="\RETURN" />
-
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-					<execute function="Type" locator1="AdvancedSearch#MIDDLE_NAME_FIELD" value1="${userMiddleName}1" />
-
-					<execute function="KeyPress" locator1="AdvancedSearch#MIDDLE_NAME_FIELD" value1="\RETURN" />
-
-					<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${userAdvancedSearch}" arg2="Last Name" />
-				<then>
-					<execute function="Type" locator1="AdvancedSearch#LAST_NAME_FIELD" value1="${userLastName}" />
-
-					<execute function="KeyPress" locator1="AdvancedSearch#LAST_NAME_FIELD" value1="\RETURN" />
-
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-					<execute function="Type" locator1="AdvancedSearch#LAST_NAME_FIELD" value1="${userLastName}1" />
-
-					<execute function="KeyPress" locator1="AdvancedSearch#LAST_NAME_FIELD" value1="\RETURN" />
-
-					<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${userAdvancedSearch}" arg2="Screen Name" />
-				<then>
-					<execute function="Type" locator1="AdvancedSearch#SCREEN_NAME_FIELD" value1="${userScreenName}" />
-
-					<execute function="KeyPress" locator1="AdvancedSearch#SCREEN_NAME_FIELD" value1="\RETURN" />
-
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-					<execute function="Type" locator1="AdvancedSearch#SCREEN_NAME_FIELD" value1="${userScreenName}1" />
-
-					<execute function="KeyPress" locator1="AdvancedSearch#SCREEN_NAME_FIELD" value1="\RETURN" />
-
-					<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${userAdvancedSearch}" arg2="Email Address" />
-				<then>
-					<execute function="Type" locator1="AdvancedSearch#EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}" />
-
-					<execute function="KeyPress" locator1="AdvancedSearch#EMAIL_ADDRESS_FIELD" value1="\RETURN" />
-
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-					<execute function="Type" locator1="AdvancedSearch#EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}1" />
-
-					<execute function="KeyPress" locator1="AdvancedSearch#EMAIL_ADDRESS_FIELD" value1="\RETURN" />
-
-					<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-				</then>
-			</elseif>
-		</if>
 	</command>
 
 	<command name="advancedSearchViaFriendsDirectoryPG">
@@ -823,7 +723,7 @@
 
 		<execute macro="UserNavigator#gotoRoles" />
 
-		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_SELECT_LINK" value1="Select" />
+		<execute function="AssertClick#assertTextClickCaseInsensitive" locator1="UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_SELECT_LINK" value1="Select" />
 
 		<execute function="Pause" locator1="5000" />
 
@@ -1031,53 +931,28 @@
 		<if>
 			<equals arg1="${deactivateType}" arg2="Actions" />
 			<then>
-				<var name="key_rowEntry" value="${userScreenName}" />
-
-				<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
-
-				<execute function="AssertClickNoError" locator1="MenuItem#ANY_MENU_ITEM" value1="Deactivate">
-					<var name="key_menuItem" value="Deactivate" />
+				<execute macro="LexiconEntry#gotoEntryMenuItemNoError">
+					<var name="menuItem" value="Deactivate" />
+					<var name="rowEntry" value="${userFirstName}" />
 				</execute>
 
 				<execute function="Confirm" value1="Are you sure you want to deactivate this?" />
 
 				<execute macro="Alert#viewSuccessMessage" />
 			</then>
-			<elseif>
-				<equals arg1="${deactivateType}" arg2="Deactivate Button" />
-				<then>
-					<var name="key_userScreenName" value="${userScreenName}" />
+			<else>
+				<execute macro="PortletEntry#selectAll" />
 
-					<execute macro="PortletEntry#selectAll" />
+				<execute function="ClickNoError" locator1="Icon#DELETE" />
 
-					<execute function="AssertClickNoError" locator1="Button#DEACTIVATE" value1="Deactivate" />
+				<execute function="Confirm" value1="Are you sure you want to deactivate the selected users?" />
 
-					<execute function="Confirm" value1="Are you sure you want to deactivate the selected users?" />
+				<execute macro="Alert#viewSuccessMessage" />
 
-					<execute macro="Alert#viewSuccessMessage" />
-				</then>
-			</elseif>
-			<elseif>
-				<condition function="IsElementPresent" locator1="Checkbox#SELECT_ALL" />
-				<then>
-					<execute function="Click" locator1="Checkbox#SELECT_ALL" />
-
-					<if>
-						<condition function="IsElementPresent" locator1="Button#DEACTIVATE" />
-						<then>
-							<execute function="ClickNoError" locator1="Button#DEACTIVATE" />
-						</then>
-					</if>
-
-					<execute function="Confirm" value1="Are you sure you want to deactivate the selected users?" />
-
-					<execute macro="Alert#viewSuccessMessage" />
-
-					<execute function="AssertElementNotPresent" locator1="UsersAndOrganizations#USER_TABLE_NAME">
-						<var name="key_userScreenName" value="${screenName}" />
-					</execute>
-				</then>
-			</elseif>
+				<execute macro="LexiconEntry#viewNoEntry">
+					<var name="rowEntry" value="${userFirstName}" />
+				</execute>
+			</else>
 		</if>
 	</command>
 
@@ -1450,7 +1325,7 @@
 
 		<var name="key_siteName" value="${siteName}" />
 
-		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#SITES_SELECT_LINK" value1="Select" />
+		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#SITES_SELECT_LINK" value1="SELECT" />
 
 		<execute function="SelectFrame" locator1="IFrame#SELECT_USER_SITES" />
 
@@ -1697,10 +1572,10 @@
 		<if>
 			<equals arg1="${loginAttempts}" arg2="${maximumFailure}" />
 			<then>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="This account is locked. Please contact an administrator to have this account unlocked." />
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_1" value1="This account is locked. Please contact an administrator to have this account unlocked." />
 			</then>
 			<else>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Authentication failed. Please try again." />
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_1" value1="Authentication failed. Please try again." />
 			</else>
 		</if>
 	</command>
@@ -2121,7 +1996,7 @@
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
-		<execute function="Click" locator1="Dropdown#FILTER" />
+		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
 		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Active">
 			<var name="key_menuItem" value="Active" />
@@ -2140,7 +2015,7 @@
 			</then>
 		</if>
 
-		<execute function="Click" locator1="Dropdown#FILTER" />
+		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
 		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Inactive">
 			<var name="key_menuItem" value="Inactive" />
@@ -2167,7 +2042,7 @@
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
-		<execute function="Click" locator1="Dropdown#FILTER" />
+		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
 		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Active">
 			<var name="key_menuItem" value="Active" />
@@ -2190,7 +2065,7 @@
 			</then>
 		</if>
 
-		<execute function="Click" locator1="Dropdown#FILTER" />
+		<execute function="Click" locator1="Dropdown#FILTER_AND_ORDER" />
 
 		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Inactive">
 			<var name="key_menuItem" value="Inactive" />

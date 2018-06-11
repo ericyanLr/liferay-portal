@@ -11,13 +11,13 @@
 		<execute macro="ProductMenuHelper#openProductMenu" />
 
 		<execute macro="ProductMenuHelper#expandCategory">
-			<var name="category" value="Navigation" />
+			<var name="category" value="Build" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPrivateChildPage">
@@ -63,7 +63,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -117,7 +117,7 @@
 			<then>
 				<execute macro="Alert#viewRequestFailedToComplete" />
 
-				<execute macro="Alert#viewFailedSiteTemplateDeletionMessage" />
+				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_DELETE_USED_SITE_TEMPLATES" value1="You cannot delete site templates that are used by a site." />
 			</then>
 			<else>
 				<execute macro="Alert#viewSuccessMessage" />

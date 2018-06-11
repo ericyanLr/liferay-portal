@@ -35,25 +35,18 @@ portletDisplay.setURLBack(redirect);
 renderResponse.setTitle(LanguageUtil.get(request, "search-results"));
 %>
 
-<liferay-frontend:management-bar>
-	<liferay-frontend:management-bar-filters>
-		<li>
-			<portlet:renderURL var="redirectURL" />
+<portlet:renderURL var="searchURL">
+	<portlet:param name="mvcRenderCommandName" value="/search" />
+	<portlet:param name="redirect" value="<%= redirect %>" />
+</portlet:renderURL>
 
-			<portlet:renderURL var="searchURL">
-				<portlet:param name="mvcRenderCommandName" value="/search" />
-				<portlet:param name="redirect" value="<%= redirectURL %>" />
-			</portlet:renderURL>
-
-			<aui:form action="<%= searchURL %>" name="searchFm">
-				<liferay-ui:input-search
-					autoFocus="<%= true %>"
-					markupView="lexicon"
-				/>
-			</aui:form>
-		</li>
-	</liferay-frontend:management-bar-filters>
-</liferay-frontend:management-bar>
+<clay:management-toolbar
+	clearResultsURL="<%= redirect %>"
+	itemsTotal="<%= configurationModelIterator.getTotal() %>"
+	searchActionURL="<%= searchURL %>"
+	selectable="<%= false %>"
+	showSearch="<%= true %>"
+/>
 
 <div class="container-fluid container-fluid-max-xl container-view">
 	<liferay-ui:search-container
@@ -119,7 +112,12 @@ renderResponse.setTitle(LanguageUtil.get(request, "search-results"));
 
 				if (configurationCategory != null) {
 					categorySection = LanguageUtil.get(request, "category-section." + configurationCategory.getCategorySection());
-					category = LanguageUtil.get(request, "category." + configurationCategory.getCategoryKey());
+
+					ConfigurationCategoryMenuDisplay configurationCategoryMenuDisplay = configurationEntryRetriever.getConfigurationCategoryMenuDisplay(configurationCategory.getCategoryKey(), themeDisplay.getLanguageId());
+
+					ConfigurationCategoryDisplay configurationCategoryDisplay = configurationCategoryMenuDisplay.getConfigurationCategoryDisplay();
+
+					category = HtmlUtil.escape(configurationCategoryDisplay.getCategoryLabel(locale));
 				}
 				else {
 					categorySection = LanguageUtil.get(request, "other");
@@ -142,7 +140,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "search-results"));
 						<liferay-ui:message key="default-configuration-for-all-sites" />
 					</c:when>
 					<c:when test="<%= ExtendedObjectClassDefinition.Scope.PORTLET_INSTANCE.equals(configurationModel.getScope()) %>">
-						<liferay-ui:message key="default-configuration-for-application" />
+						<liferay-ui:message key="default-configuration-for-widget" />
 					</c:when>
 					<c:when test="<%= ExtendedObjectClassDefinition.Scope.SYSTEM.equals(configurationModel.getScope()) %>">
 						<liferay-ui:message key="system" />

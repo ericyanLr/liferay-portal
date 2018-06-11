@@ -15,6 +15,7 @@
 package com.liferay.layout.type.controller.asset.display.internal.controller;
 
 import com.liferay.asset.display.contributor.constants.AssetDisplayWebKeys;
+import com.liferay.asset.display.page.constants.AssetDisplayPageConstants;
 import com.liferay.asset.display.page.model.AssetDisplayPageEntry;
 import com.liferay.asset.display.page.service.AssetDisplayPageEntryLocalService;
 import com.liferay.asset.kernel.model.AssetEntry;
@@ -73,20 +74,23 @@ public class AssetDisplayLayoutTypeController
 		AssetEntry assetEntry = (AssetEntry)request.getAttribute(
 			AssetDisplayWebKeys.ASSET_ENTRY);
 
-		long layoutPageTemplateEntryId = _getLayoutPageTemplateEntryId(
-			layout.getGroupId(), assetEntry);
+		if (assetEntry != null) {
+			long layoutPageTemplateEntryId = _getLayoutPageTemplateEntryId(
+				layout.getGroupId(), assetEntry);
 
-		List<FragmentEntryLink> fragmentEntryLinks =
-			_fragmentEntryLinkLocalService.getFragmentEntryLinks(
-				layout.getGroupId(),
-				_portal.getClassNameId(LayoutPageTemplateEntry.class.getName()),
-				layoutPageTemplateEntryId);
+			List<FragmentEntryLink> fragmentEntryLinks =
+				_fragmentEntryLinkLocalService.getFragmentEntryLinks(
+					layout.getGroupId(),
+					_portal.getClassNameId(
+						LayoutPageTemplateEntry.class.getName()),
+					layoutPageTemplateEntryId);
 
-		request.setAttribute(
-			AssetDisplayLayoutTypeControllerWebKeys.LAYOUT_FRAGMENTS,
-			fragmentEntryLinks);
+			request.setAttribute(
+				AssetDisplayLayoutTypeControllerWebKeys.LAYOUT_FRAGMENTS,
+				fragmentEntryLinks);
 
-		request.setAttribute(WebKeys.PORTLET_DECORATE, Boolean.FALSE);
+			request.setAttribute(WebKeys.PORTLET_DECORATE, Boolean.FALSE);
+		}
 
 		return super.includeLayoutContent(request, response, layout);
 	}
@@ -154,7 +158,16 @@ public class AssetDisplayLayoutTypeController
 				fetchAssetDisplayPageEntryByAssetEntryId(
 					assetEntry.getEntryId());
 
-		if (assetDisplayPageEntry != null) {
+		if ((assetDisplayPageEntry == null) ||
+			(assetDisplayPageEntry.getType() ==
+				AssetDisplayPageConstants.TYPE_NONE)) {
+
+			return 0;
+		}
+
+		if (assetDisplayPageEntry.getType() ==
+				AssetDisplayPageConstants.TYPE_SPECIFIC) {
+
 			return assetDisplayPageEntry.getLayoutPageTemplateEntryId();
 		}
 

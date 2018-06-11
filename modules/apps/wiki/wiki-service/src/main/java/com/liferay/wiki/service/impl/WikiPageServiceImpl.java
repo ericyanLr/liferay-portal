@@ -185,7 +185,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 		WikiPage page = wikiPageLocalService.getPage(nodeId, title, null);
 
 		_wikiPageModelResourcePermission.check(
-			getPermissionChecker(), page, ActionKeys.DELETE);
+			getPermissionChecker(), page, ActionKeys.UPDATE);
 
 		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_PAGE);
@@ -622,7 +622,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 		calendar.add(Calendar.WEEK_OF_YEAR, -1);
 
-		return wikiPageFinder.filterFindByCreateDate(
+		return wikiPageFinder.findByModifiedDate(
 			groupId, nodeId, calendar.getTime(), false, start, end);
 	}
 
@@ -637,7 +637,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 		calendar.add(Calendar.WEEK_OF_YEAR, -1);
 
-		return wikiPageFinder.filterCountByCreateDate(
+		return wikiPageFinder.countByModifiedDate(
 			groupId, nodeId, calendar.getTime(), false);
 	}
 
@@ -706,7 +706,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 		WikiPage page = wikiPageLocalService.fetchPage(nodeId, title);
 
 		_wikiPageModelResourcePermission.check(
-			getPermissionChecker(), page, ActionKeys.DELETE);
+			getPermissionChecker(), page, ActionKeys.UPDATE);
 
 		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_PAGE);

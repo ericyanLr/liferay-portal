@@ -14,19 +14,19 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Blogs Page" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
 			<var name="pageName" value="Blogs Page" />
 			<var name="privacy" value="Public" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -318,19 +318,19 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Blogs Page2" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
 			<var name="pageName" value="Blogs Page2" />
 			<var name="privacy" value="Public" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -595,8 +595,8 @@
 
 		<execute macro="Button#clickPublish" />
 
-		<execute function="AssertTextEquals" locator1="Message#ERROR" value1="Your request failed to complete." />
-		<execute function="AssertTextEquals" locator1="Message#ERROR_2" value1="The URL title is already in use. Please enter a unique URL title." />
+		<execute function="AssertElementPresent" locator1="Message#ERROR" />
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_ENTER_A_UNIQUE_TITLE" value1="The URL title is already in use. Please enter a unique URL title." />
 	</command>
 
 	<command name="AddPortletToOrganizationSitePublicPage" priority="4">
@@ -630,19 +630,19 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Blogs Page" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
 			<var name="pageName" value="Blogs Page" />
 			<var name="privacy" value="Public" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -807,7 +807,7 @@
 
 		<execute macro="Button#clickPublish" />
 
-		<execute function="AssertTextEquals" locator1="Message#ERROR" value1="Your request failed to complete." />
+		<execute function="AssertElementPresent" locator1="Message#ERROR" />
 
 		<execute function="AssertTextEquals" locator1="TextInput#BLOGS_ENTRY_URL" value1="blogs-entry-title" />
 	</command>
@@ -1217,19 +1217,19 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Search Page" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
 			<var name="pageName" value="Search Page" />
 			<var name="privacy" value="Public" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1278,19 +1278,19 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Search Page" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
 			<var name="pageName" value="Search Page" />
 			<var name="privacy" value="Public" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1339,19 +1339,19 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Search Page" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
 			<var name="pageName" value="Search Page" />
 			<var name="privacy" value="Public" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">
@@ -1400,19 +1400,19 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Search Page" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="SitePages#configurePage">
 			<var name="columnName" value="1 Column" />
 			<var name="pageName" value="Search Page" />
 			<var name="privacy" value="Public" />
-			<var name="sitePageType" value="Layout" />
+			<var name="sitePageType" value="Widget Page" />
 		</execute>
 
 		<execute macro="Navigator#gotoPage">

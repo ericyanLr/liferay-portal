@@ -84,6 +84,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ERROR_DELETE_USED_SITE_TEMPLATES</td>
+	<td>//div[contains(@class,'alert-danger') and contains(.,'You cannot delete site templates that are used by a site')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ERROR_EMPTY_FIELD</td>
 	<td>//div[contains(@class,'alert') and (contains(@class,'alert-error') or contains(@class,'alert-danger'))]//div[contains(.,'At least one option should be set for field ${key_fieldLabel}.')]</td>
 	<td></td>
@@ -99,8 +104,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ERROR_REQUEST_FAILED_TO_COMPLETE</td>
-	<td>//div[contains(@class,'alert-danger') and contains(.,'Your request failed to complete')]</td>
+	<td>ERROR_ENTER_A_UNIQUE_TITLE</td>
+	<td>//div[contains(@class,'alert-danger') and contains(.,'The URL title is already in use. Please enter a unique URL title')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -174,6 +179,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MAX_FILESIZE_ALERT</td>
+	<td>//div[(@class='maxFileSize') and (@role='alert')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>NO_COMMENTS</td>
 	<td>//div[contains(.,'No comments yet')]</td>
 	<td></td>
@@ -230,7 +240,7 @@
 </tr>
 <tr>
 	<td>SUCCESS_3</td>
-	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]/div</td>
+	<td>//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
 	<td></td>
 </tr>
 <tr>

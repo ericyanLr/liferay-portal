@@ -15,9 +15,9 @@
 package com.liferay.portal.search.web.internal.user.facet.portlet;
 
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.search.facet.user.UserFacetFactory;
 import com.liferay.portal.search.web.internal.facet.display.builder.UserSearchFacetDisplayBuilder;
 import com.liferay.portal.search.web.internal.facet.display.context.UserSearchFacetDisplayContext;
 import com.liferay.portal.search.web.internal.user.facet.constants.UserFacetPortletKeys;
@@ -44,7 +44,6 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-		"com.liferay.fragment.entry.processor.portlet.alias=search-facet-user",
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-user-facet",
 		"com.liferay.portlet.display-category=category.search",
@@ -129,7 +128,7 @@ public class UserFacetPortlet extends MVCPortlet {
 	}
 
 	protected String getFieldName() {
-		Facet facet = userFacetFactory.newInstance(new SearchContext());
+		Facet facet = userFacetFactory.newInstance(null);
 
 		return facet.getFieldName();
 	}
@@ -149,6 +148,7 @@ public class UserFacetPortlet extends MVCPortlet {
 	@Reference
 	protected PortletSharedSearchRequest portletSharedSearchRequest;
 
-	protected UserFacetFactory userFacetFactory = new UserFacetFactory();
+	@Reference
+	protected UserFacetFactory userFacetFactory;
 
 }

@@ -47,7 +47,7 @@ RatingsStats ratingsStats = (RatingsStats)request.getAttribute("view_entry_conte
 				classPK="<%= entry.getEntryId() %>"
 			>
 				<div class="row">
-					<div class="col-md-8 mx-auto widget-metadata">
+					<div class="categories col-md-8 mx-auto widget-metadata">
 						<liferay-asset:asset-categories-summary
 							className="<%= BlogsEntry.class.getName() %>"
 							classPK="<%= entry.getEntryId() %>"
@@ -131,7 +131,7 @@ RatingsStats ratingsStats = (RatingsStats)request.getAttribute("view_entry_conte
 											AssetEntry assetEntry = _getAssetEntry(request, entry);
 											%>
 
-											- <liferay-ui:message arguments="<%= assetEntry.getViewCount() %>" key='<%= assetEntry.getViewCount() == 1 ? "x-view" : "x-views" %>' />
+											- <liferay-ui:message arguments="<%= assetEntry.getViewCount() %>" key='<%= (assetEntry.getViewCount() == 1) ? "x-view" : "x-views" %>' />
 										</c:if>
 									</div>
 								</div>
@@ -154,13 +154,20 @@ RatingsStats ratingsStats = (RatingsStats)request.getAttribute("view_entry_conte
 
 		<div class="container widget-mode-detail-header" id="<portlet:namespace /><%= entry.getEntryId() %>">
 			<c:if test="<%= Validator.isNotNull(coverImageURL) %>">
-				<div class="row">
-					<div class="col-md-8 mx-auto">
-						<div class="cover-image-caption">
-							<small><%= entry.getCoverImageCaption() %></small>
+
+				<%
+				String coverImageCaption = entry.getCoverImageCaption();
+				%>
+
+				<c:if test="<%= Validator.isNotNull(coverImageCaption) %>">
+					<div class="row">
+						<div class="col-md-8 mx-auto">
+							<div class="cover-image-caption">
+								<small><%= entry.getCoverImageCaption() %></small>
+							</div>
 						</div>
 					</div>
-				</div>
+				</c:if>
 			</c:if>
 
 			<div class="row">
@@ -270,7 +277,7 @@ RatingsStats ratingsStats = (RatingsStats)request.getAttribute("view_entry_conte
 					</c:if>
 
 					<div class="autofit-col autofit-col-end">
-						<liferay-util:include page="/blogs/social_bookmarks.jsp" servletContext="<%= application %>" />
+						<%@ include file="/blogs/social_bookmarks.jspf" %>
 					</div>
 				</div>
 

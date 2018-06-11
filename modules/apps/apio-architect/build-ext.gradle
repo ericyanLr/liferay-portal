@@ -13,7 +13,7 @@ import org.kt3k.gradle.plugin.CoverallsPlugin
 
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.app.docker", version: "1.0.2"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.app.docker", version: "1.0.4"
 		classpath group: "org.kt3k.gradle.plugin", name: "coveralls-gradle-plugin", version: "2.6.3"
 	}
 
@@ -141,7 +141,7 @@ docker {
 
 task checkDocker() {
 	doLast {
-		def url = "http://localhost:8080"
+		def url = "http://localhost:9000"
 
 		println("Trying to reach " + url)
 
@@ -194,9 +194,9 @@ task runDocker(type: Exec) {
 	'-e', "LIFERAY_APIO_AUTH=${System.getenv('LIFERAY_APIO_AUTH')}",
 	'-e', "ROOT_DIR=${rootDir}",
 	'-p', '5005:5005',
-	'-p', '8080:8080',
-	'-p', '8099:8099',
 	'-p', '6666:6666',
+	'-p', '8099:8099',
+	'-p', '9000:8080',
 	'-v', "${rootDir}/build/jacoco:/jacoco",
 	'-v', "${getClientDeployDir()}:/deploy",
 	'-d',

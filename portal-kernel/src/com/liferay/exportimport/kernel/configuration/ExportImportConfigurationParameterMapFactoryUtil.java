@@ -18,6 +18,7 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletRequest;
@@ -27,6 +28,11 @@ import javax.portlet.PortletRequest;
  */
 @ProviderType
 public class ExportImportConfigurationParameterMapFactoryUtil {
+
+	public static Map<String, String[]> buildFullPublishParameterMap() {
+		return _exportImportConfigurationParameterMapFactory.
+			buildFullPublishParameterMap();
+	}
 
 	public static Map<String, String[]> buildParameterMap() {
 		return
@@ -42,21 +48,24 @@ public class ExportImportConfigurationParameterMapFactoryUtil {
 
 	public static Map<String, String[]> buildParameterMap(
 		String dataStrategy, Boolean deleteMissingLayouts,
-		Boolean deletePortletData, Boolean ignoreLastPublishDate,
-		Boolean layoutSetPrototypeLinkEnabled, Boolean layoutSetSettings,
-		Boolean logo, Boolean permissions, Boolean portletConfiguration,
-		Boolean portletConfigurationAll, Boolean portletData,
-		Boolean portletDataAll, Boolean portletSetupAll, String range,
-		Boolean themeReference, Boolean updateLastPublishDate,
+		Boolean deletePortletData, Boolean deletions,
+		Boolean ignoreLastPublishDate, Boolean layoutSetPrototypeLinkEnabled,
+		Boolean layoutSetSettings, Boolean logo, Boolean permissions,
+		Boolean portletConfiguration, Boolean portletConfigurationAll,
+		List<String> portletConfigurationPortletIds, Boolean portletData,
+		Boolean portletDataAll, List<String> portletDataPortletIds,
+		Boolean portletSetupAll, List<String> portletSetupPortletIds,
+		String range, Boolean themeReference, Boolean updateLastPublishDate,
 		String userIdStrategy) {
 
 		return _exportImportConfigurationParameterMapFactory.buildParameterMap(
-			dataStrategy, deleteMissingLayouts, deletePortletData,
+			dataStrategy, deleteMissingLayouts, deletePortletData, deletions,
 			ignoreLastPublishDate, layoutSetPrototypeLinkEnabled,
 			layoutSetSettings, logo, permissions, portletConfiguration,
-			portletConfigurationAll, portletData, portletDataAll,
-			portletSetupAll, range, themeReference, updateLastPublishDate,
-			userIdStrategy);
+			portletConfigurationAll, portletConfigurationPortletIds,
+			portletData, portletDataAll, portletDataPortletIds, portletSetupAll,
+			portletSetupPortletIds, range, themeReference,
+			updateLastPublishDate, userIdStrategy);
 	}
 
 	private static volatile ExportImportConfigurationParameterMapFactory

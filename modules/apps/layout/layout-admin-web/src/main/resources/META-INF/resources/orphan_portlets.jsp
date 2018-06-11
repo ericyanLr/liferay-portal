@@ -30,10 +30,6 @@ portletDisplay.setURLBack(orphanPortletsDisplayContext.getBackURL());
 renderResponse.setTitle(LanguageUtil.get(request, "orphan-widgets"));
 %>
 
-<clay:navigation-bar
-	navigationItems="<%= orphanPortletsDisplayContext.getNavigationItems() %>"
-/>
-
 <clay:management-toolbar
 	actionDropdownItems="<%= orphanPortletsDisplayContext.getActionDropdownItems() %>"
 	componentId="portletsManagementToolbar"
@@ -107,28 +103,6 @@ renderResponse.setTitle(LanguageUtil.get(request, "orphan-widgets"));
 						<liferay-ui:search-container-column-jsp
 							path="/orphan_portlets_action.jsp"
 						/>
-					</c:when>
-					<c:when test='<%= Objects.equals(orphanPortletsDisplayContext.getDisplayStyle(), "icon") %>'>
-
-						<%
-						row.setCssClass("entry-card lfr-asset-item");
-						%>
-
-						<liferay-ui:search-container-column-text>
-							<liferay-frontend:icon-vertical-card
-								actionJsp="/orphan_portlets_action.jsp"
-								actionJspServletContext="<%= application %>"
-								icon="archive"
-								resultRow="<%= row %>"
-								rowChecker="<%= searchContainer.getRowChecker() %>"
-								subtitle="<%= portlet.getPortletId() %>"
-								title="<%= PortalUtil.getPortletTitle(portlet, application, locale) %>"
-							>
-								<liferay-frontend:vertical-card-footer>
-									<%= orphanPortletsDisplayContext.getStatus(portlet) %>
-								</liferay-frontend:vertical-card-footer>
-							</liferay-frontend:icon-vertical-card>
-						</liferay-ui:search-container-column-text>
 					</c:when>
 					<c:when test='<%= Objects.equals(orphanPortletsDisplayContext.getDisplayStyle(), "list") %>'>
 						<liferay-ui:search-container-column-text

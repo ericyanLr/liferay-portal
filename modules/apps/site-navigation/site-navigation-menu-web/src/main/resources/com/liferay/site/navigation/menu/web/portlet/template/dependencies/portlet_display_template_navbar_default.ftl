@@ -1,7 +1,7 @@
 <#if !entries?has_content>
 	<#if themeDisplay.isSignedIn()>
 		<div class="alert alert-info">
-			<@liferay.language key="there-are-no-pages-to-display-for-the-current-page-level" />
+			<@liferay.language key="there-are-no-menu-items-to-display" />
 		</div>
 	</#if>
 <#else>
@@ -25,7 +25,7 @@
 						nav_item_caret = ""
 						nav_item_css_class = "lfr-nav-item nav-item"
 						nav_item_href_link = ""
-						nav_item_link_css_class = "nav-link"
+						nav_item_link_css_class = "nav-link text-truncate"
 					/>
 
 					<#if showChildren>
@@ -50,7 +50,7 @@
 
 					<li class="${nav_item_css_class}" id="layout_${navItem.getLayoutId()}" ${nav_item_attr_selected} role="presentation">
 						<a aria-labelledby="layout_${navItem.getLayoutId()}" ${nav_item_attr_has_popup} class="${nav_item_link_css_class}" ${nav_item_href_link} ${navItem.getTarget()} role="menuitem">
-							<span><@liferay_theme["layout-icon"] layout=navItem.getLayout() /> ${navItem.getName()} ${nav_item_caret}</span>
+							<span class="text-truncate"><@liferay_theme["layout-icon"] layout=navItem.getLayout() /> ${navItem.getName()} ${nav_item_caret}</span>
 						</a>
 
 						<#if showChildren>

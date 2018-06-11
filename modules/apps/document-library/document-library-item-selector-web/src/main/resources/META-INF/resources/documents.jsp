@@ -31,6 +31,7 @@ int end = startAndEnd[1];
 List repositoryEntries = null;
 int repositoryEntriesCount = 0;
 
+long groupId = dlItemSelectorViewDisplayContext.getStagingAwareGroupId(themeDisplay.getScopeGroupId());
 long folderId = dlItemSelectorViewDisplayContext.getFolderId(request);
 String[] mimeTypes = dlItemSelectorViewDisplayContext.getMimeTypes();
 
@@ -40,9 +41,10 @@ if (dlItemSelectorViewDisplayContext.isSearch()) {
 	searchContext.setAttribute("mimeTypes", mimeTypes);
 	searchContext.setEnd(end);
 	searchContext.setFolderIds(new long[] {dlItemSelectorViewDisplayContext.getFolderId(request)});
+	searchContext.setGroupIds(new long[] {groupId});
 	searchContext.setStart(start);
 
-	Hits hits = DLAppServiceUtil.search(themeDisplay.getScopeGroupId(), searchContext);
+	Hits hits = DLAppServiceUtil.search(groupId, searchContext);
 
 	repositoryEntriesCount = hits.getLength();
 
@@ -75,8 +77,8 @@ else {
 	String orderByCol = ParamUtil.getString(request, "orderByCol", "title");
 	String orderByType = ParamUtil.getString(request, "orderByType", "asc");
 
-	repositoryEntries = DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcuts(themeDisplay.getScopeGroupId(), folderId, WorkflowConstants.STATUS_APPROVED, mimeTypes, false, false, start, end, DLUtil.getRepositoryModelOrderByComparator(orderByCol, orderByType, true));
-	repositoryEntriesCount = DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcutsCount(themeDisplay.getScopeGroupId(), folderId, WorkflowConstants.STATUS_APPROVED, mimeTypes, false, false);
+	repositoryEntries = DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcuts(groupId, folderId, WorkflowConstants.STATUS_APPROVED, mimeTypes, false, false, start, end, DLUtil.getRepositoryModelOrderByComparator(orderByCol, orderByType, true));
+	repositoryEntriesCount = DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcutsCount(groupId, folderId, WorkflowConstants.STATUS_APPROVED, mimeTypes, false, false);
 }
 %>
 

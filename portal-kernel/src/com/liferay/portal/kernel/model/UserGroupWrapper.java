@@ -60,6 +60,7 @@ public class UserGroupWrapper implements UserGroup, ModelWrapper<UserGroup> {
 
 		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
+		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("userGroupId", getUserGroupId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
@@ -86,6 +87,13 @@ public class UserGroupWrapper implements UserGroup, ModelWrapper<UserGroup> {
 
 		if (uuid != null) {
 			setUuid(uuid);
+		}
+
+		String externalReferenceCode = (String)attributes.get(
+				"externalReferenceCode");
+
+		if (externalReferenceCode != null) {
+			setExternalReferenceCode(externalReferenceCode);
 		}
 
 		Long userGroupId = (Long)attributes.get("userGroupId");
@@ -202,6 +210,16 @@ public class UserGroupWrapper implements UserGroup, ModelWrapper<UserGroup> {
 	@Override
 	public ExpandoBridge getExpandoBridge() {
 		return _userGroup.getExpandoBridge();
+	}
+
+	/**
+	* Returns the external reference code of this user group.
+	*
+	* @return the external reference code of this user group
+	*/
+	@Override
+	public String getExternalReferenceCode() {
+		return _userGroup.getExternalReferenceCode();
 	}
 
 	@Override
@@ -438,6 +456,16 @@ public class UserGroupWrapper implements UserGroup, ModelWrapper<UserGroup> {
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
 		_userGroup.setExpandoBridgeAttributes(serviceContext);
+	}
+
+	/**
+	* Sets the external reference code of this user group.
+	*
+	* @param externalReferenceCode the external reference code of this user group
+	*/
+	@Override
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_userGroup.setExternalReferenceCode(externalReferenceCode);
 	}
 
 	/**

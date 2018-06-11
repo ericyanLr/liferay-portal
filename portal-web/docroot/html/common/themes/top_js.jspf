@@ -110,7 +110,7 @@
 		Liferay.Data.NAV_SELECTOR_MOBILE = '#navigationCollapse';
 
 		Liferay.Data.isCustomizationView = function() {
-			return <%= (layoutTypePortlet.isCustomizable() && LayoutPermissionUtil.contains(permissionChecker, layout, ActionKeys.CUSTOMIZE)) %>;
+			return <%= layoutTypePortlet.isCustomizable() && LayoutPermissionUtil.contains(permissionChecker, layout, ActionKeys.CUSTOMIZE) %>;
 		};
 
 		Liferay.Data.notices = [
@@ -161,11 +161,9 @@
 				Layout controlPanelLayout = themeDisplay.getControlPanelLayout();
 				%>
 
-				<c:if test="<%= controlPanelLayout.getGroupId() != scopeGroup.getGroupId() %>">
-					getLayoutRelativeControlPanelURL: function() {
-						return '<%= PortalUtil.getLayoutRelativeURL(new VirtualLayout(controlPanelLayout, scopeGroup), themeDisplay) %>';
-					},
-				</c:if>
+				getLayoutRelativeControlPanelURL: function() {
+					return '<%= PortalUtil.getLayoutRelativeURL(new VirtualLayout(controlPanelLayout, scopeGroup), themeDisplay) %>';
+				},
 
 				getLayoutRelativeURL: function() {
 					return '<%= PortalUtil.getLayoutRelativeURL(layout, themeDisplay) %>';
@@ -183,7 +181,7 @@
 					return '<%= layout.isPrivateLayout() %>';
 				},
 				isVirtualLayout: function() {
-					return <%= (layout instanceof VirtualLayout) %>;
+					return <%= layout instanceof VirtualLayout %>;
 				},
 			</c:if>
 

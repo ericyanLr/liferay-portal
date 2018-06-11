@@ -40,7 +40,7 @@
 				String url = (String)enu.nextElement();
 			%>
 
-				<strong><%= HtmlUtil.escape(url) %></strong><%= (enu.hasMoreElements()) ? ", " : "." %>
+				<strong><%= HtmlUtil.escape(url) %></strong><%= enu.hasMoreElements() ? ", " : "." %>
 
 			<%
 			}
@@ -162,7 +162,7 @@
 	</liferay-frontend:edit-form-footer>
 </liferay-frontend:edit-form>
 
-<aui:script use="aui-base,liferay-auto-fields">
+<aui:script use="liferay-auto-fields">
 	new Liferay.AutoFields(
 		{
 			contentBox: '#<portlet:namespace />subscriptions',

@@ -37,31 +37,10 @@ else {
 	request.setAttribute(WebKeys.SINGLE_PAGE_APPLICATION_CLEAR_CACHE, Boolean.TRUE);
 }
 
-PortletURL portletURL = renderResponse.createRenderURL();
-
-portletURL.setParameter("mvcPath", "/edit_password_policy_assignments.jsp");
-portletURL.setParameter("tabs1", tabs1);
-portletURL.setParameter("tabs2", tabs2);
-portletURL.setParameter("redirect", redirect);
-portletURL.setParameter("passwordPolicyId", String.valueOf(passwordPolicy.getPasswordPolicyId()));
-
-request.setAttribute("edit_password_policy_assignments.jsp-portletURL", portletURL);
-
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
 
 renderResponse.setTitle(passwordPolicy.getName());
-
-String[] orderColumns = {"first-name", "last-name", "screen-name"};
-RowChecker rowChecker = new DeleteUserPasswordPolicyChecker(renderResponse, passwordPolicy);
-PortletURL searchURL = PortletURLUtil.clone(portletURL, renderResponse);
-SearchContainer searchContainer = new UserSearch(renderRequest, searchURL);
-
-if (tabs2.equals("organizations")) {
-	orderColumns = new String[] {"name", "type"};
-	searchContainer = new OrganizationSearch(renderRequest, searchURL);
-	rowChecker = new DeleteOrganizationPasswordPolicyChecker(renderResponse, passwordPolicy);
-}
 
 PortletURL homeURL = renderResponse.createRenderURL();
 
@@ -69,6 +48,12 @@ homeURL.setParameter("mvcPath", "/view.jsp");
 
 PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "password-policies"), homeURL.toString());
 PortalUtil.addPortletBreadcrumbEntry(request, passwordPolicy.getName(), null);
+
+EditPasswordPolicyAssignmentsManagementToolbarDisplayContext editPasswordPolicyAssignmentsManagementToolbarDisplayContext = new EditPasswordPolicyAssignmentsManagementToolbarDisplayContext(request, renderRequest, renderResponse, displayStyle, "/edit_password_policy_assignments.jsp");
+
+SearchContainer searchContainer = editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getSearchContainer();
+
+PortletURL portletURL = editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getPortletURL();
 %>
 
 <liferay-util:include page="/edit_password_policy_tabs.jsp" servletContext="<%= application %>" />
@@ -80,72 +65,22 @@ PortalUtil.addPortletBreadcrumbEntry(request, passwordPolicy.getName(), null);
 	url="<%= portletURL.toString() %>"
 />
 
-<liferay-frontend:management-bar
-	includeCheckBox="<%= true %>"
+<clay:management-toolbar
+	actionDropdownItems="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getActionDropdownItems() %>"
+	clearResultsURL="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getClearResultsURL() %>"
+	componentId="editPasswordPolicyAssignmentsManagementToolbar"
+	filterDropdownItems="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getFilterDropdownItems() %>"
+	itemsTotal="<%= searchContainer.getTotal() %>"
+	searchActionURL="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getSearchActionURL() %>"
 	searchContainerId="passwordPolicyMembers"
->
-	<liferay-frontend:management-bar-filters>
-		<liferay-frontend:management-bar-navigation
-			navigationKeys='<%= new String[] {"all"} %>'
-			portletURL="<%= PortletURLUtil.clone(portletURL, renderResponse) %>"
-		/>
-
-		<liferay-frontend:management-bar-sort
-			orderByCol="<%= searchContainer.getOrderByCol() %>"
-			orderByType="<%= searchContainer.getOrderByType() %>"
-			orderColumns="<%= orderColumns %>"
-			portletURL="<%= PortletURLUtil.clone(portletURL, renderResponse) %>"
-		/>
-
-		<c:if test='<%= passwordPolicyDisplayContext.hasAssignMembersPermission() && tabs1.equals("assignees") %>'>
-			<li>
-				<aui:form action="<%= portletURL.toString() %>" name="searchFm">
-					<liferay-ui:input-search
-						markupView="lexicon"
-					/>
-				</aui:form>
-			</li>
-		</c:if>
-	</liferay-frontend:management-bar-filters>
-
-	<liferay-frontend:management-bar-buttons>
-		<liferay-frontend:management-bar-display-buttons
-			displayViews='<%= new String[] {"icon", "descriptive", "list"} %>'
-			portletURL="<%= PortletURLUtil.clone(portletURL, renderResponse) %>"
-			selectedDisplayStyle="<%= displayStyle %>"
-		/>
-
-		<liferay-frontend:add-menu
-			inline="<%= true %>"
-		>
-			<liferay-frontend:add-menu-item
-				id="addAssignees"
-				title='<%= LanguageUtil.get(request, "add-assignees") %>'
-				url="javascript:;"
-			/>
-		</liferay-frontend:add-menu>
-	</liferay-frontend:management-bar-buttons>
-
-	<liferay-frontend:management-bar-action-buttons>
-
-		<%
-		String taglibURL = "javascript:;";
-
-		if (tabs2.equals("users")) {
-			taglibURL = "javascript:" + renderResponse.getNamespace() + "deleteUsers();";
-		}
-		else if (tabs2.equals("organizations")) {
-			taglibURL = "javascript:" + renderResponse.getNamespace() + "deleteOrganizations();";
-		}
-		%>
-
-		<liferay-frontend:management-bar-button
-			href="<%= taglibURL %>"
-			icon="trash"
-			label="delete"
-		/>
-	</liferay-frontend:management-bar-action-buttons>
-</liferay-frontend:management-bar>
+	searchFormName="searchFm"
+	selectable="<%= true %>"
+	showCreationMenu="<%= true %>"
+	showSearch="<%= true %>"
+	sortingOrder="<%= searchContainer.getOrderByType() %>"
+	sortingURL="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getSortingURL() %>"
+	viewTypeItems="<%= editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getViewTypeItems() %>"
+/>
 
 <portlet:actionURL name="editPasswordPolicyAssignments" var="editPasswordPolicyAssignmentsURL" />
 
@@ -164,67 +99,34 @@ PortalUtil.addPortletBreadcrumbEntry(request, passwordPolicy.getName(), null);
 		/>
 	</div>
 
-	<c:choose>
-		<c:when test='<%= tabs2.equals("users") %>'>
-			<aui:input name="addUserIds" type="hidden" />
-			<aui:input name="removeUserIds" type="hidden" />
-
-			<liferay-ui:search-container
-				id="passwordPolicyMembers"
-				rowChecker="<%= rowChecker %>"
-				searchContainer="<%= searchContainer %>"
-				var="userSearchContainer"
-			>
-
-				<%
-				LinkedHashMap<String, Object> userParams = new LinkedHashMap<String, Object>();
-
-				userParams.put("usersPasswordPolicies", Long.valueOf(passwordPolicy.getPasswordPolicyId()));
-				%>
+	<liferay-ui:search-container
+		id="passwordPolicyMembers"
+		searchContainer="<%= searchContainer %>"
+		var="memberSearchContainer"
+	>
+		<c:choose>
+			<c:when test='<%= tabs2.equals("users") %>'>
+				<aui:input name="addUserIds" type="hidden" />
+				<aui:input name="removeUserIds" type="hidden" />
 
 				<%@ include file="/user_search_columns.jspf" %>
-
-				<liferay-ui:search-iterator
-					displayStyle="<%= displayStyle %>"
-					markupView="lexicon"
-				/>
-			</liferay-ui:search-container>
-		</c:when>
-		<c:when test='<%= tabs2.equals("organizations") %>'>
-			<aui:input name="addOrganizationIds" type="hidden" />
-			<aui:input name="removeOrganizationIds" type="hidden" />
-
-			<liferay-ui:search-container
-				id="passwordPolicyMembers"
-				rowChecker="<%= rowChecker %>"
-				searchContainer="<%= searchContainer %>"
-				var="organizationSearchContainer"
-			>
-
-				<%
-				LinkedHashMap<String, Object> organizationParams = new LinkedHashMap<String, Object>();
-
-				organizationParams.put("organizationsPasswordPolicies", Long.valueOf(passwordPolicy.getPasswordPolicyId()));
-				%>
+			</c:when>
+			<c:when test='<%= tabs2.equals("organizations") %>'>
+				<aui:input name="addOrganizationIds" type="hidden" />
+				<aui:input name="removeOrganizationIds" type="hidden" />
 
 				<%@ include file="/organization_search_columns.jspf" %>
+			</c:when>
+		</c:choose>
 
-				<liferay-ui:search-iterator
-					displayStyle="<%= displayStyle %>"
-					markupView="lexicon"
-				/>
-			</liferay-ui:search-container>
-		</c:when>
-	</c:choose>
+		<liferay-ui:search-iterator
+			displayStyle="<%= displayStyle %>"
+			markupView="lexicon"
+		/>
+	</liferay-ui:search-container>
 </aui:form>
 
 <aui:script use="liferay-item-selector-dialog">
-	var Util = Liferay.Util;
-
-	var $ = AUI.$;
-
-	var form = $(document.<portlet:namespace />fm);
-
 	<portlet:renderURL var="selectMembersURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
 		<portlet:param name="mvcPath" value="/select_members.jsp" />
 		<portlet:param name="tabs1" value="<%= tabs1 %>" />
@@ -232,52 +134,83 @@ PortalUtil.addPortletBreadcrumbEntry(request, passwordPolicy.getName(), null);
 		<portlet:param name="passwordPolicyId" value="<%= String.valueOf(passwordPolicyId) %>" />
 	</portlet:renderURL>
 
-	$('#<portlet:namespace />addAssignees').on(
-		'click',
-		function(event) {
-			event.preventDefault();
+	var addAssignees = function(event) {
+		var itemSelectorDialog = new A.LiferayItemSelectorDialog(
+			{
+				eventName: '<portlet:namespace />selectMember',
+				on: {
+					selectedItemChange: function(event) {
+						var result = event.newVal;
 
-			var itemSelectorDialog = new A.LiferayItemSelectorDialog(
-				{
-					eventName: '<portlet:namespace />selectMember',
-					on: {
-						selectedItemChange: function(event) {
-							var result = event.newVal;
+						if (result && result.item) {
+							var form = document.getElementById('<portlet:namespace />fm');
 
-							if (result && result.item) {
+							if (form) {
 								if (result.memberType == 'users') {
-									form.fm('addUserIds').val(result.item);
+									var addUserIds = form.querySelector('#<portlet:namespace />addUserIds');
+
+									if (addUserIds) {
+										addUserIds.setAttribute('value', result.item);
+									}
 								}
 								else if (result.memberType == 'organizations') {
-									form.fm('addOrganizationIds').val(result.item);
+									var addOrganizationIds = form.querySelector('#<portlet:namespace />addOrganizationIds');
+
+									if (addOrganizationIds) {
+										addOrganizationIds.setAttribute('value', result.item);
+									}
 								}
 
 								submitForm(form);
 							}
 						}
-					},
-					title: '<liferay-ui:message arguments="<%= HtmlUtil.escape(passwordPolicy.getName()) %>" key="add-assignees-to-x" />',
-					url: '<%= selectMembersURL %>'
-				}
-			);
+					}
+				},
+				title: '<liferay-ui:message arguments="<%= HtmlUtil.escape(passwordPolicy.getName()) %>" key="add-assignees-to-x" />',
+				url: '<%= selectMembersURL %>'
+			}
+		);
 
-			itemSelectorDialog.open();
+		itemSelectorDialog.open();
+	}
+
+	Liferay.componentReady('editPasswordPolicyAssignmentsManagementToolbar').then(
+		(managementToolbar) => {
+			managementToolbar.on('creationButtonClicked', addAssignees);
 		}
 	);
+</aui:script>
 
-	window.<portlet:namespace />deleteOrganizations = function() {
+<aui:script>
+	function <portlet:namespace />deleteOrganizations() {
 		if (confirm('<liferay-ui:message key="are-you-sure-you-want-to-delete-this" />')) {
-			form.fm('removeOrganizationIds').val(Util.listCheckedExcept(form, '<portlet:namespace />allRowIds'));
+			var form = document.getElementById('<portlet:namespace />fm');
 
-			submitForm(form);
+			if (form) {
+				var removeOrganizationIds = form.querySelector('#<portlet:namespace />removeOrganizationIds');
+
+				if (removeOrganizationIds) {
+					removeOrganizationIds.setAttribute('value', Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds'));
+
+					submitForm(form);
+				}
+			}
 		}
 	};
 
-	window.<portlet:namespace />deleteUsers = function() {
+	function <portlet:namespace />deleteUsers() {
 		if (confirm('<liferay-ui:message key="are-you-sure-you-want-to-delete-this" />')) {
-			form.fm('removeUserIds').val(Util.listCheckedExcept(form, '<portlet:namespace />allRowIds'));
+			var form = document.getElementById('<portlet:namespace />fm');
 
-			submitForm(form);
+			if (form) {
+				var removeUserIds = form.querySelector('#<portlet:namespace />removeUserIds');
+
+				if (removeUserIds) {
+					removeUserIds.setAttribute('value', Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds'));
+
+					submitForm(form);
+				}
+			}
 		}
 	};
 </aui:script>

@@ -433,6 +433,23 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			</#if>
 		</#if>
 
+		<#if entity.hasExternalReferenceCode() && entity.hasEntityColumn("companyId")>
+			/**
+			 * Returns the ${entity.humanName} with the matching external reference code and company.
+			 *
+			 * @param companyId the primary key of the company
+			 * @param externalReferenceCode the ${entity.humanName}'s external reference code
+			 * @return the matching ${entity.humanName}, or <code>null</code> if a matching ${entity.humanName} could not be found
+			<#list serviceBaseExceptions as exception>
+			 * @throws ${exception}
+			</#list>
+			 */
+			@Override
+			public ${entity.name} fetch${entity.name}ByReferenceCode(long companyId, String externalReferenceCode) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+				return ${entity.varName}Persistence.fetchByC_ERC(companyId, null);
+			}
+		</#if>
+
 		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + entity.name, [entity.PKClassName], ["PortalException"]) />
 
 		/**
@@ -1405,13 +1422,13 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 		@Override
 		public ${entity.name} checkout(${entity.name} published${entity.name}, int version) throws PortalException {
 			if (published${entity.name}.isDraft()) {
-				throw new IllegalArgumentException("Cannot checkout with unpublished changes " + published${entity.name}.getHeadId());
+				throw new IllegalArgumentException("Unable to checkout with unpublished changes " + published${entity.name}.getHeadId());
 			}
 
 			${entity.name} draft${entity.name} = ${entity.varName}Persistence.fetchByHeadId(published${entity.name}.getPrimaryKey());
 
 			if (draft${entity.name} != null) {
-				throw new IllegalArgumentException("Cannot checkout with unpublished changes " + published${entity.name}.getPrimaryKey());
+				throw new IllegalArgumentException("Unable to checkout with unpublished changes " + published${entity.name}.getPrimaryKey());
 			}
 
 			${versionEntity.name} ${versionEntity.varName} = getVersion(published${entity.name}, version);
@@ -1478,7 +1495,7 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			${versionEntity.name} latest${versionEntity.name} = ${versionEntity.varName}Persistence.findBy${pkEntityMethod}_First(${versionEntity.varName}.getVersionedModelId(), null);
 
 			if (latest${versionEntity.name}.getVersion() == ${versionEntity.varName}.getVersion()) {
-				throw new IllegalArgumentException("Cannot delete latest version " + ${versionEntity.varName}.getVersion());
+				throw new IllegalArgumentException("Unable to delete latest version " + ${versionEntity.varName}.getVersion());
 			}
 
 			${versionEntity.varName} = ${versionEntity.varName}Persistence.remove(${versionEntity.varName});

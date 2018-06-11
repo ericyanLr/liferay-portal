@@ -75,6 +75,7 @@
 	</model>
 	<model name="com.liferay.asset.kernel.model.AssetCategory">
 		<field name="uuid" type="String" />
+		<field name="externalReferenceCode" type="String" />
 		<field name="categoryId" type="long" />
 		<field name="groupId" type="long" />
 		<field name="companyId" type="long" />
@@ -179,6 +180,7 @@
 	</model>
 	<model name="com.liferay.asset.kernel.model.AssetVocabulary">
 		<field name="uuid" type="String" />
+		<field name="externalReferenceCode" type="String" />
 		<field name="vocabularyId" type="long" />
 		<field name="groupId" type="long" />
 		<field name="companyId" type="long" />
@@ -902,6 +904,7 @@
 	<model name="com.liferay.portal.kernel.model.Organization">
 		<field name="mvccVersion" type="long" />
 		<field name="uuid" type="String" />
+		<field name="externalReferenceCode" type="String" />
 		<field name="organizationId" type="long" />
 		<field name="companyId" type="long" />
 		<field name="userId" type="long" />
@@ -1361,6 +1364,7 @@
 		</default-hints>
 		<field name="mvccVersion" type="long" />
 		<field name="uuid" type="String" />
+		<field name="externalReferenceCode" type="String" />
 		<field name="userId" type="long" />
 		<field name="companyId" type="long" />
 		<field name="createDate" type="Date" />
@@ -1424,6 +1428,7 @@
 	<model name="com.liferay.portal.kernel.model.UserGroup">
 		<field name="mvccVersion" type="long" />
 		<field name="uuid" type="String" />
+		<field name="externalReferenceCode" type="String" />
 		<field name="userGroupId" type="long" />
 		<field name="companyId" type="long" />
 		<field name="userId" type="long" />

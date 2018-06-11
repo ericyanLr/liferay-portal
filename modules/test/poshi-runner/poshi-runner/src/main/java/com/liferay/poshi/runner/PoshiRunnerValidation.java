@@ -1120,31 +1120,6 @@ public class PoshiRunnerValidation {
 		}
 	}
 
-	protected static void validateNumberOfAttributes(
-		Element element, int number, String filePath) {
-
-		List<Attribute> attributes = element.attributes();
-
-		if (attributes.isEmpty()) {
-			_exceptions.add(
-				new Exception(
-					"Missing attributes\n" + filePath + ":" +
-						element.attributeValue("line-number")));
-		}
-		else if (attributes.size() > number) {
-			_exceptions.add(
-				new Exception(
-					"Too many attributes\n" + filePath + ":" +
-						element.attributeValue("line-number")));
-		}
-		else if (attributes.size() < number) {
-			_exceptions.add(
-				new Exception(
-					"Too few attributes\n" + filePath + ":" +
-						element.attributeValue("line-number")));
-		}
-	}
-
 	protected static void validateNumberOfChildElements(
 		Element element, int number, String filePath) {
 
@@ -1712,7 +1687,33 @@ public class PoshiRunnerValidation {
 					 element.attributeValue("property-value")) ||
 				 Validator.isNotNull(element.attributeValue("var"))) {
 
-			validateNumberOfAttributes(element, 3, filePath);
+			int expectedAttributeCount = 1;
+
+			if (Validator.isNotNull(element.attributeValue("name"))) {
+				expectedAttributeCount++;
+			}
+
+			if (Validator.isNotNull(element.attributeValue("line-number"))) {
+				expectedAttributeCount++;
+			}
+
+			if (Validator.isNotNull(element.attributeValue("static"))) {
+				expectedAttributeCount++;
+			}
+
+			if (attributes.size() < expectedAttributeCount) {
+				_exceptions.add(
+					new Exception(
+						"Too few attributes\n" + filePath + ":" +
+							element.attributeValue("line-number")));
+			}
+
+			if (attributes.size() > expectedAttributeCount) {
+				_exceptions.add(
+					new Exception(
+						"Too many attributes\n" + filePath + ":" +
+							element.attributeValue("line-number")));
+			}
 		}
 	}
 

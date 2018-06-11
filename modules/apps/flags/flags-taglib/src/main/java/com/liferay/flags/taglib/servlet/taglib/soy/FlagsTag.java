@@ -15,7 +15,7 @@
 package com.liferay.flags.taglib.servlet.taglib.soy;
 
 import com.liferay.flags.configuration.FlagsGroupServiceConfiguration;
-import com.liferay.frontend.taglib.soy.servlet.taglib.TemplateRendererTag;
+import com.liferay.frontend.taglib.soy.servlet.taglib.ComponentRendererTag;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -43,13 +43,12 @@ import javax.portlet.ActionRequest;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
-import javax.portlet.WindowStateException;
 
 /**
  * @author Julio Camarero
  * @author Ambrin Chaudhary
  */
-public class FlagsTag extends TemplateRendererTag {
+public class FlagsTag extends ComponentRendererTag {
 
 	@Override
 	public int doStartTag() {
@@ -173,20 +172,15 @@ public class FlagsTag extends TemplateRendererTag {
 		PortletResponse portletResponse = (PortletResponse)request.getAttribute(
 			JavaConstants.JAVAX_PORTLET_RESPONSE);
 
-		String currentURL;
-
-		if ((portletRequest != null) && (portletResponse != null)) {
-			PortletURL currentURLObj = PortletURLUtil.getCurrent(
-				PortalUtil.getLiferayPortletRequest(portletRequest),
-				PortalUtil.getLiferayPortletResponse(portletResponse));
-
-			currentURL = currentURLObj.toString();
-		}
-		else {
-			currentURL = PortalUtil.getCurrentURL(request);
+		if ((portletRequest == null) || (portletResponse == null)) {
+			return PortalUtil.getCurrentURL(request);
 		}
 
-		return currentURL;
+		PortletURL currentURLObj = PortletURLUtil.getCurrent(
+			PortalUtil.getLiferayPortletRequest(portletRequest),
+			PortalUtil.getLiferayPortletResponse(portletResponse));
+
+		return currentURLObj.toString();
 	}
 
 	private JSONObject _getDataJSONObject(Map<String, Object> context) {
@@ -221,7 +215,7 @@ public class FlagsTag extends TemplateRendererTag {
 		return reasons;
 	}
 
-	private String _getURI() throws WindowStateException {
+	private String _getURI() {
 		PortletURL portletURL = PortletURLFactoryUtil.create(
 			request, PortletKeys.FLAGS, PortletRequest.ACTION_PHASE);
 
@@ -238,15 +232,13 @@ public class FlagsTag extends TemplateRendererTag {
 				FlagsGroupServiceConfiguration.class,
 				themeDisplay.getCompanyId());
 
-		boolean flagsEnabled = false;
-
 		if (flagsGroupServiceConfiguration.guestUsersEnabled() ||
 			themeDisplay.isSignedIn()) {
 
-			flagsEnabled = true;
+			return true;
 		}
 
-		return flagsEnabled;
+		return false;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(FlagsTag.class);

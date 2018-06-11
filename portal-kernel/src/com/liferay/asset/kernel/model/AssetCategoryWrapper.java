@@ -61,6 +61,7 @@ public class AssetCategoryWrapper implements AssetCategory,
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("uuid", getUuid());
+		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("categoryId", getCategoryId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -86,6 +87,13 @@ public class AssetCategoryWrapper implements AssetCategory,
 
 		if (uuid != null) {
 			setUuid(uuid);
+		}
+
+		String externalReferenceCode = (String)attributes.get(
+				"externalReferenceCode");
+
+		if (externalReferenceCode != null) {
+			setExternalReferenceCode(externalReferenceCode);
 		}
 
 		Long categoryId = (Long)attributes.get("categoryId");
@@ -314,6 +322,16 @@ public class AssetCategoryWrapper implements AssetCategory,
 	@Override
 	public ExpandoBridge getExpandoBridge() {
 		return _assetCategory.getExpandoBridge();
+	}
+
+	/**
+	* Returns the external reference code of this asset category.
+	*
+	* @return the external reference code of this asset category
+	*/
+	@Override
+	public String getExternalReferenceCode() {
+		return _assetCategory.getExternalReferenceCode();
 	}
 
 	/**
@@ -698,6 +716,16 @@ public class AssetCategoryWrapper implements AssetCategory,
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
 		_assetCategory.setExpandoBridgeAttributes(serviceContext);
+	}
+
+	/**
+	* Sets the external reference code of this asset category.
+	*
+	* @param externalReferenceCode the external reference code of this asset category
+	*/
+	@Override
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_assetCategory.setExternalReferenceCode(externalReferenceCode);
 	}
 
 	/**

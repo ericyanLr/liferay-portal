@@ -30,7 +30,7 @@ import org.dom4j.tree.DefaultAttribute;
 /**
  * @author Yi-Chen Tsai
  */
-public class PoshiProseStatement {
+public class PoshiProseStatement extends BasePoshiProse {
 
 	public PoshiProseStatement(String proseStatement) {
 		for (String proseKeyword : PoshiProseStatement.KEYWORDS) {
@@ -42,19 +42,31 @@ public class PoshiProseStatement {
 			}
 		}
 
-		_proseStatement = proseStatement.trim();
+		_proseStatement = formatProseStatement(proseStatement);
+
+		String proseStatementMatchingString = getProseStatementMatchingString();
 
 		_poshiProseMatcher = PoshiProseMatcher.getPoshiProseMatcher(
-			_proseStatement.replaceAll(_varValuePattern.pattern(), "\"\""));
+			proseStatementMatchingString);
+
+		if (_poshiProseMatcher == null) {
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("Unable to find matching prose for '");
+			sb.append(proseStatementMatchingString);
+			sb.append("'");
+
+			throw new RuntimeException(sb.toString());
+		}
 
 		List<String> varNames = _poshiProseMatcher.getVarNames();
 
 		List<String> varValues = new ArrayList<>();
 
-		Matcher matcher = _varValuePattern.matcher(_proseStatement);
+		Matcher varValueMatcher = _varValuePattern.matcher(_proseStatement);
 
-		while (matcher.find()) {
-			varValues.add(matcher.group(1));
+		while (varValueMatcher.find()) {
+			varValues.add(varValueMatcher.group(1));
 		}
 
 		for (int i = 0; i < varNames.size(); i++) {
@@ -75,10 +87,22 @@ public class PoshiProseStatement {
 				throw new RuntimeException(sb.toString());
 			}
 
-			_varMap.put(varName, varValues.get(i));
+			String varValue = varValues.get(i);
+
+			if ((i + 1) == varNames.size()) {
+				Matcher multiLineStringMatcher =
+					_multiLineStringPattern.matcher(_proseStatement);
+
+				if (multiLineStringMatcher.find()) {
+					varValue = multiLineStringMatcher.group(1);
+				}
+			}
+
+			_varMap.put(varName, varValue);
 		}
 	}
 
+	@Override
 	public Element toElement() {
 		Element element = Dom4JUtil.getNewElement(
 			"execute", null,
@@ -87,18 +111,51 @@ public class PoshiProseStatement {
 				_poshiProseMatcher.getMacroNamespacedClassCommandName()));
 
 		for (Map.Entry<String, String> varMapEntry : _varMap.entrySet()) {
-			element.add(
-				Dom4JUtil.getNewElement(
-					"var", null,
-					new DefaultAttribute("name", varMapEntry.getKey()),
-					new DefaultAttribute("value", varMapEntry.getValue())));
+			Element varElement = Dom4JUtil.getNewElement(
+				"var", null,
+				new DefaultAttribute("name", varMapEntry.getKey()));
+
+			String value = varMapEntry.getValue();
+
+			if (value.contains(_LINE_SEPARATOR)) {
+				varElement.addCDATA(value);
+			}
+			else {
+				varElement.addAttribute("value", value);
+			}
+
+			Dom4JUtil.addToElement(element, varElement);
 		}
 
 		return element;
 	}
 
-	protected static final String[] KEYWORDS = {"And", "Given", "Then", "When"};
+	protected String formatProseStatement(String proseStatement) {
+		String formattedProseStatement = proseStatement.trim();
 
+		formattedProseStatement = formattedProseStatement.replaceAll(
+			_LINE_SEPARATOR + "\t\t", _LINE_SEPARATOR);
+
+		return formattedProseStatement;
+	}
+
+	protected String getProseStatementMatchingString() {
+		String proseStatementMatchingString = _proseStatement.replaceAll(
+			_multiLineStringPattern.pattern(), " \"\"");
+
+		proseStatementMatchingString = proseStatementMatchingString.replaceAll(
+			_varValuePattern.pattern(), "\"\"");
+
+		return proseStatementMatchingString;
+	}
+
+	protected static final String[] KEYWORDS =
+		{"*", "And", "Given", "Then", "When"};
+
+	private static final String _LINE_SEPARATOR = System.lineSeparator();
+
+	private static final Pattern _multiLineStringPattern = Pattern.compile(
+		"(?s)\\s*\"\"\".*?\\R(.*?)\\s*\"\"\"");
 	private static final Pattern _varValuePattern = Pattern.compile(
 		"\"(.*?)\"");
 

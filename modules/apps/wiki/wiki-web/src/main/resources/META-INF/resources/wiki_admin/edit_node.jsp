@@ -44,7 +44,13 @@ renderResponse.setTitle((node == null) ? LanguageUtil.get(request, "new-wiki-nod
 
 		<aui:fieldset-group markupView="lexicon">
 			<aui:fieldset>
-				<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" name="name" />
+				<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" name="name">
+					<aui:validator errorMessage="please-enter-a-nonnumeric-name" name="custom">
+						function(val) {
+							return !/^\d+$/.test(val);
+						}
+					</aui:validator>
+				</aui:input>
 
 				<aui:input name="description" />
 			</aui:fieldset>

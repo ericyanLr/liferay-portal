@@ -14,6 +14,7 @@
 
 package com.liferay.fragment.web.internal.display.context;
 
+import com.liferay.fragment.constants.FragmentActionKeys;
 import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.service.FragmentCollectionLocalServiceUtil;
@@ -23,8 +24,6 @@ import com.liferay.fragment.web.internal.security.permission.resource.FragmentPe
 import com.liferay.fragment.web.util.FragmentPortletUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -77,8 +76,51 @@ public class FragmentDisplayContext {
 							"/fragment/edit_fragment_collection", "redirect",
 							themeDisplay.getURLCurrent());
 						dropdownItem.setLabel(
-							LanguageUtil.get(_request, "new"));
+							LanguageUtil.get(_request, "collection"));
 					});
+
+				add(
+					dropdownItem -> {
+						dropdownItem.putData("action", "openImportView");
+						dropdownItem.setLabel(
+							LanguageUtil.get(_request, "import"));
+					});
+			}
+		};
+	}
+
+	public List<DropdownItem> getCollectionsDropdownItems() {
+		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		return new DropdownItemList() {
+			{
+				add(
+					dropdownItem -> {
+						dropdownItem.putData("action", "exportCollections");
+						dropdownItem.setLabel(
+							LanguageUtil.get(_request, "export"));
+					});
+
+				if (FragmentPermission.contains(
+						themeDisplay.getPermissionChecker(),
+						themeDisplay.getScopeGroupId(),
+						FragmentActionKeys.MANAGE_FRAGMENT_ENTRIES)) {
+
+					add(
+						dropdownItem -> {
+							dropdownItem.putData("action", "openImportView");
+							dropdownItem.setLabel(
+								LanguageUtil.get(_request, "import"));
+						});
+
+					add(
+						dropdownItem -> {
+							dropdownItem.putData("action", "deleteCollections");
+							dropdownItem.setLabel(
+								LanguageUtil.get(_request, "delete"));
+						});
+				}
 			}
 		};
 	}
@@ -157,8 +199,7 @@ public class FragmentDisplayContext {
 			WebKeys.THEME_DISPLAY);
 
 		SearchContainer fragmentEntriesSearchContainer = new SearchContainer(
-			_renderRequest, _renderResponse.createRenderURL(), null,
-			"there-are-no-fragments");
+			_renderRequest, _getPortletURL(), null, "there-are-no-fragments");
 
 		fragmentEntriesSearchContainer.setRowChecker(
 			new EmptyOnClickRowChecker(_renderResponse));
@@ -216,6 +257,9 @@ public class FragmentDisplayContext {
 	}
 
 	public List<DropdownItem> getFragmentEntryActionItemsDropdownItems() {
+		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
 		return new DropdownItemList() {
 			{
 				add(
@@ -228,15 +272,21 @@ public class FragmentDisplayContext {
 						dropdownItem.setQuickAction(true);
 					});
 
-				add(
-					dropdownItem -> {
-						dropdownItem.putData(
-							"action", "deleteSelectedFragmentEntries");
-						dropdownItem.setIcon("trash");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_request, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+				if (FragmentPermission.contains(
+						themeDisplay.getPermissionChecker(),
+						themeDisplay.getScopeGroupId(),
+						FragmentActionKeys.MANAGE_FRAGMENT_ENTRIES)) {
+
+					add(
+						dropdownItem -> {
+							dropdownItem.putData(
+								"action", "deleteSelectedFragmentEntries");
+							dropdownItem.setIcon("trash");
+							dropdownItem.setLabel(
+								LanguageUtil.get(_request, "delete"));
+							dropdownItem.setQuickAction(true);
+						});
+				}
 			}
 		};
 	}
@@ -364,21 +414,6 @@ public class FragmentDisplayContext {
 		return _jsContent;
 	}
 
-	public List<NavigationItem> getNavigationItems() {
-		return new NavigationItemList() {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(true);
-						navigationItem.setHref(
-							_renderResponse.createRenderURL());
-						navigationItem.setLabel(
-							LanguageUtil.get(_request, "fragments"));
-					});
-			}
-		};
-	}
-
 	public String getOrderByType() {
 		if (Validator.isNotNull(_orderByType)) {
 			return _orderByType;
@@ -442,20 +477,6 @@ public class FragmentDisplayContext {
 		}
 
 		return true;
-	}
-
-	public boolean isShowAddButton(String actionId) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		if (FragmentPermission.contains(
-				themeDisplay.getPermissionChecker(),
-				themeDisplay.getSiteGroupId(), actionId)) {
-
-			return true;
-		}
-
-		return false;
 	}
 
 	private List<DropdownItem>

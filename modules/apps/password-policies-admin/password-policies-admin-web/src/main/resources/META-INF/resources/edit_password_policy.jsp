@@ -56,9 +56,9 @@ renderResponse.setTitle(passwordPolicy.isNew() ? LanguageUtil.get(request, "new-
 
 	<aui:fieldset-group markupView="lexicon">
 		<aui:fieldset>
-			<aui:input autoFocus="<%= (!defaultPolicy && windowState.equals(WindowState.MAXIMIZED)) %>" disabled="<%= defaultPolicy %>" name="name" required="<%= true %>" />
+			<aui:input autoFocus="<%= !defaultPolicy && windowState.equals(WindowState.MAXIMIZED) %>" disabled="<%= defaultPolicy %>" name="name" required="<%= true %>" />
 
-			<aui:input autoFocus="<%= (defaultPolicy && windowState.equals(WindowState.MAXIMIZED)) %>" name="description" />
+			<aui:input autoFocus="<%= defaultPolicy && windowState.equals(WindowState.MAXIMIZED) %>" name="description" />
 		</aui:fieldset>
 
 		<liferay-ui:panel-container
@@ -281,8 +281,8 @@ renderResponse.setTitle(passwordPolicy.isNew() ? LanguageUtil.get(request, "new-
 <aui:script>
 	Liferay.Util.toggleBoxes('<portlet:namespace />changeable', '<portlet:namespace />changeableSettings');
 	Liferay.Util.toggleBoxes('<portlet:namespace />checkSyntax', '<portlet:namespace />syntaxSettings');
-	Liferay.Util.toggleBoxes('<portlet:namespace />history', '<portlet:namespace />historySettings');
 	Liferay.Util.toggleBoxes('<portlet:namespace />expireable', '<portlet:namespace />expirationSettings');
+	Liferay.Util.toggleBoxes('<portlet:namespace />history', '<portlet:namespace />historySettings');
 	Liferay.Util.toggleBoxes('<portlet:namespace />lockout', '<portlet:namespace />lockoutSettings');
 </aui:script>
 

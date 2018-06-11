@@ -49,7 +49,6 @@ import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.DDMStructureIndexer;
 import com.liferay.portal.kernel.search.Document;
-import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.IndexWriterHelper;
 import com.liferay.portal.kernel.search.Indexer;
@@ -59,6 +58,7 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
+import com.liferay.portal.kernel.search.filter.DateRangeTermFilter;
 import com.liferay.portal.kernel.search.filter.QueryFilter;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.search.highlight.HighlightUtil;
@@ -69,11 +69,14 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -84,9 +87,12 @@ import com.liferay.trash.TrashHelper;
 
 import java.io.Serializable;
 
+import java.text.Format;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -214,6 +220,9 @@ public class JournalArticleIndexer
 		boolean showNonindexable = GetterUtil.getBoolean(
 			searchContext.getAttribute("showNonindexable"));
 
+		long nowDate = GetterUtil.getLong(
+			searchContext.getAttribute("nowDate"));
+
 		if (latest && !relatedClassName && !showNonindexable) {
 			contextBooleanFilter.addRequiredTerm("latest", Boolean.TRUE);
 		}
@@ -226,6 +235,17 @@ public class JournalArticleIndexer
 		}
 		else if (!relatedClassName && showNonindexable) {
 			contextBooleanFilter.addRequiredTerm("headListable", Boolean.TRUE);
+		}
+
+		if (nowDate > 0) {
+			Format dateFormat = FastDateFormatFactoryUtil.getSimpleDateFormat(
+				PropsUtil.get(PropsKeys.INDEX_DATE_FORMAT_PATTERN));
+
+			DateRangeTermFilter dateRangeTermFilter = new DateRangeTermFilter(
+				Field.EXPIRATION_DATE, false, false,
+				dateFormat.format(new Date(nowDate)), null);
+
+			contextBooleanFilter.add(dateRangeTermFilter);
 		}
 	}
 
@@ -415,7 +435,7 @@ public class JournalArticleIndexer
 			return Collections.emptyMap();
 		}
 
-		String localizedField = DocumentImpl.getLocalizedName(
+		String localizedField = Field.getLocalizedName(
 			searchContext.getLocale(), field);
 
 		Map<String, Query> queries = new HashMap<>();
@@ -609,8 +629,7 @@ public class JournalArticleIndexer
 
 		Locale snippetLocale = getSnippetLocale(document, locale);
 
-		String localizedTitleName = DocumentImpl.getLocalizedName(
-			locale, Field.TITLE);
+		String localizedTitleName = Field.getLocalizedName(locale, Field.TITLE);
 
 		if ((snippetLocale == null) &&
 			(document.getField(localizedTitleName) == null)) {

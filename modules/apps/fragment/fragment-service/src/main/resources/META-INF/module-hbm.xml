@@ -35,7 +35,7 @@
 		<property name="css" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="html" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="js" type="com.liferay.portal.dao.orm.hibernate.StringType" />
-		<property name="htmlPreviewEntryId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+		<property name="previewFileEntryId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 		<property name="status" type="com.liferay.portal.dao.orm.hibernate.IntegerType" />
 		<property name="statusByUserId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 		<property name="statusByUserName" type="com.liferay.portal.dao.orm.hibernate.StringType" />
@@ -63,5 +63,6 @@
 		<property name="position" type="com.liferay.portal.dao.orm.hibernate.IntegerType" />
 		<property name="lastPropagationDate" type="org.hibernate.type.TimestampType" />
 		<property name="namespace" type="com.liferay.portal.dao.orm.hibernate.StringType" />
+		<property name="lastPublishDate" type="org.hibernate.type.TimestampType" />
 	</class>
 </hibernate-mapping>

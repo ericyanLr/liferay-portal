@@ -21,8 +21,12 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.soy.base.BaseClayTag;
  */
 public class ButtonTag extends BaseClayTag {
 
-	public ButtonTag() {
-		super("button", "ClayButton");
+	@Override
+	public int doStartTag() {
+		setComponentBaseName("ClayButton");
+		setModuleBaseName("button");
+
+		return super.doStartTag();
 	}
 
 	public void setAriaLabel(String ariaLabel) {

@@ -106,13 +106,21 @@ public class LiferayOAuth2OSGiFeature implements Feature {
 			(ContainerResponseFilter)(a, b) -> _scopeContext.clear(),
 			Priorities.AUTHORIZATION - 9);
 
-		registerAuthVerifierFilter(
-			MapUtil.getString(
-				applicationProperties,
-				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT,
-				StringBundler.concat(
-					"(", HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME,
-					"=context.for", osgiJAXRSName, ")")));
+		if (!GetterUtil.getBoolean(
+				applicationProperties.get(
+					"com.liferay.auth.verifier.filter.enabled")) &&
+			!applicationProperties.containsKey(
+				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT)) {
+
+			registerAuthVerifierFilter(
+				MapUtil.getString(
+					applicationProperties,
+					HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT,
+					StringBundler.concat(
+						"(",
+						HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME,
+						"=context.for", osgiJAXRSName, ")")));
+		}
 
 		registerDescriptors(osgiJAXRSName);
 
@@ -174,7 +182,7 @@ public class LiferayOAuth2OSGiFeature implements Feature {
 		sb.append(bundleSymbolicName);
 		sb.append(")(objectClass=");
 		sb.append(ResourceBundleLoader.class.getName());
-		sb.append("resource.bundle.base.name=content.Language))");
+		sb.append(")(resource.bundle.base.name=content.Language))");
 
 		ServiceTracker<ResourceBundleLoader, ResourceBundleLoader>
 			serviceTracker = ServiceTrackerFactory.open(
@@ -240,8 +248,7 @@ public class LiferayOAuth2OSGiFeature implements Feature {
 				return _osgiJAXRSName;
 			}
 
-			String key = StringBundler.concat(
-				"oauth2.application.description.", _osgiJAXRSName);
+			String key = "oauth2.application.description." + _osgiJAXRSName;
 
 			return GetterUtil.getString(
 				ResourceBundleUtil.getString(
@@ -258,7 +265,7 @@ public class LiferayOAuth2OSGiFeature implements Feature {
 				return _defaultScopeDescriptor.describeScope(scope, locale);
 			}
 
-			String key = StringBundler.concat("oauth2.scope.", scope);
+			String key = "oauth2.scope." + scope;
 
 			return GetterUtil.getString(
 				ResourceBundleUtil.getString(

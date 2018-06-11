@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -398,6 +397,16 @@ public class LayoutPageTemplateEntryServiceImpl
 	}
 
 	@Override
+	public List<LayoutPageTemplateEntry> getLayoutPageTemplateEntriesByType(
+		long groupId, long layoutPageTemplateCollectionId, int type, int start,
+		int end, OrderByComparator<LayoutPageTemplateEntry> orderByComparator) {
+
+		return layoutPageTemplateEntryPersistence.filterFindByG_L_T(
+			groupId, layoutPageTemplateCollectionId, type, start, end,
+			orderByComparator);
+	}
+
+	@Override
 	public int getLayoutPageTemplateEntriesCount(long groupId, int type) {
 		return getLayoutPageTemplateEntriesCount(
 			groupId, type, WorkflowConstants.STATUS_ANY);
@@ -536,6 +545,14 @@ public class LayoutPageTemplateEntryServiceImpl
 	}
 
 	@Override
+	public int getLayoutPageTemplateEntriesCountByType(
+		long groupId, long layoutPageTemplateCollectionId, int type) {
+
+		return layoutPageTemplateEntryPersistence.filterCountByG_L_T(
+			groupId, layoutPageTemplateCollectionId, type);
+	}
+
+	@Override
 	public LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
 			long layoutPageTemplateEntryId, boolean defaultTemplate)
 		throws PortalException {
@@ -630,12 +647,13 @@ public class LayoutPageTemplateEntryServiceImpl
 				LayoutPageTemplateEntryServiceImpl.class,
 				"_layoutPageTemplateEntryModelResourcePermission",
 				LayoutPageTemplateEntry.class);
+
+	@ServiceReference(
+		filterString = "(resource.name=" + LayoutPageTemplateConstants.RESOURCE_NAME + ")",
+		type = PortletResourcePermission.class
+	)
 	private static volatile PortletResourcePermission
-		_portletResourcePermission =
-			PortletResourcePermissionFactory.getInstance(
-				LayoutPageTemplateEntryServiceImpl.class,
-				"_portletResourcePermission",
-				LayoutPageTemplateConstants.RESOURCE_NAME);
+		_portletResourcePermission;
 
 	@ServiceReference(type = CustomSQL.class)
 	private CustomSQL _customSQL;

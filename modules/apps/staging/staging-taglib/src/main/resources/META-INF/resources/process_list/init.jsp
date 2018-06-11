@@ -49,11 +49,9 @@ PortletURL renderURL = liferayPortletResponse.createRenderURL();
 renderURL.setParameter("mvcRenderCommandName", mvcRenderCommandName);
 renderURL.setParameter("tabs1", "processes");
 
-boolean localPublishing = true;
+StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHelper();
 
-if (liveGroup.isStaged() && liveGroup.isStagedRemotely()) {
-	localPublishing = false;
-}
+boolean localPublishing = (liveGroup == null) || stagingGroupHelper.isLocalStagingOrLocalLiveGroup(liveGroup);
 
 renderURL.setParameter("localPublishing", String.valueOf(localPublishing));
 

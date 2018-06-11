@@ -24,8 +24,6 @@ import com.liferay.portal.url.builder.AbsolutePortalURLBuilderFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import java.util.Arrays;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,15 +50,13 @@ public class IETopHeadDynamicInclude extends BaseDynamicInclude {
 				_absolutePortalURLBuilderFactory.getAbsolutePortalURLBuilder(
 					request);
 
-			for (String url :
-					Arrays.asList("object-assign-auto.js", "fetch.js")) {
-
+			for (String fileName : _FILE_NAMES) {
 				printWriter.print(
 					"<script data-senna-track=\"permanent\" src=\"");
 
 				printWriter.print(
 					absolutePortalURLBuilder.forResource(
-						"/o/frontend-compatibility-ie/" + url
+						"/o/frontend-compatibility-ie/" + fileName
 					).build());
 
 				printWriter.println("\" type=\"text/javascript\"></script>");
@@ -73,6 +69,10 @@ public class IETopHeadDynamicInclude extends BaseDynamicInclude {
 		dynamicIncludeRegistry.register(
 			"/html/common/themes/top_head.jsp#post");
 	}
+
+	private static final String[] _FILE_NAMES = {
+		"array.find.js", "fetch.js", "object.assign.js", "url.search.params.js"
+	};
 
 	@Reference
 	private AbsolutePortalURLBuilderFactory _absolutePortalURLBuilderFactory;

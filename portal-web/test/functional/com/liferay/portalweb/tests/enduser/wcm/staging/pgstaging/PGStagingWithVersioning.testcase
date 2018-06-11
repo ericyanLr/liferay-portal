@@ -21,7 +21,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -96,7 +96,25 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Navigation Menus" />
+		</execute>
+
+		<execute macro="LexiconEntry#gotoEntry">
+			<var name="rowEntry" value="Default" />
+		</execute>
+
+		<execute macro="SiteNavigationMenu#deleteItem">
+			<var name="itemName" value="Staging Test Page" />
+		</execute>
+
+		<execute macro="Navigator#openStagingSiteURL">
+			<var name="siteName" value="Site Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#gotoPageMenuItem">
@@ -109,12 +127,12 @@
 			<var name="localizedFriendlyURL" value="/german" />
 		</execute>
 
-		<execute macro="Page#hideFromNavigationMenu" />
+		<execute macro="Button#clickSave" />
 
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#gotoPageMenuItem">
@@ -138,7 +156,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">

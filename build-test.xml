@@ -2383,16 +2383,31 @@ ${tomcat-gc-log}
 
 	<macrodef name="record-test-class-file-names">
 		<sequential>
+			<fail message="Please set the property ${test.batch.name}." unless="test.batch.name" />
+
+			<local name="portal.branch.name" />
+
+			<condition else="${git.working.branch.name}" property="portal.branch.name" value="${env.TEST_PORTAL_BRANCH_NAME}">
+				<isset property="env.TEST_PORTAL_BRANCH_NAME" />
+			</condition>
+
+			<local name="top.level.job.name" />
+
+			<condition else="test-portal-acceptance-upstream(${portal.branch.name})" property="top.level.job.name" value="${env.TOP_LEVEL_JOB_NAME}">
+				<isset property="env.TOP_LEVEL_JOB_NAME" />
+			</condition>
+
 			<beanshell>
 				<![CDATA[
-					import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
+					import com.liferay.jenkins.results.parser.Job;
+					import com.liferay.jenkins.results.parser.JobFactory;
 					import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
 					import com.liferay.jenkins.results.parser.test.clazz.group.BatchTestClassGroup;
 					import com.liferay.jenkins.results.parser.test.clazz.group.TestClassGroupFactory;
 
-					PortalGitWorkingDirectory portalGitWorkingDirectory = new PortalGitWorkingDirectory(project.getProperty("git.working.branch.name"), project.getProperty("project.dir"));
+					Job job = JobFactory.newJob(project.getProperty("top.level.job.name"), project.getProperty("env.CI_TEST_SUITE"), project.getProperty("portal.branch.name"));
 
-					BatchTestClassGroup batchTestClassGroup = TestClassGroupFactory.newBatchTestClassGroup(project.getProperty("test.batch.name"), portalGitWorkingDirectory, project.getProperty("env.CI_TEST_SUITE"));
+					BatchTestClassGroup batchTestClassGroup = TestClassGroupFactory.newBatchTestClassGroup(project.getProperty("test.batch.name"), job);
 
 					int axisCount = batchTestClassGroup.getAxisCount();
 
@@ -2435,6 +2450,8 @@ ${tomcat-gc-log}
 			</beanshell>
 
 			<echo file="test.class.file.names.properties">${test.class.file.names.properties.content}</echo>
+
+			<print-file file.name="test.class.file.names.properties" />
 		</sequential>
 	</macrodef>
 
@@ -2892,12 +2909,7 @@ go</echo>
 					</then>
 				</elseif>
 				<elseif>
-					<or>
-						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.4" />
-						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.5" />
-						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.10.14" />
-						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.10.15" />
-					</or>
+					<contains string="@{liferay.portal.bundle}" substring="6.2" />
 					<then>
 						<var name="app.server.tomcat.version" value="7.0.62" />
 					</then>
@@ -4838,7 +4850,7 @@ go]]></replacevalue>
 				</if>
 
 				<execute dir="${project.dir}/modules/sdk/project-templates/project-templates-npm-portlet">
-					mvn archetype:generate --batch-mode -DarchetypeArtifactId=com.liferay.project.templates.npm.portlet -DarchetypeGroupId=com.liferay -DarchetypeVersion=1.0.4 -DartifactId=com.npm.simple -Dauthor=liferay -DbuildType=maven -DclassName=Foo -DgroupId=com.test -DinteractiveMode=false -DliferayVersion=7.1 -Dpackage=com.test -DprojectType=standalone -Dversion=1.0.0
+					mvn archetype:generate --batch-mode -DarchetypeArtifactId=com.liferay.project.templates.npm.portlet -DarchetypeGroupId=com.liferay -DarchetypeVersion=1.0.5 -DartifactId=com.npm.simple -Dauthor=liferay -DbuildType=maven -DclassName=Foo -DgroupId=com.test -DinteractiveMode=false -DliferayVersion=7.1 -Dpackage=com.test -DprojectType=standalone -Dversion=1.0.0
 				</execute>
 
 				<execute dir="${project.dir}/modules/sdk/project-templates/project-templates-npm-portlet/com.npm.simple">
@@ -4859,7 +4871,7 @@ go]]></replacevalue>
 				</if>
 
 				<execute dir="${project.dir}/modules/sdk/project-templates/project-templates-npm-${blade.templates}-portlet">
-					mvn archetype:generate --batch-mode -DarchetypeArtifactId=com.liferay.project.templates.npm.${blade.templates}.portlet -DarchetypeGroupId=com.liferay -DarchetypeVersion=1.0.4 -DartifactId=com.npm.${blade.templates} -Dauthor=liferay -DbuildType=maven -DclassName=Foo -DgroupId=com.test -DinteractiveMode=false -DliferayVersion=7.1 -Dpackage=com.test -DprojectType=standalone -Dversion=1.0.0
+					mvn archetype:generate --batch-mode -DarchetypeArtifactId=com.liferay.project.templates.npm.${blade.templates}.portlet -DarchetypeGroupId=com.liferay -DarchetypeVersion=1.0.5 -DartifactId=com.npm.${blade.templates} -Dauthor=liferay -DbuildType=maven -DclassName=Foo -DgroupId=com.test -DinteractiveMode=false -DliferayVersion=7.1 -Dpackage=com.test -DprojectType=standalone -Dversion=1.0.0
 				</execute>
 
 				<execute dir="${project.dir}/modules/sdk/project-templates/project-templates-npm-${blade.templates}-portlet/com.npm.${blade.templates}">
@@ -5125,6 +5137,15 @@ go]]></replacevalue>
 									<else>
 										<echo>Deploying all relevant modules that make up ${Liferay-Releng-App-Title}.lpkg.</echo>
 
+										<local name="app.name" />
+
+										<propertyregex
+											input="@{app.dir}"
+											property="app.name"
+											regexp=".*\/(.*)"
+											select="\1"
+										/>
+
 										<for param="module.dir.path">
 											<path>
 												<dirset
@@ -5152,7 +5173,12 @@ go]]></replacevalue>
 													</fileset>
 												</delete>
 
-												<echo file="@{module.dir.path}/.lfrbuild-portal" />
+												<if>
+													<contains string="${test.modules.force.deploy}" substring="${app.name}" />
+													<then>
+														<echo file="@{module.dir.path}/.lfrbuild-portal" />
+													</then>
+												</if>
 											</sequential>
 										</for>
 
@@ -5164,19 +5190,6 @@ go]]></replacevalue>
 											<property name="app.name" value="${osgi.app.name}" />
 											<property name="osgi.dir" value="${liferay.home}/osgi" />
 										</ant>
-
-										<for param="module.dir.path">
-											<path>
-												<dirset
-													dir="@{app.dir}"
-												>
-													<include name="*" />
-												</dirset>
-											</path>
-											<sequential>
-												<delete file="@{module.dir.path}/.lfrbuild-portal" />
-											</sequential>
-										</for>
 
 										<gradle-execute dir="@{app.dir}" task="clean" />
 									</else>
@@ -5755,6 +5768,24 @@ go]]></replacevalue>
 				</fileset>
 				<fileset
 					dir="${liferay.jenkins.dir}/commands/custom-scripts/test-results"
+					erroronmissingdir="false"
+				>
+					<include name="**/TEST-*.xml" />
+				</fileset>
+				<fileset
+					dir="${liferay.faces.bridge.impl.dir}/tck/bridge-tck-main-portlet"
+					erroronmissingdir="false"
+				>
+					<include name="**/TEST-*.xml" />
+				</fileset>
+				<fileset
+					dir="${liferay.faces.bridge.impl.dir}/test/integration"
+					erroronmissingdir="false"
+				>
+					<include name="**/TEST-*.xml" />
+				</fileset>
+				<fileset
+					dir="${liferay.faces.portal.dir}/test/integration"
 					erroronmissingdir="false"
 				>
 					<include name="**/TEST-*.xml" />
@@ -9075,16 +9106,29 @@ if (ppstate.equals("normal")) {
 			<isset property="test.batch.name" />
 		</condition>
 
+		<local name="portal.branch.name" />
+
+		<condition else="${git.working.branch.name}" property="portal.branch.name" value="${env.TEST_PORTAL_BRANCH_NAME}">
+			<isset property="env.TEST_PORTAL_BRANCH_NAME" />
+		</condition>
+
+		<local name="top.level.job.name" />
+
+		<condition else="test-portal-acceptance-upstream(${portal.branch.name})" property="top.level.job.name" value="${env.TOP_LEVEL_JOB_NAME}">
+			<isset property="env.TOP_LEVEL_JOB_NAME" />
+		</condition>
+
 		<beanshell>
 			<![CDATA[
-				import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
+				import com.liferay.jenkins.results.parser.Job;
+				import com.liferay.jenkins.results.parser.JobFactory;
 				import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
 				import com.liferay.jenkins.results.parser.test.clazz.group.BatchTestClassGroup;
 				import com.liferay.jenkins.results.parser.test.clazz.group.TestClassGroupFactory;
 
-				PortalGitWorkingDirectory portalGitWorkingDirectory = new PortalGitWorkingDirectory(project.getProperty("git.working.branch.name"), project.getProperty("project.dir"));
+				Job job = JobFactory.newJob(project.getProperty("top.level.job.name"), project.getProperty("env.CI_TEST_SUITE"), project.getProperty("portal.branch.name"));
 
-				BatchTestClassGroup batchTestClassGroup = TestClassGroupFactory.newBatchTestClassGroup(project.getProperty("test.batch.name"), portalGitWorkingDirectory, project.getProperty("env.CI_TEST_SUITE"));
+				BatchTestClassGroup batchTestClassGroup = TestClassGroupFactory.newBatchTestClassGroup(project.getProperty("test.batch.name"), job);
 
 				int axisCount = batchTestClassGroup.getAxisCount();
 
@@ -9127,6 +9171,8 @@ if (ppstate.equals("normal")) {
 		</beanshell>
 
 		<echo file="test.plugin.names.properties">${test.plugin.names.properties.content}</echo>
+
+		<print-file file.name="test.plugin.names.properties" />
 	</target>
 
 	<target name="remove-plugin">

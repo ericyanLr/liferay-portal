@@ -15,7 +15,8 @@
 package com.liferay.layout.taglib.servlet.taglib.soy;
 
 import com.liferay.exportimport.kernel.staging.StagingUtil;
-import com.liferay.frontend.taglib.soy.servlet.taglib.TemplateRendererTag;
+import com.liferay.frontend.taglib.soy.servlet.taglib.ComponentRendererTag;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Collections;
@@ -44,7 +44,7 @@ import javax.servlet.ServletRequest;
 /**
  * @author Eudaldo Alonso
  */
-public class SelectLayoutTag extends TemplateRendererTag {
+public class SelectLayoutTag extends ComponentRendererTag {
 
 	@Override
 	public int doStartTag() {
@@ -225,7 +225,7 @@ public class SelectLayoutTag extends TemplateRendererTag {
 			jsonObject.put("name", layout.getName(themeDisplay.getLocale()));
 			jsonObject.put("privateLayout", layout.isPrivateLayout());
 			jsonObject.put(
-				"url", PortalUtil.getLayoutURL(layout, themeDisplay));
+				"url", PortalUtil.getLayoutRelativeURL(layout, themeDisplay));
 
 			if (Objects.equals(layout.getUuid(), selectedLayoutUuid)) {
 				jsonObject.put("selected", true);
@@ -287,7 +287,7 @@ public class SelectLayoutTag extends TemplateRendererTag {
 		sb.append("/layout-taglib/select_layout/css/main.css");
 		sb.append("\" rel=\"stylesheet\">");
 
-		outputData.setData(
+		outputData.setDataSB(
 			SelectLayoutTag.class.getName() + "_CSS", WebKeys.PAGE_TOP, sb);
 	}
 

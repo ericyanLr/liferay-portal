@@ -226,7 +226,7 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 
 				<div class="card-horizontal main-content-card">
 					<div class="card-row-padded">
-						<liferay-ui:error exception="<%= WorkflowDefinitionTitleException.class %>" message="please-name-your-workflow-before-publishing" />
+						<liferay-ui:error exception="<%= WorkflowDefinitionTitleException.class %>" message="please-add-a-workflow-title-before-publishing" />
 
 						<aui:fieldset cssClass="workflow-definition-content">
 							<aui:col>
@@ -266,7 +266,7 @@ renderResponse.setTitle((workflowDefinition == null) ? LanguageUtil.get(request,
 					String taglibUpdateOnClick = "Liferay.fire('" + liferayPortletResponse.getNamespace() + "publishDefinition');";
 					%>
 
-					<aui:button onClick="<%= taglibUpdateOnClick %>" primary="<%= true %>" value='<%= (workflowDefinition == null || !active) ? "publish" : "update" %>' />
+					<aui:button onClick="<%= taglibUpdateOnClick %>" primary="<%= true %>" value='<%= ((workflowDefinition == null) || !active) ? "publish" : "update" %>' />
 
 					<c:if test="<%= (workflowDefinition == null) || !active %>">
 

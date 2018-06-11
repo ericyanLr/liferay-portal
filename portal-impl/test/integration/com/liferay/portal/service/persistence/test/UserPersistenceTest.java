@@ -121,6 +121,8 @@ public class UserPersistenceTest {
 
 		newUser.setUuid(RandomTestUtil.randomString());
 
+		newUser.setExternalReferenceCode(RandomTestUtil.randomString());
+
 		newUser.setCompanyId(RandomTestUtil.nextLong());
 
 		newUser.setCreateDate(RandomTestUtil.nextDate());
@@ -206,6 +208,8 @@ public class UserPersistenceTest {
 		Assert.assertEquals(existingUser.getMvccVersion(),
 			newUser.getMvccVersion());
 		Assert.assertEquals(existingUser.getUuid(), newUser.getUuid());
+		Assert.assertEquals(existingUser.getExternalReferenceCode(),
+			newUser.getExternalReferenceCode());
 		Assert.assertEquals(existingUser.getUserId(), newUser.getUserId());
 		Assert.assertEquals(existingUser.getCompanyId(), newUser.getCompanyId());
 		Assert.assertEquals(Time.getShortTimestamp(existingUser.getCreateDate()),
@@ -429,6 +433,15 @@ public class UserPersistenceTest {
 	}
 
 	@Test
+	public void testCountByC_ERC() throws Exception {
+		_persistence.countByC_ERC(RandomTestUtil.nextLong(), "");
+
+		_persistence.countByC_ERC(0L, "null");
+
+		_persistence.countByC_ERC(0L, (String)null);
+	}
+
+	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		User newUser = addUser();
 
@@ -452,11 +465,12 @@ public class UserPersistenceTest {
 
 	protected OrderByComparator<User> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create("User_", "mvccVersion",
-			true, "uuid", true, "userId", true, "companyId", true,
-			"createDate", true, "modifiedDate", true, "defaultUser", true,
-			"contactId", true, "password", true, "passwordEncrypted", true,
-			"passwordReset", true, "passwordModifiedDate", true, "digest",
-			true, "reminderQueryQuestion", true, "reminderQueryAnswer", true,
+			true, "uuid", true, "externalReferenceCode", true, "userId", true,
+			"companyId", true, "createDate", true, "modifiedDate", true,
+			"defaultUser", true, "contactId", true, "password", true,
+			"passwordEncrypted", true, "passwordReset", true,
+			"passwordModifiedDate", true, "digest", true,
+			"reminderQueryQuestion", true, "reminderQueryAnswer", true,
 			"graceLoginCount", true, "screenName", true, "emailAddress", true,
 			"facebookId", true, "googleUserId", true, "ldapServerId", true,
 			"openId", true, "portraitId", true, "languageId", true,
@@ -721,6 +735,14 @@ public class UserPersistenceTest {
 		Assert.assertTrue(Objects.equals(existingUser.getOpenId(),
 				ReflectionTestUtil.invoke(existingUser, "getOriginalOpenId",
 					new Class<?>[0])));
+
+		Assert.assertEquals(Long.valueOf(existingUser.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(existingUser,
+				"getOriginalCompanyId", new Class<?>[0]));
+		Assert.assertTrue(Objects.equals(
+				existingUser.getExternalReferenceCode(),
+				ReflectionTestUtil.invoke(existingUser,
+					"getOriginalExternalReferenceCode", new Class<?>[0])));
 	}
 
 	protected User addUser() throws Exception {
@@ -731,6 +753,8 @@ public class UserPersistenceTest {
 		user.setMvccVersion(RandomTestUtil.nextLong());
 
 		user.setUuid(RandomTestUtil.randomString());
+
+		user.setExternalReferenceCode(RandomTestUtil.randomString());
 
 		user.setCompanyId(RandomTestUtil.nextLong());
 

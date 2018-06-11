@@ -20,7 +20,19 @@ import com.liferay.frontend.js.loader.modules.extender.npm.ModuleNameUtil;
 import com.liferay.frontend.js.loader.modules.extender.npm.NPMRegistry;
 import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
+
+import java.net.URL;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.osgi.framework.Bundle;
 
 /**
  * @author Iván Zaera Avellón
@@ -28,18 +40,27 @@ import com.liferay.portal.kernel.util.StringBundler;
 public class NPMResolverImpl implements NPMResolver {
 
 	public NPMResolverImpl(
-		String jsPackageIdentifier, NPMRegistry npmRegistry) {
+		Bundle bundle, JSONFactory jsonFactory, NPMRegistry npmRegistry) {
 
-		_jsPackageIdentifier = jsPackageIdentifier;
+		_jsonFactory = jsonFactory;
 		_npmRegistry = npmRegistry;
+
+		_jsPackageIdentifier = _resolveJSPackageIdentifier(bundle);
+		_packageNamesMap = _loadPackageNamesMap(bundle);
 	}
 
 	@Override
 	public JSPackage getDependencyJSPackage(String packageName) {
 		JSPackage jsPackage = getJSPackage();
 
+		String destPackageName = _packageNamesMap.get(packageName);
+
+		if (Validator.isNull(destPackageName)) {
+			destPackageName = packageName;
+		}
+
 		JSPackageDependency jsPackageDependency =
-			jsPackage.getJSPackageDependency(packageName);
+			jsPackage.getJSPackageDependency(destPackageName);
 
 		if (jsPackageDependency == null) {
 			return null;
@@ -81,7 +102,79 @@ public class NPMResolverImpl implements NPMResolver {
 		return sb.toString();
 	}
 
+	private Map<String, String> _loadPackageNamesMap(Bundle bundle) {
+		try {
+			Map<String, String> map = new HashMap<>();
+
+			URL url = bundle.getResource("META-INF/resources/manifest.json");
+
+			if (url != null) {
+				String content = StringUtil.read(url.openStream());
+
+				JSONObject jsonObject = _jsonFactory.createJSONObject(content);
+
+				JSONObject packagesJSONObject = jsonObject.getJSONObject(
+					"packages");
+
+				Iterator<String> packageIds = packagesJSONObject.keys();
+
+				while (packageIds.hasNext()) {
+					String packageId = packageIds.next();
+
+					JSONObject packageJSONObject =
+						packagesJSONObject.getJSONObject(packageId);
+
+					JSONObject srcJSONObject = packageJSONObject.getJSONObject(
+						"src");
+					JSONObject destJSONObject = packageJSONObject.getJSONObject(
+						"dest");
+
+					map.put(
+						srcJSONObject.getString("name"),
+						destJSONObject.getString("name"));
+				}
+			}
+
+			return map;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private String _resolveJSPackageIdentifier(Bundle bundle) {
+		try {
+			StringBundler sb = new StringBundler(5);
+
+			sb.append(bundle.getBundleId());
+			sb.append(StringPool.SLASH);
+
+			URL url = bundle.getResource("META-INF/resources/package.json");
+
+			String content = StringUtil.read(url.openStream());
+
+			JSONObject jsonObject = _jsonFactory.createJSONObject(content);
+
+			String name = jsonObject.getString("name");
+
+			sb.append(name);
+
+			sb.append(StringPool.AT);
+
+			String version = jsonObject.getString("version");
+
+			sb.append(version);
+
+			return sb.toString();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private final JSONFactory _jsonFactory;
 	private final String _jsPackageIdentifier;
 	private final NPMRegistry _npmRegistry;
+	private final Map<String, String> _packageNamesMap;
 
 }

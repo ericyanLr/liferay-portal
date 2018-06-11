@@ -22,4 +22,8 @@
     <command prose="I wait for ${element} to be present" name="wait">
         <execute function="WaitForElementPresent" locator1="${element}" />
     </command>
+
+    <command prose="I have a lot to say: ${text}" name="sayALot">
+        <echo>${text}</echo>
+    </command>
 </definition>

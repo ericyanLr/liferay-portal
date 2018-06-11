@@ -16,13 +16,11 @@ package com.liferay.jenkins.results.parser.test.clazz.group;
 
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.PluginsGitWorkingDirectory;
-import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
+import com.liferay.jenkins.results.parser.PortalTestClassJob;
 
 import java.io.File;
 import java.io.IOException;
 
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +28,6 @@ import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -57,10 +54,9 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected PluginsBatchTestClassGroup(
-		String batchName, PortalGitWorkingDirectory portalGitWorkingDirectory,
-		String testSuiteName) {
+		String batchName, PortalTestClassJob portalTestClassJob) {
 
-		super(batchName, portalGitWorkingDirectory, testSuiteName);
+		super(batchName, portalTestClassJob);
 
 		Properties portalReleaseProperties =
 			JenkinsResultsParserUtil.getProperties(
@@ -74,10 +70,15 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 				JenkinsResultsParserUtil.getProperty(
 					portalReleaseProperties, "lp.plugins.dir"));
 
-			_pluginNamesExcludePathMatchers = _getPluginNamesPathMatchers(
-				"test.batch.plugin.names.excludes");
-			_pluginNamesIncludePathMatchers = _getPluginNamesPathMatchers(
-				"test.batch.plugin.names.includes");
+			excludesPathMatchers.addAll(
+				getPathMatchers(
+					getFirstPropertyValue("test.batch.plugin.names.excludes"),
+					_pluginsGitWorkingDirectory.getWorkingDirectory()));
+
+			includesPathMatchers.addAll(
+				getPathMatchers(
+					getFirstPropertyValue("test.batch.plugin.names.includes"),
+					_pluginsGitWorkingDirectory.getWorkingDirectory()));
 
 			setTestClasses();
 
@@ -128,13 +129,11 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 					}
 
 					private boolean _pathExcluded(Path path) {
-						return _pathMatches(
-							path, _pluginNamesExcludePathMatchers);
+						return _pathMatches(path, excludesPathMatchers);
 					}
 
 					private boolean _pathIncluded(Path path) {
-						return _pathMatches(
-							path, _pluginNamesIncludePathMatchers);
+						return _pathMatches(path, includesPathMatchers);
 					}
 
 					private boolean _pathMatches(
@@ -161,39 +160,6 @@ public class PluginsBatchTestClassGroup extends BatchTestClassGroup {
 		Collections.sort(testClasses);
 	}
 
-	private List<PathMatcher> _getPluginNamesPathMatchers(String propertyName) {
-		String pluginNamesRelativeGlobs = getFirstPropertyValue(propertyName);
-
-		if ((pluginNamesRelativeGlobs == null) ||
-			pluginNamesRelativeGlobs.isEmpty()) {
-
-			return new ArrayList<>();
-		}
-
-		List<PathMatcher> pathMatchers = new ArrayList<>();
-
-		File workingDirectory =
-			_pluginsGitWorkingDirectory.getWorkingDirectory();
-
-		String workingDirectoryPath = workingDirectory.getAbsolutePath();
-
-		for (String pluginNamesRelativeGlob :
-				pluginNamesRelativeGlobs.split(",")) {
-
-			FileSystem fileSystem = FileSystems.getDefault();
-
-			pathMatchers.add(
-				fileSystem.getPathMatcher(
-					JenkinsResultsParserUtil.combine(
-						"glob:", workingDirectoryPath, "/",
-						pluginNamesRelativeGlob)));
-		}
-
-		return pathMatchers;
-	}
-
-	private final List<PathMatcher> _pluginNamesExcludePathMatchers;
-	private final List<PathMatcher> _pluginNamesIncludePathMatchers;
 	private final PluginsGitWorkingDirectory _pluginsGitWorkingDirectory;
 
 }

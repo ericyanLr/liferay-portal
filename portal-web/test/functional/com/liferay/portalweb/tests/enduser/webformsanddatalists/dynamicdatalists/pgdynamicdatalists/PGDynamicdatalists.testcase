@@ -14,7 +14,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#addPublicPage">
@@ -656,9 +656,7 @@
 
 		<execute macro="PortletEntry#publish" />
 
-		<execute macro="DDLRecord#deleteViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		<execute macro="DDLRecord#deleteViaDDLDisplayPG" />
 	</command>
 
 	<command name="EditFormTemplateLabelAndViewRecord" priority="2">
@@ -1894,7 +1892,7 @@
 
 	<command name="ViewListRecordWithUploadedFreeMarkerDisplayTemplate" priority="5">
 		<property name="custom.properties" value="freemarker.engine.restricted.variables=${line.separator}restricted.variables=" />
-		<property name="portal.acceptance" value="true" />
+		<property name="portal.acceptance" value="quarantine" />
 		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
@@ -2414,9 +2412,7 @@
 			<var name="pageName" value="Dynamic Data Lists Display Page" />
 		</execute>
 
-		<execute macro="DDLRecord#viewNoRecords">
-			<var name="ddlDataDefinitionName" value="To Do" />
-		</execute>
+		<execute macro="DDLRecord#viewNoRecords" />
 	</command>
 
 	<command name="ViewTextBoxFieldPredefinedValue" priority="3">

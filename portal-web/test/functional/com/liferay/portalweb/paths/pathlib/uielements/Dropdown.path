@@ -15,7 +15,7 @@
 </tr>
 <tr>
 	<td>RESULT</td>
-	<td>//div[@class='drop-chosen']//ul//li[//text()='${key_option}']</td>
+	<td>//div[@class='drop-chosen']//ul//li/a[text()='${key_option}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -34,11 +34,6 @@
 	<td></td>
 </tr>
 <!--FILTER-->
-<tr>
-	<td>FILTER</td>
-	<td>//*[@data-qa-id='filter']</td>
-	<td></td>
-</tr>
 <tr>
 	<td>FILTER_STATUS</td>
 	<td>//*[@data-qa-id='filterstatus']</td>

@@ -973,47 +973,6 @@ public class PoshiRunnerValidationTest extends TestCase {
 	}
 
 	@Test
-	public void testValidateNumberOfAttributes() {
-		Document document = DocumentHelper.createDocument();
-
-		Element element = document.addElement("execute");
-
-		element.addAttribute("function", "Open");
-		element.addAttribute("locator1", "http://www.liferay.com");
-
-		PoshiRunnerValidation.validateNumberOfAttributes(
-			element, 2, "ValidateNumberOfAttributes.macro");
-
-		Assert.assertEquals(
-			"validateNumberOfAttributes is failing", "", getExceptionMessage());
-
-		PoshiRunnerValidation.validateNumberOfAttributes(
-			element, 1, "ValidateNumberOfAttributes.macro");
-
-		Assert.assertEquals(
-			"validateNumberOfAttributes is failing", "Too many attributes",
-			getExceptionMessage());
-
-		PoshiRunnerValidation.validateNumberOfAttributes(
-			element, 3, "ValidateNumberOfAttributes.macro");
-
-		Assert.assertEquals(
-			"validateNumberOfAttributes is failing", "Too few attributes",
-			getExceptionMessage());
-
-		document = DocumentHelper.createDocument();
-
-		element = document.addElement("execute");
-
-		PoshiRunnerValidation.validateNumberOfAttributes(
-			element, 2, "ValidateNumberOfAttributes.macro");
-
-		Assert.assertEquals(
-			"validateNumberOfAttributes is failing", "Missing attributes",
-			getExceptionMessage());
-	}
-
-	@Test
 	public void testValidateNumberOfChildElements() {
 		Document document = DocumentHelper.createDocument();
 

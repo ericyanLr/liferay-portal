@@ -153,9 +153,6 @@ AUI.add(
 						if (instance._isFormView()) {
 							instance._eventHandlers.push(
 								instance.after('autosave', instance._afterAutosave),
-								A.one(descriptionEditor.element.$).on('keydown', A.bind('handleDescriptionTitleKeydown', instance)),
-								A.one(descriptionEditor.element.$).on('keyup', A.bind('handleDescriptionTitleCopyAndPaste', instance)),
-								A.one(descriptionEditor.element.$).on('keypress', A.bind('handleDescriptionTitleCopyAndPaste', instance)),
 								A.one(nameEditor.element.$).on('keydown', A.bind('handleEditorTitleKeydown', instance)),
 								A.one(nameEditor.element.$).on('keyup', A.bind('handleEditorTitleCopyAndPaste', instance)),
 								A.one(nameEditor.element.$).on('keypress', A.bind('handleEditorTitleCopyAndPaste', instance)),
@@ -316,18 +313,6 @@ AUI.add(
 						}
 
 						return state;
-					},
-
-					handleDescriptionTitleCopyAndPaste: function(e) {
-						var instance = this;
-
-						return instance.preventCopyAndPaste(e, 100);
-					},
-
-					handleDescriptionTitleKeydown: function(e) {
-						var instance = this;
-
-						return instance.checkEditorLimit(e, 100);
 					},
 
 					handleEditorTitleCopyAndPaste: function(e) {
@@ -818,6 +803,12 @@ AUI.add(
 					_onFormButtonClick: function() {
 						var instance = this;
 
+						var ruleTab = instance.one('#showRules');
+
+						if (ruleTab.hasClass('disabled')) {
+							ruleTab.removeClass('disabled');
+						}
+
 						instance._hideRuleBuilder();
 
 						instance._showFormBuilder();
@@ -928,6 +919,12 @@ AUI.add(
 
 					_onRulesButtonClick: function() {
 						var instance = this;
+
+						var ruleTab = instance.one('#showRules');
+
+						if (ruleTab.hasClass('disabled')) {
+							return;
+						}
 
 						instance._hideFormBuilder();
 

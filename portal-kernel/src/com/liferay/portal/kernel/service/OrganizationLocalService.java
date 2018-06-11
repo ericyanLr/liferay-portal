@@ -307,6 +307,17 @@ public interface OrganizationLocalService extends BaseLocalService,
 	public Organization fetchOrganization(long companyId, String name);
 
 	/**
+	* Returns the organization with the matching external reference code and company.
+	*
+	* @param companyId the primary key of the company
+	* @param externalReferenceCode the organization's external reference code
+	* @return the matching organization, or <code>null</code> if a matching organization could not be found
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public Organization fetchOrganizationByReferenceCode(long companyId,
+		String externalReferenceCode);
+
+	/**
 	* Returns the organization with the matching UUID and company.
 	*
 	* @param uuid the organization's UUID

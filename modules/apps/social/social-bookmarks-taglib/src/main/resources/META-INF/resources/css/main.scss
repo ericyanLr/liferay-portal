@@ -10,16 +10,16 @@
 
 	.lfr-icon-item {
 		height: 32px;
-		width: 37px;
+		width: 40px;
 		img {
-			height: 13px;
+			height: 1rem;
+			max-width: initial;
+			vertical-align: middle;
+			width: 1rem;
 		}
 		i {
-			display: inline-block;
-			font-size: 15px;
-			position: relative;
-			top: -1px;
-			width: 14px;
+			font-size: 19px;
+			vertical-align: middle;
 		}
 	}
 

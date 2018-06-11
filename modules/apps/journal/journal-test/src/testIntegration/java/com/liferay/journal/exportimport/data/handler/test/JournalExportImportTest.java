@@ -44,6 +44,7 @@ import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleEventListe
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleListener;
 import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.exportimport.test.util.lar.BasePortletExportImportTestCase;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleConstants;
@@ -81,7 +82,6 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.zip.ZipReaderFactoryUtil;
 import com.liferay.portal.kernel.zip.ZipWriter;
-import com.liferay.portal.lar.test.BasePortletExportImportTestCase;
 import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -105,6 +105,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -202,6 +203,7 @@ public class JournalExportImportTest extends BasePortletExportImportTestCase {
 		exportImportJournalArticle(false);
 	}
 
+	@Ignore
 	@Test
 	public void testReferenceSkipping() throws Exception {
 		setPortalProperty("STAGING_DELETE_TEMP_LAR_ON_SUCCESS", false);
@@ -257,9 +259,10 @@ public class JournalExportImportTest extends BasePortletExportImportTestCase {
 		Map<String, String[]> parameterMap =
 			ExportImportConfigurationParameterMapFactoryUtil.buildParameterMap(
 				PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE, true,
-				false, false, false, false, false, true, true, true, true, true,
-				true, ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE, true,
-				true, UserIdStrategy.CURRENT_USER_ID);
+				false, true, false, false, false, false, true, true, true, null,
+				true, true, null, true, null,
+				ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE, true, true,
+				UserIdStrategy.CURRENT_USER_ID);
 
 		Layout sourceLayout = LayoutLocalServiceUtil.getLayoutByUuidAndGroupId(
 			targetLayout.getUuid(), stagingGroup.getGroupId(), false);
@@ -695,7 +698,14 @@ public class JournalExportImportTest extends BasePortletExportImportTestCase {
 			StagedModel stagedModel, StagedModel importedStagedModel)
 		throws Exception {
 
-		super.validateImportedStagedModel(stagedModel, importedStagedModel);
+		Assert.assertTrue(
+			stagedModel.getCreateDate() + " " +
+				importedStagedModel.getCreateDate(),
+			DateUtil.equals(
+				stagedModel.getCreateDate(),
+				importedStagedModel.getCreateDate()));
+		Assert.assertEquals(
+			stagedModel.getUuid(), importedStagedModel.getUuid());
 
 		JournalArticle article = (JournalArticle)stagedModel;
 		JournalArticle importedArticle = (JournalArticle)importedStagedModel;
@@ -703,8 +713,6 @@ public class JournalExportImportTest extends BasePortletExportImportTestCase {
 		Assert.assertEquals(
 			(Double)article.getVersion(), (Double)importedArticle.getVersion());
 		Assert.assertEquals(article.getTitle(), importedArticle.getTitle());
-		Assert.assertEquals(
-			article.getUrlTitle(), importedArticle.getUrlTitle());
 		Assert.assertEquals(
 			article.getDescription(), importedArticle.getDescription());
 		Assert.assertEquals(article.getContent(), importedArticle.getContent());
@@ -725,7 +733,7 @@ public class JournalExportImportTest extends BasePortletExportImportTestCase {
 			DateUtil.equals(
 				article.getReviewDate(), importedArticle.getReviewDate()));
 		Assert.assertEquals(
-			article.getSmallImage(), importedArticle.getSmallImage());
+			article.isSmallImage(), importedArticle.isSmallImage());
 		Assert.assertEquals(
 			article.getSmallImageURL(), importedArticle.getSmallImageURL());
 		Assert.assertEquals(article.getStatus(), importedArticle.getStatus());

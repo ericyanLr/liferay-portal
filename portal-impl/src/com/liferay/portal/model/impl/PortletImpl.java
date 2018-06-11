@@ -130,6 +130,7 @@ public class PortletImpl extends PortletBaseImpl {
 		_headerPortalJavaScript = new ArrayList<>();
 		_headerPortletCss = new ArrayList<>();
 		_headerPortletJavaScript = new ArrayList<>();
+		_headerRequestAttributePrefixes = new ArrayList<>();
 		_indexerClasses = new ArrayList<>();
 		_initParams = new HashMap<>();
 		_portletFilters = new LinkedHashMap<>();
@@ -187,13 +188,17 @@ public class PortletImpl extends PortletBaseImpl {
 		int renderTimeout, int renderWeight, boolean ajaxable,
 		List<String> headerPortalCss, List<String> headerPortletCss,
 		List<String> headerPortalJavaScript,
-		List<String> headerPortletJavaScript, List<String> footerPortalCss,
-		List<String> footerPortletCss, List<String> footerPortalJavaScript,
+		List<String> headerPortletJavaScript,
+		List<String> headerRequestAttributePrefixes, int headerTimeout,
+		List<String> footerPortalCss, List<String> footerPortletCss,
+		List<String> footerPortalJavaScript,
 		List<String> footerPortletJavaScript, String cssClassWrapper,
 		boolean addDefaultResource, String roles, Set<String> unlinkedRoles,
 		Map<String, String> roleMappers, boolean system, boolean active,
 		boolean include, Map<String, String> initParams, Integer expCache,
-		Map<String, Set<String>> portletModes,
+		boolean asyncSupported, int multipartFileSizeThreshold,
+		String multipartLocation, long multipartMaxFileSize,
+		long multipartMaxRequestSize, Map<String, Set<String>> portletModes,
 		Map<String, Set<String>> windowStates, Set<String> supportedLocales,
 		String resourceBundle, PortletInfo portletInfo,
 		Map<String, PortletFilter> portletFilters, Set<QName> processingEvents,
@@ -280,6 +285,8 @@ public class PortletImpl extends PortletBaseImpl {
 		_headerPortletCss = headerPortletCss;
 		_headerPortalJavaScript = headerPortalJavaScript;
 		_headerPortletJavaScript = headerPortletJavaScript;
+		_headerRequestAttributePrefixes = headerRequestAttributePrefixes;
+		_headerTimeout = headerTimeout;
 		_footerPortalCss = footerPortalCss;
 		_footerPortletCss = footerPortletCss;
 		_footerPortalJavaScript = footerPortalJavaScript;
@@ -292,6 +299,11 @@ public class PortletImpl extends PortletBaseImpl {
 		_include = include;
 		_initParams = initParams;
 		_expCache = expCache;
+		_asyncSupported = asyncSupported;
+		_multipartFileSizeThreshold = multipartFileSizeThreshold;
+		_multipartLocation = multipartLocation;
+		_multipartMaxFileSize = multipartMaxFileSize;
+		_multipartMaxRequestSize = multipartMaxRequestSize;
 		_portletModes = portletModes;
 		_windowStates = windowStates;
 		_supportedLocales = supportedLocales;
@@ -407,15 +419,18 @@ public class PortletImpl extends PortletBaseImpl {
 			getRenderTimeout(), getRenderWeight(), isAjaxable(),
 			getHeaderPortalCss(), getHeaderPortletCss(),
 			getHeaderPortalJavaScript(), getHeaderPortletJavaScript(),
+			getHeaderRequestAttributePrefixes(), getHeaderTimeout(),
 			getFooterPortalCss(), getFooterPortletCss(),
 			getFooterPortalJavaScript(), getFooterPortletJavaScript(),
 			getCssClassWrapper(), isAddDefaultResource(), getRoles(),
 			getUnlinkedRoles(), getRoleMappers(), isSystem(), isActive(),
-			isInclude(), getInitParams(), getExpCache(), getPortletModes(),
-			getWindowStates(), getSupportedLocales(), getResourceBundle(),
-			getPortletInfo(), getPortletFilters(), getProcessingEvents(),
-			getPublishingEvents(), getPublicRenderParameters(),
-			getPortletApp());
+			isInclude(), getInitParams(), getExpCache(), isAsyncSupported(),
+			getMultipartFileSizeThreshold(), getMultipartLocation(),
+			getMultipartMaxFileSize(), getMultipartMaxRequestSize(),
+			getPortletModes(), getWindowStates(), getSupportedLocales(),
+			getResourceBundle(), getPortletInfo(), getPortletFilters(),
+			getProcessingEvents(), getPublishingEvents(),
+			getPublicRenderParameters(), getPortletApp());
 
 		portletImpl.setApplicationTypes(getApplicationTypes());
 		portletImpl.setId(getId());
@@ -1004,6 +1019,33 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Returns a list of attribute name prefixes that will be referenced after
+	 * the HEADER_PHASE completes for each portlet. Header request attributes
+	 * that have names starting with any of the prefixes will be copied from the
+	 * header request to the subsequent render request.
+	 *
+	 * @return a list of attribute name prefixes that will be referenced after
+	 *         the HEADER_PHASE completes for each portlet. Header request
+	 *         attributes that have names starting with any of the prefixes will
+	 *         be copied from the header request to the subsequent render
+	 *         request.
+	 */
+	@Override
+	public List<String> getHeaderRequestAttributePrefixes() {
+		return _headerRequestAttributePrefixes;
+	}
+
+	/**
+	 * Returns the header timeout of the portlet.
+	 *
+	 * @return the header timeout of the portlet
+	 */
+	@Override
+	public int getHeaderTimeout() {
+		return _headerTimeout;
+	}
+
+	/**
 	 * Returns the icon of the portlet.
 	 *
 	 * @return the icon of the portlet
@@ -1114,6 +1156,42 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public boolean getMaximizeHelp() {
 		return _maximizeHelp;
+	}
+
+	/**
+	 * Returns the maximum size of buffered bytes before storing occurs.
+	 *
+	 * @return the maximum size of buffered bytes before storing occurs
+	 */
+	public int getMultipartFileSizeThreshold() {
+		return _multipartFileSizeThreshold;
+	}
+
+	/**
+	 * Returns the directory for storing uploaded files.
+	 *
+	 * @return the directory for storing uploaded files
+	 */
+	public String getMultipartLocation() {
+		return _multipartLocation;
+	}
+
+	/**
+	 * Returns the maximum number of bytes permitted for an uploaded file.
+	 *
+	 * @return the maximum number of bytes permitted for an uploaded file
+	 */
+	public long getMultipartMaxFileSize() {
+		return _multipartMaxFileSize;
+	}
+
+	/**
+	 * Returns the maximum number of bytes permitted for a multipart request.
+	 *
+	 * @return the maximum number of bytes permitted for a multipart request
+	 */
+	public long getMultipartMaxRequestSize() {
+		return _multipartMaxRequestSize;
 	}
 
 	/**
@@ -2440,6 +2518,18 @@ public class PortletImpl extends PortletBaseImpl {
 		return _ajaxable;
 	}
 
+	/**
+	 * Returns <code>true</code> if the portlet supports asynchronous processing
+	 * in resource requests.
+	 *
+	 * @return <code>true</code> if the portlet supports asynchrounous
+	 *         processing in resource requests
+	 */
+	@Override
+	public boolean isAsyncSupported() {
+		return _asyncSupported;
+	}
+
 	@Override
 	public boolean isFullPageDisplayable() {
 		return _applicationTypes.contains(
@@ -2838,6 +2928,18 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Set to <code>true</code> if the portlet supports asynchronous processing
+	 * in resource requests.
+	 *
+	 * @param asyncSupported boolean value for whether the portlet supports
+	 *        asynchronous processing in resource requests
+	 */
+	@Override
+	public void setAsyncSupported(boolean asyncSupported) {
+		_asyncSupported = asyncSupported;
+	}
+
+	/**
 	 * Sets the names of the classes that represent atom collection adapters
 	 * associated with the portlet.
 	 *
@@ -3133,6 +3235,35 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Sets a list of attribute name prefixes that will be referenced after the
+	 * HEADER_PHASE completes for each portlet. Header request attributes that
+	 * have names starting with any of the prefixes will be copied from the
+	 * header request to the subsequent render request.
+	 *
+	 * @param headerRequestAttributePrefixes a list of attribute name prefixes
+	 *        that will be referenced after the HEADER_PHASE completes for each
+	 *        portlet. Header request attributes that have names starting with
+	 *        any of the prefixes will be copied from the header request to the
+	 *        subsequent render request.
+	 */
+	@Override
+	public void setHeaderRequestAttributePrefixes(
+		List<String> headerRequestAttributePrefixes) {
+
+		_headerRequestAttributePrefixes = headerRequestAttributePrefixes;
+	}
+
+	/**
+	 * Sets the header timeout of the portlet.
+	 *
+	 * @param headerTimeout the header timeout of the portlet
+	 */
+	@Override
+	public void setHeaderTimeout(int headerTimeout) {
+		_headerTimeout = headerTimeout;
+	}
+
+	/**
 	 * Sets the icon of the portlet.
 	 *
 	 * @param icon the icon of the portlet
@@ -3222,6 +3353,45 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public void setMaximizeHelp(boolean maximizeHelp) {
 		_maximizeHelp = maximizeHelp;
+	}
+
+	/**
+	 * Sets the maximum size of buffered bytes before storing occurs.
+	 *
+	 * @param multipartFileSizeThreshold the maximum size of buffered bytes
+	 *        before storing occurs
+	 */
+	public void setMultipartFileSizeThreshold(int multipartFileSizeThreshold) {
+		_multipartFileSizeThreshold = multipartFileSizeThreshold;
+	}
+
+	/**
+	 * Sets the directory for storing uploaded files.
+	 *
+	 * @param multipartLocation the directory for storing uploaded files
+	 */
+	public void setMultipartLocation(String multipartLocation) {
+		_multipartLocation = multipartLocation;
+	}
+
+	/**
+	 * Sets the maximum number of bytes permitted for an uploaded file.
+	 *
+	 * @param multipartMaxFileSize the maximum number of bytes permitted for an
+	 *        uploaded file
+	 */
+	public void setMultipartMaxFileSize(long multipartMaxFileSize) {
+		_multipartMaxFileSize = multipartMaxFileSize;
+	}
+
+	/**
+	 * Sets the maximum number of bytes permitted for a multipart request.
+	 *
+	 * @param multipartMaxRequestSize the maximum number of bytes permitted for
+	 *        a multipart request
+	 */
+	public void setMultipartMaxRequestSize(long multipartMaxRequestSize) {
+		_multipartMaxRequestSize = multipartMaxRequestSize;
 	}
 
 	/**
@@ -4058,6 +4228,12 @@ public class PortletImpl extends PortletBaseImpl {
 	private List<String> _assetRendererFactoryClasses;
 
 	/**
+	 * <code>True</code> if the portlet supports asynchronous processing in
+	 * resource requests.
+	 */
+	private boolean _asyncSupported;
+
+	/**
 	 * The names of the classes that represents atom collection adapters
 	 * associated with the portlet.
 	 */
@@ -4198,6 +4374,19 @@ public class PortletImpl extends PortletBaseImpl {
 	private List<String> _headerPortletJavaScript;
 
 	/**
+	 * A list of header request attribute prefixes that will be referenced after
+	 * the HEADER_PHASE completes for each portlet. Header request attributes
+	 * that have names starting with any of the prefixes will be copied from the
+	 * header request to the subsequent render request.
+	 */
+	private List<String> _headerRequestAttributePrefixes;
+
+	/**
+	 * The header timeout of the portlet.
+	 */
+	private int _headerTimeout;
+
+	/**
 	 * The icon of the portlet.
 	 */
 	private String _icon;
@@ -4240,6 +4429,26 @@ public class PortletImpl extends PortletBaseImpl {
 	 * user goes into the help mode.
 	 */
 	private boolean _maximizeHelp;
+
+	/**
+	 * The maximum size of buffered bytes before storing occurs.
+	 */
+	private int _multipartFileSizeThreshold;
+
+	/**
+	 * The directory for storing uploaded files.
+	 */
+	private String _multipartLocation;
+
+	/**
+	 * The maximum number of bytes permitted for an uploaded file.
+	 */
+	private long _multipartMaxFileSize;
+
+	/**
+	 * The maximum number of bytes permitted for a multipart request.
+	 */
+	private long _multipartMaxRequestSize;
 
 	/**
 	 * The name of the open search class of the portlet.

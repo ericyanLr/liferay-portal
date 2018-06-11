@@ -242,6 +242,19 @@ public abstract class AssetCategoryLocalServiceBaseImpl
 	}
 
 	/**
+	 * Returns the asset category with the matching external reference code and company.
+	 *
+	 * @param companyId the primary key of the company
+	 * @param externalReferenceCode the asset category's external reference code
+	 * @return the matching asset category, or <code>null</code> if a matching asset category could not be found
+	 */
+	@Override
+	public AssetCategory fetchAssetCategoryByReferenceCode(long companyId,
+		String externalReferenceCode) {
+		return assetCategoryPersistence.fetchByC_ERC(companyId, null);
+	}
+
+	/**
 	 * Returns the asset category with the primary key.
 	 *
 	 * @param categoryId the primary key of the asset category

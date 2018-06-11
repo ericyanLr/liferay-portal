@@ -14,6 +14,7 @@
 
 package com.liferay.frontend.js.spa.web.internal.servlet.taglib;
 
+import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
 import com.liferay.frontend.js.spa.web.internal.servlet.taglib.util.SPAUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
@@ -79,7 +80,8 @@ public class SPATopHeadJSPDynamicInclude extends BaseJSPDynamicInclude {
 		values.put(
 			"message",
 			_language.get(
-				_spaUtil.getLanguageResourceBundle(themeDisplay.getLocale()),
+				_spaUtil.getLanguageResourceBundle(
+					"frontend-js-spa-web", themeDisplay.getLocale()),
 				"it-looks-like-this-is-taking-longer-than-expected"));
 		values.put(
 			"navigationExceptionSelectors",
@@ -93,15 +95,20 @@ public class SPATopHeadJSPDynamicInclude extends BaseJSPDynamicInclude {
 		values.put(
 			"title",
 			_language.get(
-				_spaUtil.getLanguageResourceBundle(themeDisplay.getLocale()),
+				_spaUtil.getLanguageResourceBundle(
+					"frontend-js-spa-web", themeDisplay.getLocale()),
 				"oops"));
 		values.put("validStatusCodes", _spaUtil.getValidStatusCodes());
+
+		String initModuleName = _npmResolver.resolveModuleName(
+			"frontend-js-spa-web/liferay/init.es");
 
 		scriptData.append(
 			null,
 			StringUtil.replaceToStringBundler(
 				_TMPL_CONTENT, StringPool.POUND, StringPool.POUND, values),
-			"frontend-js-spa-web/liferay/init.es", ScriptData.ModulesType.ES6);
+			initModuleName + " as frontendJsSpaWebLiferayInitEs",
+			ScriptData.ModulesType.ES6);
 
 		scriptData.writeTo(response.getWriter());
 	}
@@ -127,19 +134,6 @@ public class SPATopHeadJSPDynamicInclude extends BaseJSPDynamicInclude {
 		return null;
 	}
 
-	@Reference(
-		cardinality = ReferenceCardinality.OPTIONAL,
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY
-	)
-	protected void setSPAUtil(SPAUtil spaUtil) {
-		_spaUtil = spaUtil;
-	}
-
-	protected void unsetSPAUtil(SPAUtil spaUtil) {
-		_spaUtil = null;
-	}
-
 	private static final String _TMPL_CONTENT = StringUtil.read(
 		SPATopHeadJSPDynamicInclude.class, "/META-INF/resources/init.tmpl");
 
@@ -150,8 +144,16 @@ public class SPATopHeadJSPDynamicInclude extends BaseJSPDynamicInclude {
 	private Language _language;
 
 	@Reference
+	private NPMResolver _npmResolver;
+
+	@Reference
 	private Props _props;
 
-	private SPAUtil _spaUtil;
+	@Reference(
+		cardinality = ReferenceCardinality.OPTIONAL,
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY
+	)
+	private volatile SPAUtil _spaUtil;
 
 }

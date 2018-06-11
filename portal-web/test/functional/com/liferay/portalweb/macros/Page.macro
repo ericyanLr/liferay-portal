@@ -157,7 +157,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#gotoPageMenuItem">
@@ -178,7 +178,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="Portlet#gotoPortletOptions">
@@ -232,20 +232,26 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
-		</execute>
-
-		<execute macro="LexiconEntry#gotoEntryMenuItem">
-			<var name="menuItem" value="Configure" />
-			<var name="rowEntry" value="${page}" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<if>
-			<condition function="IsElementPresent" locator1="SitePagesEditPage#PAGE_TYPE_LAYOUT" />
+			<isset var="page" />
 			<then>
-				<execute function="AssertClick" locator1="SitePages#DETAILS_NAVIGATION_ADVANCED" value1="Advanced" />
+				<execute macro="SitePages#gotoPageMenuItem">
+					<var name="menuItem" value="Configure" />
+					<var name="pageName" value="${page}" />
+				</execute>
+
+				<execute macro="Navigator#gotoNavTab">
+					<var name="navTab" value="Advanced" />
+				</execute>
 			</then>
 			<else>
+				<execute macro="LexiconEntry#gotoHeaderMenuItem">
+					<var name="menuItem" value="Configure" />
+				</execute>
+
 				<execute macro="Panel#expandPanel">
 					<var name="panel" value="Logo" />
 				</execute>
@@ -358,7 +364,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#gotoPageMenuItem">
@@ -435,12 +441,6 @@
 		<execute macro="ProductMenuHelper#gotoPortlet">
 			<var name="portlet" value="${portletName}" />
 		</execute>
-	</command>
-
-	<command name="hideFromNavigationMenu">
-		<execute function="Check#checkToggleSwitch" locator1="Checkbox#HIDE_FROM_NAVIGATION_MENU" />
-
-		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
 	</command>
 
 	<command name="localizedPG">
@@ -541,7 +541,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<while>
@@ -614,7 +614,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#togglePrivacy">
@@ -656,7 +656,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="Portlet#gotoPortletOptions">
@@ -830,7 +830,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#togglePrivacy">
@@ -871,9 +871,10 @@
 		<if>
 			<isset var="friendlyUrlLocalized" />
 			<then>
-				<var name="key_friendlyUrlLocalized" value="${friendlyUrlLocalized}" />
-
-				<execute function="Click" locator1="SitePagesEditPage#FRIENDLY_URL_LOCALIZED" />
+				<execute macro="PortletEntry#changeLocale">
+					<var name="fieldName" value="Friendly URL" />
+					<var name="locale" value="${friendlyUrlLocalized}" />
+				</execute>
 			</then>
 		</if>
 
@@ -955,7 +956,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#gotoPageMenuItem">
@@ -996,7 +997,7 @@
 		<execute macro="ProductMenu#gotoPortlet">
 			<var name="category" value="Build" />
 			<var name="panel" value="Site Administration" />
-			<var name="portlet" value="Site Pages" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
 		<execute macro="SitePages#gotoPageMenuItem">
@@ -1032,7 +1033,7 @@
 		<var name="key_pageName" value="${pageName}" />
 
 		<execute function="AssertTextEquals" locator1="Panel#PANEL_PAGE_TITLE" value1="${pageName}" />
-		<execute function="AssertTextEquals" locator1="Message#INFO" value1="Please select a tool from the left menu." />
+		<execute function="AssertTextEquals" locator1="Panel#PANEL_PAGE_DEFAULT_INFORMATION" value1="Please select a tool from the left menu." />
 
 		<for list="${portletNameList}" param="portletName">
 			<var name="key_portletName" value="${portletName}" />

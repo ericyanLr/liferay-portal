@@ -45,7 +45,7 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 
 		Collection<String> fileNames = null;
 
-		if (portalSource || subrepository) {
+		if (isPortalSource() || isSubrepository()) {
 			fileNames = _getPortalJavaFiles(includes);
 		}
 		else {
@@ -88,6 +88,19 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 
 			printError(fileName, sourceFormatterMessage.toString());
 		}
+	}
+
+	@Override
+	protected void preFormat() throws Exception {
+		SourceFormatterArgs sourceFormatterArgs = getSourceFormatterArgs();
+
+		_checkstyleLogger = new CheckstyleLogger(
+			new UnsyncByteArrayOutputStream(), true,
+			sourceFormatterArgs.getBaseDirName());
+		_checkstyleConfiguration = CheckstyleUtil.getConfiguration(
+			"checkstyle.xml", getPropertiesMap(), sourceFormatterArgs);
+
+		setCheckstyleConfiguration(_checkstyleConfiguration);
 	}
 
 	private String[] _getPluginExcludes(String pluginDirectoryName) {
@@ -142,7 +155,7 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			"**/portal-web/test/**/*Test.java", "**/test/*-generated/**"
 		};
 
-		if (subrepository) {
+		if (isSubrepository()) {
 			excludes = ArrayUtil.append(
 				excludes, _getPluginExcludes(StringPool.BLANK));
 		}
@@ -201,22 +214,15 @@ public class JavaSourceProcessor extends BaseSourceProcessor {
 			return;
 		}
 
-		if (_configuration == null) {
-			_checkstyleLogger = new CheckstyleLogger(
-				new UnsyncByteArrayOutputStream(), true,
-				sourceFormatterArgs.getBaseDirName());
-			_configuration = CheckstyleUtil.getConfiguration(
-				"checkstyle.xml", getPropertiesMap(), sourceFormatterArgs);
-		}
-
 		_sourceFormatterMessages.addAll(
-			processCheckstyle(_configuration, _checkstyleLogger, files));
+			processCheckstyle(
+				_checkstyleConfiguration, _checkstyleLogger, files));
 	}
 
 	private static final String[] _INCLUDES = {"**/*.java"};
 
+	private Configuration _checkstyleConfiguration;
 	private CheckstyleLogger _checkstyleLogger;
-	private Configuration _configuration;
 	private final Set<SourceFormatterMessage> _sourceFormatterMessages =
 		new TreeSet<>();
 	private final List<File> _ungeneratedFiles = new ArrayList<>();

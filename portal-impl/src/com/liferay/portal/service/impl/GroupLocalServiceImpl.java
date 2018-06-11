@@ -16,7 +16,8 @@ package com.liferay.portal.service.impl;
 
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
+import com.liferay.exportimport.kernel.exception.RemoteExportException;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataContextFactoryUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
@@ -45,6 +46,7 @@ import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutSetException;
 import com.liferay.portal.kernel.exception.PendingBackgroundTaskException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.RemoteOptionsException;
 import com.liferay.portal.kernel.exception.RequiredGroupException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -52,6 +54,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.model.Account;
+import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
@@ -81,7 +84,12 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.auth.HttpPrincipal;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.auth.RemoteAuthException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.security.permission.RolePermissions;
 import com.liferay.portal.kernel.security.permission.UserBag;
@@ -102,6 +110,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -116,6 +125,8 @@ import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.model.impl.LayoutImpl;
 import com.liferay.portal.security.permission.PermissionCacheUtil;
 import com.liferay.portal.service.base.GroupLocalServiceBaseImpl;
+import com.liferay.portal.service.http.ClassNameServiceHttp;
+import com.liferay.portal.service.http.GroupServiceHttp;
 import com.liferay.portal.theme.ThemeLoader;
 import com.liferay.portal.theme.ThemeLoaderFactory;
 import com.liferay.portal.util.PropsUtil;
@@ -337,6 +348,10 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 					entry.getKey(), name.concat(ORGANIZATION_STAGING_SUFFIX));
 			}
 
+			friendlyURL = getValidatedFriendlyURL(
+				user.getCompanyId(), groupId, classNameId, classPK,
+				friendlyURL);
+
 			friendlyURL = getFriendlyURL(friendlyURL.concat("-staging"));
 		}
 
@@ -393,8 +408,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		group.setManualMembership(manualMembership);
 		group.setMembershipRestriction(membershipRestriction);
 		group.setFriendlyURL(friendlyURL);
-		group.setInheritContent(inheritContent);
 		group.setSite(site);
+		group.setInheritContent(inheritContent);
 		group.setActive(active);
 
 		if ((serviceContext != null) && (classNameId == groupClassNameId) &&
@@ -3603,7 +3618,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 		String groupKey = group.getGroupKey();
 
-		List<String> names = new ArrayList(nameMap.values());
+		List<String> names = new ArrayList<>(nameMap.values());
 
 		if (ListUtil.isNull(names)) {
 			throw new GroupKeyException();
@@ -3826,6 +3841,52 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return group;
 	}
 
+	@Override
+	public void validateRemote(
+			long groupId, String remoteAddress, int remotePort,
+			String remotePathContext, boolean secureConnection,
+			long remoteGroupId)
+		throws PortalException {
+
+		RemoteOptionsException roe = null;
+
+		if (!Validator.isDomain(remoteAddress) &&
+			!Validator.isIPAddress(remoteAddress)) {
+
+			roe = new RemoteOptionsException(
+				RemoteOptionsException.REMOTE_ADDRESS);
+
+			roe.setRemoteAddress(remoteAddress);
+
+			throw roe;
+		}
+
+		if ((remotePort < 1) || (remotePort > 65535)) {
+			roe = new RemoteOptionsException(
+				RemoteOptionsException.REMOTE_PORT);
+
+			roe.setRemotePort(remotePort);
+
+			throw roe;
+		}
+
+		if (Validator.isNotNull(remotePathContext) &&
+			(!remotePathContext.startsWith(StringPool.FORWARD_SLASH) ||
+			 remotePathContext.endsWith(StringPool.FORWARD_SLASH))) {
+
+			roe = new RemoteOptionsException(
+				RemoteOptionsException.REMOTE_PATH_CONTEXT);
+
+			roe.setRemotePathContext(remotePathContext);
+
+			throw roe;
+		}
+
+		validateRemoteGroup(
+			groupId, remoteGroupId, remoteAddress, remotePort,
+			remotePathContext, secureConnection);
+	}
+
 	protected void addControlPanelLayouts(Group group) throws PortalException {
 		long defaultUserId = userLocalService.getDefaultUserId(
 			group.getCompanyId());
@@ -3956,7 +4017,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			new String[] {Boolean.TRUE.toString()});
 
 		Map<String, Serializable> importLayoutSettingsMap =
-			ExportImportConfigurationSettingsMapFactory.
+			ExportImportConfigurationSettingsMapFactoryUtil.
 				buildImportLayoutSettingsMap(
 					defaultUser, group.getGroupId(), false, null, parameterMap);
 
@@ -4340,28 +4401,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 		friendlyURL = StringPool.SLASH + getFriendlyURL(friendlyName);
 
-		int i = 0;
-
-		while (true) {
-			try {
-				validateFriendlyURL(
-					companyId, groupId, classNameId, classPK, friendlyURL);
-
-				break;
-			}
-			catch (GroupFriendlyURLException gfurle) {
-				int type = gfurle.getType();
-
-				if (type == GroupFriendlyURLException.DUPLICATE) {
-					friendlyURL = friendlyURL + "-" + ++i;
-				}
-				else {
-					friendlyURL = StringPool.SLASH + "group-" + classPK;
-				}
-			}
-		}
-
-		return friendlyURL;
+		return getValidatedFriendlyURL(
+			companyId, groupId, classNameId, classPK, friendlyURL);
 	}
 
 	protected String getFriendlyURL(String friendlyURL) {
@@ -4433,6 +4474,39 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return CustomSQLUtil.keywords(name);
 	}
 
+	protected String getValidatedFriendlyURL(
+			long companyId, long groupId, long classNameId, long classPK,
+			String friendlyURL)
+		throws PortalException {
+
+		int i = 0;
+
+		while (true) {
+			try {
+				validateFriendlyURL(
+					companyId, groupId, classNameId, classPK, friendlyURL);
+
+				break;
+			}
+			catch (GroupFriendlyURLException gfurle) {
+				int type = gfurle.getType();
+
+				if (type == GroupFriendlyURLException.DUPLICATE) {
+					friendlyURL = friendlyURL + "-" + ++i;
+				}
+				else if (type == GroupFriendlyURLException.ENDS_WITH_DASH) {
+					friendlyURL = StringUtil.replaceLast(
+						friendlyURL, CharPool.DASH, StringPool.BLANK);
+				}
+				else {
+					friendlyURL = StringPool.SLASH + "group-" + classPK;
+				}
+			}
+		}
+
+		return friendlyURL;
+	}
+
 	protected void initImportLARFile() {
 		String publicLARFileName = PropsValues.DEFAULT_GUEST_PUBLIC_LAYOUTS_LAR;
 
@@ -4479,6 +4553,17 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			new String[] {
 				ActionKeys.MANAGE_LAYOUTS, ActionKeys.VIEW_SITE_ADMINISTRATION
 			});
+	}
+
+	protected boolean isCompanyGroup(HttpPrincipal httpPrincipal, Group group) {
+		ClassName className = ClassNameServiceHttp.fetchByClassNameId(
+			httpPrincipal, group.getClassNameId());
+
+		if (Objects.equals(className.getClassName(), Company.class.getName())) {
+			return true;
+		}
+
+		return false;
 	}
 
 	protected boolean isParentGroup(long parentGroupId, long groupId)
@@ -4831,6 +4916,11 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			throw new GroupFriendlyURLException(
 				GroupFriendlyURLException.TOO_DEEP);
 		}
+
+		if (StringUtil.endsWith(friendlyURL, CharPool.DASH)) {
+			throw new GroupFriendlyURLException(
+				GroupFriendlyURLException.ENDS_WITH_DASH);
+		}
 	}
 
 	protected void validateGroupKey(
@@ -4966,6 +5056,128 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 				throw new GroupParentException.MustNotHaveStagingParent(
 					groupId, stagingGroupId);
 			}
+		}
+	}
+
+	protected void validateRemoteGroup(
+			long groupId, long remoteGroupId, String remoteAddress,
+			int remotePort, String remotePathContext, boolean secureConnection)
+		throws PortalException {
+
+		if (remoteGroupId <= 0) {
+			RemoteOptionsException roe = new RemoteOptionsException(
+				RemoteOptionsException.REMOTE_GROUP_ID);
+
+			roe.setRemoteGroupId(remoteGroupId);
+
+			throw roe;
+		}
+
+		Thread currentThread = Thread.currentThread();
+
+		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		User user = permissionChecker.getUser();
+
+		String remoteURL = StagingUtil.buildRemoteURL(
+			remoteAddress, remotePort, remotePathContext, secureConnection);
+
+		HttpPrincipal httpPrincipal = new HttpPrincipal(
+			remoteURL, user.getLogin(), user.getPassword(),
+			user.isPasswordEncrypted());
+
+		try {
+			currentThread.setContextClassLoader(
+				PortalClassLoaderUtil.getClassLoader());
+
+			// Ping the remote host and verify that the remote group exists in
+			// the same company as the remote user
+
+			GroupServiceHttp.checkRemoteStagingGroup(
+				httpPrincipal, remoteGroupId);
+
+			// Ensure that the local group and the remote group are not the same
+			// group and that they are either both company groups or both not
+			// company groups
+
+			Group group = groupLocalService.getGroup(groupId);
+
+			Group remoteGroup = GroupServiceHttp.getGroup(
+				httpPrincipal, remoteGroupId);
+
+			if (group.isCompany() ^
+				isCompanyGroup(httpPrincipal, remoteGroup)) {
+
+				RemoteExportException ree = new RemoteExportException(
+					RemoteExportException.INVALID_GROUP);
+
+				ree.setGroupId(remoteGroupId);
+
+				throw ree;
+			}
+		}
+		catch (NoSuchGroupException nsge) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(nsge, nsge);
+			}
+
+			RemoteExportException ree = new RemoteExportException(
+				RemoteExportException.NO_GROUP);
+
+			ree.setGroupId(remoteGroupId);
+
+			throw ree;
+		}
+		catch (PrincipalException pe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
+
+			RemoteExportException ree = new RemoteExportException(
+				RemoteExportException.NO_PERMISSIONS);
+
+			ree.setGroupId(remoteGroupId);
+
+			throw ree;
+		}
+		catch (RemoteAuthException rae) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(rae, rae);
+			}
+
+			rae.setURL(remoteURL);
+
+			throw rae;
+		}
+		catch (SystemException se) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(se, se);
+			}
+
+			RemoteExportException ree = new RemoteExportException(
+				RemoteExportException.BAD_CONNECTION, se.getMessage());
+
+			ree.setURL(remoteURL);
+
+			throw ree;
+		}
+		finally {
+			currentThread.setContextClassLoader(contextClassLoader);
 		}
 	}
 

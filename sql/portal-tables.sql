@@ -82,6 +82,7 @@ create table AnnouncementsFlag (
 
 create table AssetCategory (
 	uuid_ VARCHAR(75) null,
+	externalReferenceCode VARCHAR(75) null,
 	categoryId LONG not null primary key,
 	groupId LONG,
 	companyId LONG,
@@ -171,6 +172,7 @@ create table AssetTag (
 
 create table AssetVocabulary (
 	uuid_ VARCHAR(75) null,
+	externalReferenceCode VARCHAR(75) null,
 	vocabularyId LONG not null primary key,
 	groupId LONG,
 	companyId LONG,
@@ -731,6 +733,7 @@ create table MembershipRequest (
 create table Organization_ (
 	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
+	externalReferenceCode VARCHAR(75) null,
 	organizationId LONG not null primary key,
 	companyId LONG,
 	userId LONG,
@@ -1262,6 +1265,7 @@ create table UserNotificationDelivery (
 create table User_ (
 	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
+	externalReferenceCode VARCHAR(75) null,
 	userId LONG not null primary key,
 	companyId LONG,
 	createDate DATE null,
@@ -1307,6 +1311,7 @@ create table User_ (
 create table UserGroup (
 	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
+	externalReferenceCode VARCHAR(75) null,
 	userGroupId LONG not null primary key,
 	companyId LONG,
 	userId LONG,

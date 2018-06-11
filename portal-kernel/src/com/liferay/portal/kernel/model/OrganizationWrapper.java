@@ -61,6 +61,7 @@ public class OrganizationWrapper implements Organization,
 
 		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
+		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("organizationId", getOrganizationId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
@@ -93,6 +94,13 @@ public class OrganizationWrapper implements Organization,
 
 		if (uuid != null) {
 			setUuid(uuid);
+		}
+
+		String externalReferenceCode = (String)attributes.get(
+				"externalReferenceCode");
+
+		if (externalReferenceCode != null) {
+			setExternalReferenceCode(externalReferenceCode);
 		}
 
 		Long organizationId = (Long)attributes.get("organizationId");
@@ -283,6 +291,16 @@ public class OrganizationWrapper implements Organization,
 	@Override
 	public ExpandoBridge getExpandoBridge() {
 		return _organization.getExpandoBridge();
+	}
+
+	/**
+	* Returns the external reference code of this organization.
+	*
+	* @return the external reference code of this organization
+	*/
+	@Override
+	public String getExternalReferenceCode() {
+		return _organization.getExternalReferenceCode();
 	}
 
 	@Override
@@ -630,6 +648,16 @@ public class OrganizationWrapper implements Organization,
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
 		_organization.setExpandoBridgeAttributes(serviceContext);
+	}
+
+	/**
+	* Sets the external reference code of this organization.
+	*
+	* @param externalReferenceCode the external reference code of this organization
+	*/
+	@Override
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_organization.setExternalReferenceCode(externalReferenceCode);
 	}
 
 	/**
