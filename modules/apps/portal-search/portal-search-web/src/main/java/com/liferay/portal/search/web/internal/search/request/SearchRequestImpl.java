@@ -94,6 +94,8 @@ public class SearchRequestImpl implements SearchRequest {
 
 		searchContext.setAttribute("paginationType", "more");
 
+		searchContext.setAttribute("nowDate", System.currentTimeMillis());
+
 		return searchContext;
 	}
 
