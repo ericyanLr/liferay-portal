@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.ThreadUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashSet;
@@ -207,20 +208,7 @@ public class ClusterMasterExecutorImpl implements ClusterMasterExecutor {
 						". Trying again in 1 second."));
 			}
 
-			try {
-				Object waitObject = new Object();
-
-				synchronized (waitObject) {
-					waitObject.wait(1000);
-				}
-			}
-			catch (InterruptedException ie) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Ignoring unexpected interruption of 1 second delay",
-						ie);
-				}
-			}
+			ThreadUtil.sleep(1000);
 		}
 
 		if (master == _master) {
