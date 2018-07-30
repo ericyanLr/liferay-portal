@@ -37,6 +37,8 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -186,11 +188,27 @@ public class ClusterMasterExecutorImpl implements ClusterMasterExecutor {
 				masterClusterNodeId = _localClusterNodeId;
 			}
 			else {
-				ClusterNode clusterNode = _clusterExecutorImpl.getClusterNode(
-					coordinatorAddress);
+				CompletableFuture<ClusterNode> completableFuture =
+					new CompletableFuture<>();
 
-				if (clusterNode != null) {
+				CompletableFuture.runAsync(
+					() -> {
+						ClusterNode clusterNode =
+							_clusterExecutorImpl.getClusterNode(
+								coordinatorAddress);
+
+						if (clusterNode != null) {
+							completableFuture.complete(clusterNode);
+						}
+					});
+
+				try {
+					ClusterNode clusterNode = completableFuture.get(
+						_GET_CLUSTER_NODE_TIMEOUT, TimeUnit.SECONDS);
+
 					masterClusterNodeId = clusterNode.getClusterNodeId();
+				}
+				catch (Exception e) {
 				}
 			}
 
@@ -250,6 +268,8 @@ public class ClusterMasterExecutorImpl implements ClusterMasterExecutor {
 		_clusterMasterTokenTransitionListeners.addAll(
 			clusterMasterTokenTransitionListeners);
 	}
+
+	private static final long _GET_CLUSTER_NODE_TIMEOUT = 1;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ClusterMasterExecutorImpl.class);
