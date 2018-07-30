@@ -50,9 +50,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -599,6 +601,18 @@ public class ClusterSchedulerEngine
 				return;
 			}
 			catch (Exception e) {
+				if (!(e instanceof TimeoutException)) {
+					CompletableFuture completableFuture =
+						new CompletableFuture();
+
+					try {
+						completableFuture.get(
+							_callMasterTimeout, TimeUnit.SECONDS);
+					}
+					catch (Exception e2) {
+					}
+				}
+
 				StringBundler sb = new StringBundler(5);
 
 				sb.append(
