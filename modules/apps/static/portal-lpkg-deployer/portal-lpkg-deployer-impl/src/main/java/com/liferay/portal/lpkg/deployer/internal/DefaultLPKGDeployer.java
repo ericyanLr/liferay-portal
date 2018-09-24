@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.lpkg.deployer.LPKGDeployer;
 import com.liferay.portal.lpkg.deployer.LPKGVerifier;
 import com.liferay.portal.lpkg.deployer.LPKGVerifyException;
@@ -38,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import java.net.URI;
 import java.net.URL;
 
 import java.nio.file.DirectoryStream;
@@ -50,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -153,6 +156,8 @@ public class DefaultLPKGDeployer implements LPKGDeployer {
 			Bundle lpkgBundle = bundleContext.getBundle(location);
 
 			if (lpkgBundle != null) {
+				_addWarLPKGURLs(_urls, lpkgBundle);
+
 				return Collections.emptyList();
 			}
 
@@ -359,6 +364,53 @@ public class DefaultLPKGDeployer implements LPKGDeployer {
 		}
 		finally {
 			LPKGIndexValidatorThreadLocal.setEnabled(enabled);
+		}
+	}
+
+	private void _addWarLPKGURLs(Map<String, URL> urls, Bundle lpkgBundle)
+		throws IOException {
+
+		File file = new File(lpkgBundle.getLocation());
+
+		try (ZipFile zipFile = new ZipFile(file)) {
+			Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
+
+			while (zipEntries.hasMoreElements()) {
+				ZipEntry zipEntry = zipEntries.nextElement();
+
+				String name = zipEntry.getName();
+
+				if (!name.endsWith(".war")) {
+					continue;
+				}
+
+				StringBundler sb = new StringBundler(4);
+
+				sb.append("jar:");
+
+				URI uri = file.toURI();
+
+				sb.append(URLCodec.decodeURL(uri.toString()));
+
+				sb.append("!/");
+				sb.append(name);
+
+				URL url = new URL(sb.toString());
+
+				String[] servletContextNameAndPortalProfileNames =
+					LPKGInnerWarBundleUtil.
+						readServletContextNameAndPortalProfileNames(url);
+
+				String portalProfileNames =
+					servletContextNameAndPortalProfileNames[1];
+				String servletContextName =
+					servletContextNameAndPortalProfileNames[0];
+
+				String lpkgURL = LPKGInnerWarBundleUtil.generateLPKGURL(
+					lpkgBundle, servletContextName, portalProfileNames);
+
+				urls.put(lpkgURL, url);
+			}
 		}
 	}
 
