@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -153,6 +154,8 @@ public class DefaultLPKGDeployer implements LPKGDeployer {
 			Bundle lpkgBundle = bundleContext.getBundle(location);
 
 			if (lpkgBundle != null) {
+				_addWarLPKGURLs(_urls, lpkgBundle);
+
 				return Collections.emptyList();
 			}
 
@@ -359,6 +362,33 @@ public class DefaultLPKGDeployer implements LPKGDeployer {
 		}
 		finally {
 			LPKGIndexValidatorThreadLocal.setEnabled(enabled);
+		}
+	}
+
+	private void _addWarLPKGURLs(Map<String, URL> urls, Bundle lpkgBundle)
+		throws IOException {
+
+		Enumeration<URL> enumeration = lpkgBundle.findEntries(
+			"/", "*.war", false);
+
+		if (enumeration != null) {
+			while (enumeration.hasMoreElements()) {
+				URL warURL = enumeration.nextElement();
+
+				String[] servletContextNameAndPortalProfileNames =
+					LPKGInnerWarBundleUtil.
+						readServletContextNameAndPortalProfileNames(warURL);
+
+				String portalProfileNames =
+					servletContextNameAndPortalProfileNames[1];
+				String servletContextName =
+					servletContextNameAndPortalProfileNames[0];
+
+				String lpkgURL = LPKGInnerWarBundleUtil.generateLPKGURL(
+					lpkgBundle, servletContextName, portalProfileNames);
+
+				urls.put(lpkgURL, warURL);
+			}
 		}
 	}
 
