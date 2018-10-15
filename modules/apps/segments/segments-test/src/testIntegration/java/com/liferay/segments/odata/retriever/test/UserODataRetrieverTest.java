@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -30,13 +31,14 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerTestRule;
 import com.liferay.segments.odata.retriever.UserODataRetriever;
 
+import java.time.Instant;
+
 import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +46,6 @@ import org.junit.runner.RunWith;
 /**
  * @author David Arques
  */
-@Ignore
 @RunWith(Arquillian.class)
 public class UserODataRetrieverTest {
 
@@ -72,11 +73,19 @@ public class UserODataRetrieverTest {
 			RandomTestUtil.randomString(), LocaleUtil.getDefault(), firstName,
 			RandomTestUtil.randomString(), new long[] {_group1.getGroupId()});
 
+		Date modifiedDate = _user1.getModifiedDate();
+
+		Instant instant = modifiedDate.toInstant();
+
+		_user2.setModifiedDate(Date.from(instant.plusSeconds(1)));
+
+		_userLocalService.updateUser(_user2);
+
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
 			String.format(
-				"(dateModified eq %s) and (firstName eq \"%s\")", firstName,
-				ISO8601Utils.format(_user1.getModifiedDate())),
+				"(dateModified eq %s) and (firstName eq '%s')",
+				ISO8601Utils.format(_user1.getModifiedDate()), firstName),
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -94,11 +103,19 @@ public class UserODataRetrieverTest {
 			RandomTestUtil.randomString(), LocaleUtil.getDefault(), firstName,
 			RandomTestUtil.randomString(), new long[] {_group1.getGroupId()});
 
+		Date modifiedDate = _user1.getModifiedDate();
+
+		Instant instant = modifiedDate.toInstant();
+
+		_user2.setModifiedDate(Date.from(instant.plusSeconds(1)));
+
+		_userLocalService.updateUser(_user2);
+
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
 			String.format(
-				"(dateModified gt %s) and (firstName eq \"%s\")", firstName,
-				ISO8601Utils.format(_user1.getModifiedDate())),
+				"(dateModified gt %s) and (firstName eq '%s')",
+				ISO8601Utils.format(_user1.getModifiedDate()), firstName),
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -118,11 +135,19 @@ public class UserODataRetrieverTest {
 			RandomTestUtil.randomString(), LocaleUtil.getDefault(), firstName,
 			RandomTestUtil.randomString(), new long[] {_group1.getGroupId()});
 
+		Date modifiedDate = _user1.getModifiedDate();
+
+		Instant instant = modifiedDate.toInstant();
+
+		_user2.setModifiedDate(Date.from(instant.plusSeconds(1)));
+
+		_userLocalService.updateUser(_user2);
+
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
 			String.format(
-				"(dateModified ge %s) and (firstName eq \"%s\")", firstName,
-				ISO8601Utils.format(new Date())),
+				"(dateModified ge %s) and (firstName eq '%s')",
+				ISO8601Utils.format(_user2.getModifiedDate()), firstName),
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -140,11 +165,19 @@ public class UserODataRetrieverTest {
 			RandomTestUtil.randomString(), LocaleUtil.getDefault(), firstName,
 			RandomTestUtil.randomString(), new long[] {_group1.getGroupId()});
 
+		Date modifiedDate = _user1.getModifiedDate();
+
+		Instant instant = modifiedDate.toInstant();
+
+		_user2.setModifiedDate(Date.from(instant.plusSeconds(1)));
+
+		_userLocalService.updateUser(_user2);
+
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
 			String.format(
-				"(dateModified lt %s) and (firstName eq \"%s\")", firstName,
-				ISO8601Utils.format(_user2.getModifiedDate())),
+				"(dateModified lt %s) and (firstName eq '%s')",
+				ISO8601Utils.format(_user2.getModifiedDate()), firstName),
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -164,11 +197,19 @@ public class UserODataRetrieverTest {
 			RandomTestUtil.randomString(), LocaleUtil.getDefault(), firstName,
 			RandomTestUtil.randomString(), new long[] {_group1.getGroupId()});
 
+		Date modifiedDate = _user1.getModifiedDate();
+
+		Instant instant = modifiedDate.toInstant();
+
+		_user2.setModifiedDate(Date.from(instant.plusSeconds(1)));
+
+		_userLocalService.updateUser(_user2);
+
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
 			String.format(
-				"(dateModified le %s) and (firstName eq \"%s\")", firstName,
-				ISO8601Utils.format(new Date())),
+				"(dateModified le %s) and (firstName eq '%s')",
+				ISO8601Utils.format(modifiedDate), firstName),
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -182,7 +223,7 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(emailAddress eq \"" + _user1.getEmailAddress() + "\")",
+			"(emailAddress eq '" + _user1.getEmailAddress() + "')",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -198,7 +239,7 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(firstName eq \"" + _user1.getFirstName() + "\")",
+			"(firstName eq '" + _user1.getFirstName() + "')",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -214,8 +255,8 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(firstName eq \"" + _user1.getFirstName() +
-				"\") and (lastName eq " + "\"" + _user1.getLastName() + "\") ",
+			"(firstName eq '" + _user1.getFirstName() + "') and (lastName eq " +
+				"'" + _user1.getLastName() + "') ",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -235,8 +276,8 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(firstName eq \"" + _user1.getFirstName() +
-				"\") or (lastName eq \"" + _user2.getLastName() + "\") ",
+			"(firstName eq '" + _user1.getFirstName() + "') or (lastName eq '" +
+				_user2.getLastName() + "') ",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 2, users.size());
@@ -253,8 +294,8 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(firstName eq \"" + _user1.getFirstName() +
-				"\") or (lastName eq \"nonexistentLastName\") ",
+			"(firstName eq '" + _user1.getFirstName() +
+				"') or (lastName eq 'nonexistentLastName') ",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -272,8 +313,8 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(firstName eq \"" + _user1.getFirstName() +
-				"\") or (lastName eq \"" + _user1.getLastName() + "\") ",
+			"(firstName eq '" + _user1.getFirstName() + "') or (lastName eq '" +
+				_user1.getLastName() + "') ",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -294,8 +335,8 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(firstName eq \"" + firstName + "\") and (groupId eq \"" +
-				_group2.getGroupId() + "\")",
+			"(firstName eq '" + firstName + "') and (groupId eq '" +
+				_group2.getGroupId() + "')",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -316,8 +357,8 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(firstName eq \"" + firstName + "\") and (groupIds eq \"" +
-				_group2.getGroupId() + "\")",
+			"(firstName eq '" + firstName + "') and (groupIds eq '" +
+				_group2.getGroupId() + "')",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -338,9 +379,9 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(firstName eq \"" + firstName + "\") and ((groupIds eq \"" +
-				_group2.getGroupId() + "\") or (groupIds eq \"" +
-					_group1.getGroupId() + "\"))",
+			"(firstName eq '" + firstName + "') and ((groupIds eq '" +
+				_group2.getGroupId() + "') or (groupIds eq '" +
+					_group1.getGroupId() + "'))",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 2, users.size());
@@ -355,7 +396,7 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(lastName eq \"" + _user1.getLastName() + "\")",
+			"(lastName eq '" + _user1.getLastName() + "')",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -376,9 +417,9 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(firstName eq \"" + firstName + "\") and (groupIds eq \"" +
-				_group2.getGroupId() + "\") and (groupIds eq \"" +
-					_group1.getGroupId() + "\")",
+			"(firstName eq '" + firstName + "') and (groupIds eq '" +
+				_group2.getGroupId() + "') and (groupIds eq '" +
+					_group1.getGroupId() + "')",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -394,7 +435,7 @@ public class UserODataRetrieverTest {
 
 		List<User> users = _userODataRetriever.getUsers(
 			_group1.getCompanyId(),
-			"(screenName eq \"" + _user1.getScreenName() + "\")",
+			"(screenName eq '" + _user1.getScreenName() + "')",
 			LocaleUtil.getDefault(), 0, 2);
 
 		Assert.assertEquals(users.toString(), 1, users.size());
@@ -412,6 +453,9 @@ public class UserODataRetrieverTest {
 
 	@DeleteAfterTestRun
 	private User _user2;
+
+	@Inject
+	private UserLocalService _userLocalService;
 
 	@Inject
 	private UserODataRetriever _userODataRetriever;
