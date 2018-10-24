@@ -73,9 +73,11 @@ if (referer.startsWith(themeDisplay.getPathMain() + "/portal/update_password") &
 
 					<%
 					UserLockoutException.PasswordPolicyLockout ule = (UserLockoutException.PasswordPolicyLockout)SessionErrors.get(request, UserLockoutException.PasswordPolicyLockout.class.getName());
+					Date userLockoutDate = ule.user.getUnlockDate();
+					Format dateFormatTime = FastDateFormatFactoryUtil.getDateTime(ule.user.getLocale(), ule.user.getTimeZone());
 					%>
 
-					<liferay-ui:message arguments="<%= ule.user.getUnlockDate() %>" key="this-account-is-locked-until-x" translateArguments="<%= false %>" />
+					<liferay-ui:message arguments="<%= dateFormatTime.format(userLockoutDate) %>" key="this-account-is-locked-until-x" translateArguments="<%= false %>" />
 				</div>
 			</c:when>
 			<c:otherwise>

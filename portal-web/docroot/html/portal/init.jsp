@@ -37,6 +37,7 @@ page import="com.liferay.portal.kernel.portlet.PortletConfigurationLayoutUtil" %
 page import="com.liferay.portal.kernel.servlet.HttpHeaders" %><%@
 page import="com.liferay.portal.kernel.templateparser.TransformException" %><%@
 page import="com.liferay.portal.kernel.util.ClassUtil" %><%@
+page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.ProgressTracker" %><%@
 page import="com.liferay.portal.kernel.util.TermsOfUseContentProvider" %><%@
 page import="com.liferay.portal.kernel.util.TermsOfUseContentProviderRegistryUtil" %><%@
@@ -45,3 +46,8 @@ page import="com.liferay.portal.util.LicenseUtil" %><%@
 page import="com.liferay.portal.util.PortletCategoryUtil" %><%@
 page import="com.liferay.portlet.configuration.kernel.util.PortletConfigurationApplicationType" %><%@
 page import="com.liferay.taglib.servlet.PipingServletResponse" %>
+
+<%@ page import="java.text.Format" %>
+
+<%@ page import="java.util.Date" %>
+
