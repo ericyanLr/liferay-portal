@@ -15,6 +15,7 @@
 package com.liferay.portal.liveusers;
 
 import com.liferay.portal.kernel.cluster.ClusterExecutorUtil;
+import com.liferay.portal.kernel.cluster.ClusterMasterExecutorUtil;
 import com.liferay.portal.kernel.cluster.ClusterNode;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -242,11 +243,13 @@ public class LiveUsers {
 		}
 
 		try {
-			UserTrackerLocalServiceUtil.addUserTracker(
-				userTracker.getCompanyId(), userTracker.getUserId(),
-				userTracker.getModifiedDate(), sessionId,
-				userTracker.getRemoteAddr(), userTracker.getRemoteHost(),
-				userTracker.getUserAgent(), userTracker.getPaths());
+			if (ClusterMasterExecutorUtil.isMaster()) {
+				UserTrackerLocalServiceUtil.addUserTracker(
+					userTracker.getCompanyId(), userTracker.getUserId(),
+					userTracker.getModifiedDate(), sessionId,
+					userTracker.getRemoteAddr(), userTracker.getRemoteHost(),
+					userTracker.getUserAgent(), userTracker.getPaths());
+			}
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
