@@ -57,9 +57,11 @@ import com.liferay.portal.util.PropsValues;
 
 import java.io.Serializable;
 
+import java.text.DateFormat;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 
 import java.util.Collections;
 import java.util.Date;
@@ -1835,6 +1837,12 @@ public class LanguageImpl implements Language, Serializable {
 				}
 
 				sb.append(dateFormat.format(argument));
+
+				DateFormat getTimeZoneShort = new SimpleDateFormat("z", locale);
+
+				String timeZoneShort = " " + getTimeZoneShort.format(argument);
+
+				sb.append(timeZoneShort);
 			}
 			else {
 				sb.append(argument);
