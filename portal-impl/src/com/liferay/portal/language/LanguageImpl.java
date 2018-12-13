@@ -49,6 +49,7 @@ import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
+import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -57,9 +58,11 @@ import com.liferay.portal.util.PropsValues;
 
 import java.io.Serializable;
 
+import java.text.DateFormat;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 
 import java.util.Collections;
 import java.util.Date;
@@ -72,6 +75,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -1831,7 +1835,18 @@ public class LanguageImpl implements Language, Serializable {
 			}
 			else if (argument instanceof Date) {
 				if (dateFormat == null) {
-					dateFormat = FastDateFormatFactoryUtil.getDateTime(locale);
+					int dateStyle = DateFormat.LONG;
+					int timeStyle = DateFormat.LONG;
+					DateFormat getTimeZoneShort = new SimpleDateFormat(
+						"z", locale);
+
+					String timeZoneShort =
+						" " + getTimeZoneShort.format(argument);
+
+					TimeZone timeZone = TimeZoneUtil.getTimeZone(timeZoneShort);
+
+					dateFormat = FastDateFormatFactoryUtil.getDateTime(
+						dateStyle, timeStyle, locale, timeZone);
 				}
 
 				sb.append(dateFormat.format(argument));
