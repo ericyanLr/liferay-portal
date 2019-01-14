@@ -16,6 +16,7 @@ package com.liferay.document.library.document.conversion.internal;
 
 import com.artofsolving.jodconverter.DefaultDocumentFormatRegistry;
 import com.artofsolving.jodconverter.DocumentConverter;
+import com.artofsolving.jodconverter.DocumentFamily;
 import com.artofsolving.jodconverter.DocumentFormat;
 import com.artofsolving.jodconverter.DocumentFormatRegistry;
 import com.artofsolving.jodconverter.openoffice.connection.OpenOfficeConnection;
@@ -51,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.star.beans.PropertyValue;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -88,13 +90,10 @@ public class DocumentConversionImpl implements DocumentConversion {
 			return file;
 		}
 
-		DocumentFormatRegistry documentFormatRegistry =
-			new DefaultDocumentFormatRegistry();
-
 		DocumentFormat inputDocumentFormat =
-			documentFormatRegistry.getFormatByFileExtension(sourceExtension);
+			_documentFormatRegistry.getFormatByFileExtension(sourceExtension);
 		DocumentFormat outputDocumentFormat =
-			documentFormatRegistry.getFormatByFileExtension(targetExtension);
+			_documentFormatRegistry.getFormatByFileExtension(targetExtension);
 
 		if (inputDocumentFormat == null) {
 			throw new SystemException(
@@ -253,8 +252,11 @@ public class DocumentConversionImpl implements DocumentConversion {
 	@Activate
 	@Modified
 	protected void activate(Map<String, Object> properties) {
+		_documentFormatRegistry = new DefaultDocumentFormatRegistry();
 		_openOfficeConfiguration = ConfigurableUtil.createConfigurable(
 			OpenOfficeConfiguration.class, properties);
+
+		_setupPDFDocumentFormat();
 
 		_populateConversionsMap("drawing");
 		_populateConversionsMap("presentation");
@@ -294,6 +296,18 @@ public class DocumentConversionImpl implements DocumentConversion {
 		return _documentConverter;
 	}
 
+	private void _setupPDFDocumentFormat() {
+		DocumentFormat documentFormat =
+			_documentFormatRegistry.getFormatByFileExtension("pdf");
+
+		Map<String, Object> filterData = new HashMap<>();
+
+		filterData.put("UseLosslessCompression", Boolean.TRUE);
+
+		documentFormat.setExportOption(
+			DocumentFamily.TEXT, "FilterData", filterData);
+	}
+
 	private boolean _isRemoteOpenOfficeHost(String host) {
 		if (Validator.isNotNull(host) && !host.equals(_LOCALHOST_IP) &&
 			!host.startsWith(_LOCALHOST)) {
@@ -307,9 +321,6 @@ public class DocumentConversionImpl implements DocumentConversion {
 	private void _populateConversionsMap(String documentFamily) {
 		Filter filter = new Filter(documentFamily);
 
-		DocumentFormatRegistry documentFormatRegistry =
-			new DefaultDocumentFormatRegistry();
-
 		String[] sourceExtensions = PropsUtil.getArray(
 			PropsKeys.OPENOFFICE_CONVERSION_SOURCE_EXTENSIONS, filter);
 		String[] targetExtensions = PropsUtil.getArray(
@@ -317,7 +328,7 @@ public class DocumentConversionImpl implements DocumentConversion {
 
 		for (String sourceExtension : sourceExtensions) {
 			DocumentFormat sourceDocumentFormat =
-				documentFormatRegistry.getFormatByFileExtension(
+				_documentFormatRegistry.getFormatByFileExtension(
 					sourceExtension);
 
 			if (sourceDocumentFormat == null) {
@@ -332,7 +343,7 @@ public class DocumentConversionImpl implements DocumentConversion {
 
 			for (String targetExtension : targetExtensions) {
 				DocumentFormat targetDocumentFormat =
-					documentFormatRegistry.getFormatByFileExtension(
+					_documentFormatRegistry.getFormatByFileExtension(
 						targetExtension);
 
 				if (targetDocumentFormat == null) {
@@ -395,6 +406,7 @@ public class DocumentConversionImpl implements DocumentConversion {
 
 	private final Map<String, String[]> _conversionsMap = new HashMap<>();
 	private DocumentConverter _documentConverter;
+	private DocumentFormatRegistry _documentFormatRegistry;
 	private volatile OpenOfficeConfiguration _openOfficeConfiguration;
 	private OpenOfficeConnection _openOfficeConnection;
 
