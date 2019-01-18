@@ -130,9 +130,13 @@ public class DocumentConversionImpl implements DocumentConversion {
 
 		DocumentConverter documentConverter = _getDocumentConverter();
 
+		_log.error("OpenOffice Document Conversion Started..");
+
 		documentConverter.convert(
 			inputStream, inputDocumentFormat, unsyncByteArrayOutputStream,
 			outputDocumentFormat);
+
+		_log.error("OpenOffice Document Conversion Completed!");
 
 		FileUtil.write(
 			file, unsyncByteArrayOutputStream.unsafeGetByteArray(), 0,
