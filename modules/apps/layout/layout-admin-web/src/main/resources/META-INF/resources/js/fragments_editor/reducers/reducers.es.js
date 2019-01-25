@@ -5,6 +5,7 @@ import {hideFragmentsEditorSidebarReducer, toggleFragmentsEditorSidebarReducer} 
 import {hideMappingDialogReducer, hideMappingTypeDialogReducer, openAssetTypeDialogReducer, openMappingFieldsDialogReducer, selectMappeableTypeReducer} from './dialogs.es';
 import {languageIdReducer, translationStatusReducer} from './translations.es';
 import {saveChangesReducer} from './changes.es';
+import {segmentIdReducer} from './segments.es';
 import {updateActiveItemReducer, updateDropTargetReducer, updateHighlightMappingReducer, updateHoveredItemReducer} from './placeholders.es';
 
 /**
@@ -27,6 +28,7 @@ const reducers = [
 	removeSectionReducer,
 	saveChangesReducer,
 	selectMappeableTypeReducer,
+	segmentIdReducer,
 	toggleFragmentsEditorSidebarReducer,
 	translationStatusReducer,
 	updateActiveItemReducer,
