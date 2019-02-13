@@ -99,11 +99,8 @@ public class ModuleApplicationContextRegistrator {
 			Bundle extender, Bundle extendee)
 		throws RuntimeException {
 
-		Dictionary<String, String> headers = extendee.getHeaders(
-			StringPool.BLANK);
-
-		String[] beanDefinitionFileNames = StringUtil.split(
-			headers.get("Liferay-Spring-Context"), ',');
+		String[] beanDefinitionFileNames = _getBeanDefinitionFileNames(
+			extendee);
 
 		ClassLoader classLoader = new BundleResolverClassLoader(
 			extendee, extender);
@@ -131,6 +128,13 @@ public class ModuleApplicationContextRegistrator {
 		moduleApplicationContext.refresh();
 
 		return moduleApplicationContext;
+	}
+
+	private String[] _getBeanDefinitionFileNames(Bundle bundle) {
+		Dictionary<String, String> headers = bundle.getHeaders(
+			StringPool.BLANK);
+
+		return StringUtil.split(headers.get("Liferay-Spring-Context"), ',');
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
