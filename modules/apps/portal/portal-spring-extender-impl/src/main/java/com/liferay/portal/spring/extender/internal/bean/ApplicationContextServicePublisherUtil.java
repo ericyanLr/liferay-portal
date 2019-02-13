@@ -43,8 +43,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 public class ApplicationContextServicePublisherUtil {
 
 	public static List<ServiceRegistration<?>> registerContext(
-		ApplicationContext applicationContext, BundleContext bundleContext,
-		boolean parentContext) {
+		ApplicationContext applicationContext, BundleContext bundleContext) {
 
 		String[] beanNames = applicationContext.getBeanDefinitionNames();
 
@@ -75,16 +74,9 @@ public class ApplicationContextServicePublisherUtil {
 
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
-		if (parentContext) {
-			properties.put(
-				"org.springframework.parent.context.service.name",
-				bundle.getSymbolicName());
-		}
-		else {
-			properties.put(
-				"org.springframework.context.service.name",
-				bundle.getSymbolicName());
-		}
+		properties.put(
+			"org.springframework.context.service.name",
+			bundle.getSymbolicName());
 
 		ServiceRegistration<ApplicationContext> serviceRegistration =
 			bundleContext.registerService(
@@ -93,20 +85,6 @@ public class ApplicationContextServicePublisherUtil {
 		serviceRegistrations.add(serviceRegistration);
 
 		return serviceRegistrations;
-	}
-
-	public static void unregisterContext(
-		List<ServiceRegistration<?>> serviceRegistrations) {
-
-		if (serviceRegistrations != null) {
-			for (ServiceRegistration<?> serviceReference :
-					serviceRegistrations) {
-
-				serviceReference.unregister();
-			}
-
-			serviceRegistrations.clear();
-		}
 	}
 
 	private static ServiceRegistration<?> _registerService(
