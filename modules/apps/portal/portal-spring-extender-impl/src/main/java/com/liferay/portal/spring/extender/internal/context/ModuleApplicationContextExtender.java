@@ -393,6 +393,10 @@ public class ModuleApplicationContextExtender extends AbstractExtender {
 				String line = null;
 
 				while ((line = unsyncBufferedReader.readLine()) != null) {
+					if (Validator.isNull(line)) {
+						continue;
+					}
+
 					line = line.trim();
 
 					int index = line.indexOf(CharPool.SPACE);
