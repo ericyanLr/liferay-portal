@@ -127,9 +127,8 @@ public class ParentModuleApplicationContextExtender extends AbstractExtender {
 		}
 	}
 
-	private static final String[] _PARENT_CONFIG_LOCATIONS = {
-		"META-INF/spring/parent"
-	};
+	private static final String[] _PARENT_CONFIG_LOCATIONS =
+		{"META-INF/spring/parent"};
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ParentModuleApplicationContextExtender.class);
