@@ -14,7 +14,6 @@
 
 package com.liferay.portal.spring.extender.internal.context;
 
-import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
@@ -64,8 +63,7 @@ public class ModuleApplicationContextRegistrator {
 
 			_configurableApplicationContext = new ModuleApplicationContext(
 				compositeResourceLoaderBundle, classLoader,
-				StringUtil.split(
-					headers.get("Liferay-Spring-Context"), CharPool.COMMA));
+				StringUtil.split(headers.get("Liferay-Spring-Context"), ','));
 
 			_configurableApplicationContext.addBeanFactoryPostProcessor(
 				new ModuleBeanFactoryPostProcessor(
