@@ -51,7 +51,8 @@ public class ModuleApplicationContextRegistrator {
 
 	protected void start() throws Exception {
 		try {
-			_configurableApplicationContext = _createApplicationContext();
+			_configurableApplicationContext = _createApplicationContext(
+				_extenderBundle, _extendeeBundle);
 
 			BundleWiring bundleWiring = _extendeeBundle.adapt(
 				BundleWiring.class);
@@ -94,18 +95,21 @@ public class ModuleApplicationContextRegistrator {
 		_configurableApplicationContext = null;
 	}
 
-	private ConfigurableApplicationContext _createApplicationContext() {
-		Dictionary<String, String> headers = _extendeeBundle.getHeaders(
+	private ConfigurableApplicationContext _createApplicationContext(
+			Bundle extender, Bundle extendee)
+		throws RuntimeException {
+
+		Dictionary<String, String> headers = extendee.getHeaders(
 			StringPool.BLANK);
 
 		String[] beanDefinitionFileNames = StringUtil.split(
 			headers.get("Liferay-Spring-Context"), ',');
 
 		ClassLoader classLoader = new BundleResolverClassLoader(
-			_extendeeBundle, _extenderBundle);
+			extendee, extender);
 
 		Bundle compositeResourceLoaderBundle =
-			new CompositeResourceLoaderBundle(_extendeeBundle, _extenderBundle);
+			new CompositeResourceLoaderBundle(extendee, extender);
 
 		ModuleApplicationContext moduleApplicationContext =
 			new ModuleApplicationContext(
@@ -114,7 +118,7 @@ public class ModuleApplicationContextRegistrator {
 
 		moduleApplicationContext.addBeanFactoryPostProcessor(
 			new ModuleBeanFactoryPostProcessor(
-				classLoader, _extendeeBundle.getBundleContext()));
+				classLoader, extendee.getBundleContext()));
 
 		ApplicationContext parentApplicationContext =
 			ParentModuleApplicationContextHolder.getApplicationContext(
