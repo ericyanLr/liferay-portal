@@ -51,8 +51,8 @@ public class ModuleApplicationContextRegistrator {
 
 	protected void start() throws Exception {
 		try {
-			_configurableApplicationContext = _createApplicationContext(
-				_extenderBundle, _extendeeBundle);
+			ConfigurableApplicationContext configurableApplicationContext =
+				_createApplicationContext(_extenderBundle, _extendeeBundle);
 
 			BundleWiring bundleWiring = _extendeeBundle.adapt(
 				BundleWiring.class);
@@ -61,7 +61,9 @@ public class ModuleApplicationContextRegistrator {
 				_extendeeBundle.getSymbolicName(),
 				new BeanLocatorImpl(
 					bundleWiring.getClassLoader(),
-					_configurableApplicationContext));
+					configurableApplicationContext));
+
+			_configurableApplicationContext = configurableApplicationContext;
 
 			_applicationContextServicePublisher =
 				new ApplicationContextServicePublisher(
