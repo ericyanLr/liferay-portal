@@ -20,7 +20,7 @@ import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.spring.extender.internal.bean.ApplicationContextServicePublisherUtil;
+import com.liferay.portal.spring.extender.internal.bean.ApplicationContextServicePublisher;
 import com.liferay.portal.spring.extender.internal.bundle.CompositeResourceLoaderBundle;
 import com.liferay.portal.spring.extender.internal.classloader.BundleResolverClassLoader;
 
@@ -32,7 +32,6 @@ import java.util.Dictionary;
 import java.util.List;
 
 import org.osgi.framework.Bundle;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleWiring;
 
 import org.springframework.beans.CachedIntrospectionResults;
@@ -64,10 +63,12 @@ public class ModuleApplicationContextRegistrator {
 					bundleWiring.getClassLoader(),
 					_configurableApplicationContext));
 
-			_serviceRegistrations =
-				ApplicationContextServicePublisherUtil.registerContext(
+			_applicationContextServicePublisher =
+				new ApplicationContextServicePublisher(
 					_configurableApplicationContext,
 					_extendeeBundle.getBundleContext());
+
+			_applicationContextServicePublisher.register();
 		}
 		catch (Exception e) {
 			_log.error(
@@ -85,15 +86,7 @@ public class ModuleApplicationContextRegistrator {
 
 		Introspector.flushCaches();
 
-		if (_serviceRegistrations != null) {
-			for (ServiceRegistration<?> serviceReference :
-					_serviceRegistrations) {
-
-				serviceReference.unregister();
-			}
-
-			_serviceRegistrations.clear();
-		}
+		_applicationContextServicePublisher.unregister();
 
 		PortletBeanLocatorUtil.setBeanLocator(
 			_extendeeBundle.getSymbolicName(), null);
@@ -154,9 +147,10 @@ public class ModuleApplicationContextRegistrator {
 	private static final Log _log = LogFactoryUtil.getLog(
 		ModuleApplicationContextRegistrator.class);
 
+	private ApplicationContextServicePublisher
+		_applicationContextServicePublisher;
 	private ConfigurableApplicationContext _configurableApplicationContext;
 	private final Bundle _extendeeBundle;
 	private final Bundle _extenderBundle;
-	private List<ServiceRegistration<?>> _serviceRegistrations;
 
 }
