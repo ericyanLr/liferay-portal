@@ -52,10 +52,13 @@ public class ApplicationContextServicePublisherUtil {
 			beanNames.length + 1);
 
 		for (String beanName : beanNames) {
+			Object bean = null;
+
 			try {
+				bean = applicationContext.getBean(beanName);
+
 				ServiceRegistration<?> serviceRegistration = _registerService(
-					bundleContext, beanName,
-					applicationContext.getBean(beanName));
+					bundleContext, beanName, bean);
 
 				if (serviceRegistration != null) {
 					serviceRegistrations.add(serviceRegistration);
