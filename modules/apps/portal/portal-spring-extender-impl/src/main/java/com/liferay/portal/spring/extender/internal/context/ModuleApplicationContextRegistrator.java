@@ -36,6 +36,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
 import org.springframework.beans.CachedIntrospectionResults;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -55,14 +56,8 @@ public class ModuleApplicationContextRegistrator {
 			ConfigurableApplicationContext configurableApplicationContext =
 				_createApplicationContext(_extenderBundle, _extendeeBundle);
 
-			BundleWiring bundleWiring = _extendeeBundle.adapt(
-				BundleWiring.class);
-
-			PortletBeanLocatorUtil.setBeanLocator(
-				_extendeeBundle.getSymbolicName(),
-				new BeanLocatorImpl(
-					bundleWiring.getClassLoader(),
-					configurableApplicationContext));
+			_registerBeanLocator(
+				_extendeeBundle, configurableApplicationContext);
 
 			_configurableApplicationContext = configurableApplicationContext;
 
@@ -153,6 +148,17 @@ public class ModuleApplicationContextRegistrator {
 
 		return beanDefinitionFileNames.toArray(
 			new String[beanDefinitionFileNames.size()]);
+	}
+
+	private void _registerBeanLocator(
+		Bundle bundle, ApplicationContext applicationContext) {
+
+		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
+
+		PortletBeanLocatorUtil.setBeanLocator(
+			_extendeeBundle.getSymbolicName(),
+			new BeanLocatorImpl(
+				bundleWiring.getClassLoader(), applicationContext));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
