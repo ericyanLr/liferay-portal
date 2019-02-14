@@ -14,21 +14,18 @@
 
 package com.liferay.portal.spring.extender.internal.context;
 
-import com.liferay.petra.string.CharPool;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.spring.extender.internal.bean.ApplicationContextServicePublisherUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.spring.extender.internal.bean.ApplicationContextServicePublisher;
+import com.liferay.portal.spring.extender.internal.bundle.CompositeResourceLoaderBundle;
 import com.liferay.portal.spring.extender.internal.classloader.BundleResolverClassLoader;
 
 import java.beans.Introspector;
 
-import java.util.Dictionary;
-import java.util.List;
-
 import org.osgi.framework.Bundle;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleWiring;
 
 import org.springframework.beans.CachedIntrospectionResults;
@@ -49,62 +46,33 @@ public class ModuleApplicationContextRegistrator {
 
 	protected void start() throws Exception {
 		try {
-			ClassLoader classLoader = new BundleResolverClassLoader(
-				_extendeeBundle, _extenderBundle);
+			ConfigurableApplicationContext configurableApplicationContext =
+				_createApplicationContext(_extenderBundle, _extendeeBundle);
 
-			Dictionary<String, String> headers = _extendeeBundle.getHeaders(
-				StringPool.BLANK);
+			_registerBeanLocator(
+				_extendeeBundle, configurableApplicationContext);
 
-			_configurableApplicationContext = new ModuleApplicationContext(
-				_extendeeBundle, classLoader,
-				StringUtil.split(
-					headers.get("Liferay-Spring-Context"), CharPool.COMMA));
+			_configurableApplicationContext = configurableApplicationContext;
 
-			_configurableApplicationContext.addBeanFactoryPostProcessor(
-				new ModuleBeanFactoryPostProcessor(
-					classLoader, _extendeeBundle.getBundleContext()));
-
-			ApplicationContext parentApplicationContext =
-				ParentModuleApplicationContextHolder.getApplicationContext(
-					_extendeeBundle);
-
-			if (parentApplicationContext != null) {
-				_configurableApplicationContext.setParent(
-					parentApplicationContext);
-			}
-
-			_configurableApplicationContext.refresh();
-
-			BundleWiring bundleWiring = _extendeeBundle.adapt(
-				BundleWiring.class);
-
-			PortletBeanLocatorUtil.setBeanLocator(
-				_extendeeBundle.getSymbolicName(),
-				new BeanLocatorImpl(
-					bundleWiring.getClassLoader(),
-					_configurableApplicationContext));
-
-			_serviceRegistrations =
-				ApplicationContextServicePublisherUtil.registerContext(
+			_applicationContextServicePublisher =
+				new ApplicationContextServicePublisher(
 					_configurableApplicationContext,
-					_extendeeBundle.getBundleContext(), false);
+					_extendeeBundle.getBundleContext());
+
+			_applicationContextServicePublisher.register();
 		}
 		catch (Exception e) {
-			throw new Exception(
+			_log.error(
 				"Unable to start " + _extendeeBundle.getSymbolicName(), e);
+
+			throw e;
 		}
 	}
 
 	protected void stop() throws Exception {
-		BundleWiring bundleWiring = _extendeeBundle.adapt(BundleWiring.class);
+		_cleanInstropectionCaches(_extendeeBundle);
 
-		CachedIntrospectionResults.clearClassLoader(
-			bundleWiring.getClassLoader());
-
-		Introspector.flushCaches();
-
-		ApplicationContextServicePublisherUtil.unregisterContext(
-			_serviceRegistrations);
+		_applicationContextServicePublisher.unregister();
 
 		PortletBeanLocatorUtil.setBeanLocator(
 			_extendeeBundle.getSymbolicName(), null);
@@ -114,9 +82,67 @@ public class ModuleApplicationContextRegistrator {
 		_configurableApplicationContext = null;
 	}
 
+	private void _cleanInstropectionCaches(Bundle bundle) {
+		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
+
+		CachedIntrospectionResults.clearClassLoader(
+			bundleWiring.getClassLoader());
+
+		Introspector.flushCaches();
+	}
+
+	private ConfigurableApplicationContext _createApplicationContext(
+			Bundle extender, Bundle extendee)
+		throws RuntimeException {
+
+		SpringContextHeaderParser springContextHeaderParser =
+			new SpringContextHeaderParser(extendee);
+
+		String[] beanDefinitionFileNames =
+			springContextHeaderParser.getBeanDefinitionFileNames();
+
+		if (ArrayUtil.isEmpty(beanDefinitionFileNames)) {
+			return null;
+		}
+
+		ClassLoader classLoader = new BundleResolverClassLoader(
+			extendee, extender);
+
+		Bundle compositeResourceLoaderBundle =
+			new CompositeResourceLoaderBundle(extendee, extender);
+
+		ModuleApplicationContext moduleApplicationContext =
+			new ModuleApplicationContext(
+				compositeResourceLoaderBundle, classLoader,
+				beanDefinitionFileNames);
+
+		moduleApplicationContext.addBeanFactoryPostProcessor(
+			new ModuleBeanFactoryPostProcessor(
+				classLoader, extendee.getBundleContext()));
+
+		moduleApplicationContext.refresh();
+
+		return moduleApplicationContext;
+	}
+
+	private void _registerBeanLocator(
+		Bundle bundle, ApplicationContext applicationContext) {
+
+		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
+
+		PortletBeanLocatorUtil.setBeanLocator(
+			_extendeeBundle.getSymbolicName(),
+			new BeanLocatorImpl(
+				bundleWiring.getClassLoader(), applicationContext));
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		ModuleApplicationContextRegistrator.class);
+
+	private ApplicationContextServicePublisher
+		_applicationContextServicePublisher;
 	private ConfigurableApplicationContext _configurableApplicationContext;
 	private final Bundle _extendeeBundle;
 	private final Bundle _extenderBundle;
-	private List<ServiceRegistration<?>> _serviceRegistrations;
 
 }
