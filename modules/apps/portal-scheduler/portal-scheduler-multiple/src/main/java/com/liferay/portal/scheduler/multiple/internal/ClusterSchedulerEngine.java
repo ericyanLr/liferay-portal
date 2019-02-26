@@ -886,6 +886,18 @@ public class ClusterSchedulerEngine
 					SchedulerResponse schedulerResponse =
 						memoryClusteredJob.getKey();
 
+					if ((schedulerResponse == null) ||
+						(schedulerResponse.getTrigger() == null)) {
+
+						if (_log.isInfoEnabled()) {
+							_log.info(
+								"Memory clustered job is not yet deployed on " +
+									"master");
+						}
+
+						continue;
+					}
+
 					Trigger oldTrigger = schedulerResponse.getTrigger();
 
 					Date startDate = oldTrigger.getFireDateAfter(new Date());
