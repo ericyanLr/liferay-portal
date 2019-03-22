@@ -127,8 +127,9 @@ public class PortletBagImpl implements PortletBag {
 	@Override
 	public Object clone() {
 		return new PortletBagImpl(
-			getPortletId(), getPortletName(), getServletContext(), getPortletInstance(),
-			getResourceBundleBaseName(), getFriendlyURLMapperTracker(), null);
+			getPortletId(), getPortletName(), getServletContext(),
+			getPortletInstance(), getResourceBundleBaseName(),
+			getFriendlyURLMapperTracker(), null);
 	}
 
 	@Override
@@ -323,6 +324,11 @@ public class PortletBagImpl implements PortletBag {
 	}
 
 	@Override
+	public String getPortletId() {
+		return _portletId;
+	}
+
+	@Override
 	public Portlet getPortletInstance() {
 		return _portletInstance;
 	}
@@ -340,11 +346,6 @@ public class PortletBagImpl implements PortletBag {
 		}
 
 		return _portletLayoutListenerInstances;
-	}
-
-	@Override
-	public String getPortletId() {
-		return _portletId;
 	}
 
 	@Override
