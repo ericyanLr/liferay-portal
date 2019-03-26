@@ -1744,7 +1744,7 @@
 			</library>
 			<library>
 				<file-name>com.liferay.portal.cluster.multiple.jar!jgroups.jar</file-name>
-				<version>3.6.4.Final</version>
+				<version>3.6.16.Final</version>
 				<project-name>JGroups</project-name>
 				<project-url>http://www.jgroups.org</project-url>
 				<licenses>
