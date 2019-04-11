@@ -54,7 +54,7 @@
 						"store": true,
 						"type": "text"
 					},
-					"match": "expando__keyword__*",
+					"path_match": "expando__keyword__*",
 					"match_mapping_type": "string"
 				}
 			},
@@ -463,7 +463,7 @@
 						"store": true,
 						"type": "text"
 					},
-					"match": "expando__*",
+					"path_match": "expando__*",
 					"match_mapping_type": "string"
 				}
 			}
