@@ -221,7 +221,7 @@ public class RequestBackedPortletURLFactoryUtil {
 				controlPanelLayout = themeDisplay.getControlPanelLayout();
 
 				if (group == null) {
-					group = themeDisplay.getScopeGroup();
+					group = themeDisplay.getSiteGroup();
 				}
 			}
 
