@@ -25,6 +25,7 @@ import com.liferay.message.boards.constants.MBPortletKeys;
 import com.liferay.portal.kernel.editor.configuration.BaseEditorConfigContributor;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigContributor;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -65,9 +66,16 @@ public class MBAttachmentHTMLEditorConfigContributor
 		String name = GetterUtil.getString(
 			inputEditorTaglibAttributes.get("liferay-ui:input-editor:name"));
 
+		Group group = themeDisplay.getRefererGroup();
+
+		if (group == null) {
+			group = themeDisplay.getSiteGroup();
+		}
+
 		PortletURL itemSelectorURL = _itemSelector.getItemSelectorURL(
-			requestBackedPortletURLFactory, namespace + name + "selectItem",
-			getImageItemSelectorCriterion(), getURLItemSelectorCriterion());
+			requestBackedPortletURLFactory, group, 0,
+			namespace + name + "selectItem", getImageItemSelectorCriterion(),
+			getURLItemSelectorCriterion());
 
 		jsonObject.put(
 			"filebrowserImageBrowseLinkUrl", itemSelectorURL.toString());
