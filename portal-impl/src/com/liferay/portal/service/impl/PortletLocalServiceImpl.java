@@ -2345,6 +2345,8 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 					-1L));
 		}
 
+		portletModel.setReady(false);
+
 		portletsMap.put(portletId, portletModel);
 	}
 
