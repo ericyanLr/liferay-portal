@@ -7636,7 +7636,8 @@ public class PortalImpl implements Portal {
 
 		if (Validator.isBlank(portalDomain) ||
 			StringUtil.equalsIgnoreCase(portalDomain, _LOCALHOST) ||
-			!StringUtil.equalsIgnoreCase(virtualHostname, _LOCALHOST)) {
+			(!StringUtil.equalsIgnoreCase(virtualHostname, _LOCALHOST) &&
+			 !PropsValues.WEB_SERVER_FORWARDED_HOST_ENABLED)) {
 
 			return virtualHostname;
 		}
@@ -8522,6 +8523,9 @@ public class PortalImpl implements Portal {
 						if (!StringUtil.equalsIgnoreCase(
 								virtualHostname, _LOCALHOST) &&
 							!_isSameHostName(virtualHostname, portalDomain)) {
+
+							virtualHostname = getCanonicalDomain(
+								virtualHostname, portalDomain);
 
 							portalURL = getPortalURL(
 								virtualHostname, themeDisplay.getServerPort(),
