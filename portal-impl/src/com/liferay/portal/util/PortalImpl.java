@@ -8523,6 +8523,10 @@ public class PortalImpl implements Portal {
 								virtualHostname, _LOCALHOST) &&
 							!_isSameHostName(virtualHostname, portalDomain)) {
 
+							if (PropsValues.WEB_SERVER_FORWARDED_HOST_ENABLED) {
+								virtualHostname = portalDomain;
+							}
+
 							portalURL = getPortalURL(
 								virtualHostname, themeDisplay.getServerPort(),
 								themeDisplay.isSecure());
