@@ -19,7 +19,9 @@
 <portlet:defineObjects />
 
 <%
-renderRequest.setAttribute(WebKeys.PORTLET_CONFIGURATOR_VISIBILITY, Boolean.TRUE);
+if (renderRequest != null) {
+	renderRequest.setAttribute(WebKeys.PORTLET_CONFIGURATOR_VISIBILITY, Boolean.TRUE);
+}
 %>
 
 <div class="alert alert-info">
