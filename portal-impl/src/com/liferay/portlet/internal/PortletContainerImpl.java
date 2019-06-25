@@ -887,19 +887,17 @@ public class PortletContainerImpl implements PortletContainer {
 		String path = (String)httpServletRequest.getAttribute(
 			WebKeys.RENDER_PATH);
 
-		if (path == null) {
-			path = "/html/portal/render_portlet.jsp";
-		}
-
-		if (headerPhase) {
-			path = "/html/portal/header_portlet.jsp";
-		}
-
 		if (portlet.isUndeployedPortlet()) {
 			path = "/html/portal/undeployed_portlet.jsp";
 		}
 		else if (!portlet.isReady()) {
 			path = "/html/portal/portlet_not_ready.jsp";
+		}
+		else if (headerPhase) {
+			path = "/html/portal/header_portlet.jsp";
+		}
+		else if (path == null) {
+			path = "/html/portal/render_portlet.jsp";
 		}
 
 		RequestDispatcher requestDispatcher =
