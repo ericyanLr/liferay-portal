@@ -895,6 +895,13 @@ public class PortletContainerImpl implements PortletContainer {
 			path = "/html/portal/header_portlet.jsp";
 		}
 
+		if (portlet.isUndeployedPortlet()) {
+			path = "/html/portal/undeployed_portlet.jsp";
+		}
+		else if (!portlet.isReady()) {
+			path = "/html/portal/portlet_not_ready.jsp";
+		}
+
 		RequestDispatcher requestDispatcher =
 			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
 				DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
