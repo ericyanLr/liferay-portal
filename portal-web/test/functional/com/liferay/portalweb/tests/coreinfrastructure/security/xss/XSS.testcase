@@ -26,6 +26,7 @@ definition {
 
 	@priority = "4"
 	test ValidateXSSVulnerabilities {
+		property portal.acceptance = "true";
 		var portalURL = PropsUtil.get("portal.url");
 
 		var maliciousURL1 = '''
