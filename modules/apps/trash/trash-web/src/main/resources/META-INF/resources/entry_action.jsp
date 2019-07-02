@@ -53,7 +53,7 @@ else {
 				url="<%= restoreEntryURL.toString() %>"
 			/>
 		</c:when>
-		<c:when test="<%= !trashHandler.isRestorable(trashEntry.getClassPK()) && trashHandler.isMovable() %>">
+		<c:when test="<%= !trashHandler.isRestorable(trashEntry.getClassPK()) && trashHandler.isMovable(trashEntry.getClassPK()) %>">
 			<portlet:renderURL var="moveURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
 				<portlet:param name="mvcPath" value="/view_container_model.jsp" />
 				<portlet:param name="classNameId" value="<%= String.valueOf(trashEntry.getClassNameId()) %>" />
