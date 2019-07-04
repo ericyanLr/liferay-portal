@@ -189,12 +189,9 @@ public class WikiNodeTrashHandler extends BaseWikiTrashHandler {
 	public boolean isRestorable(long classPK) throws PortalException {
 		WikiNode node = _wikiNodeLocalService.getNode(classPK);
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		if (!hasTrashPermission(
-				permissionChecker, node.getGroupId(), classPK,
-				TrashActionKeys.RESTORE)) {
+				PermissionThreadLocal.getPermissionChecker(), node.getGroupId(),
+				classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}

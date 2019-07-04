@@ -58,11 +58,9 @@ public class CalendarBookingTrashHandler extends BaseTrashHandler {
 		CalendarBooking calendarBooking =
 			_calendarBookingLocalService.getCalendarBooking(classPK);
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		if (!hasTrashPermission(
-				permissionChecker, calendarBooking.getGroupId(), classPK,
+				PermissionThreadLocal.getPermissionChecker(),
+				calendarBooking.getGroupId(), classPK,
 				TrashActionKeys.RESTORE)) {
 
 			return false;

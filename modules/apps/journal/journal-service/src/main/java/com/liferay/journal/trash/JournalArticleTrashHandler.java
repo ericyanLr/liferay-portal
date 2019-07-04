@@ -241,12 +241,9 @@ public class JournalArticleTrashHandler extends JournalBaseTrashHandler {
 			return false;
 		}
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		if (!hasTrashPermission(
-				permissionChecker, article.getGroupId(), classPK,
-				TrashActionKeys.RESTORE)) {
+				PermissionThreadLocal.getPermissionChecker(),
+				article.getGroupId(), classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}

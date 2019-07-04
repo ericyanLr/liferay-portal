@@ -244,12 +244,9 @@ public class DLFileEntryTrashHandler extends DLBaseTrashHandler {
 			return false;
 		}
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		if (!hasTrashPermission(
-				permissionChecker, dlFileEntry.getGroupId(), classPK,
-				TrashActionKeys.RESTORE)) {
+				PermissionThreadLocal.getPermissionChecker(),
+				dlFileEntry.getGroupId(), classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}

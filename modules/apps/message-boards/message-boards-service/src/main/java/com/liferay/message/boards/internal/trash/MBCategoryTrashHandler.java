@@ -364,12 +364,9 @@ public class MBCategoryTrashHandler extends BaseTrashHandler {
 			return false;
 		}
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		if (!hasTrashPermission(
-				permissionChecker, category.getGroupId(), classPK,
-				TrashActionKeys.RESTORE)) {
+				PermissionThreadLocal.getPermissionChecker(),
+				category.getGroupId(), classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}

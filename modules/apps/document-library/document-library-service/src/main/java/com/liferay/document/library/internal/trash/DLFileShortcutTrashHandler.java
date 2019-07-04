@@ -195,11 +195,9 @@ public class DLFileShortcutTrashHandler extends DLBaseTrashHandler {
 			return false;
 		}
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		if (!hasTrashPermission(
-				permissionChecker, dlFileShortcut.getGroupId(), classPK,
+				PermissionThreadLocal.getPermissionChecker(),
+				dlFileShortcut.getGroupId(), classPK,
 				TrashActionKeys.RESTORE)) {
 
 			return false;

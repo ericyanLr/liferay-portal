@@ -104,12 +104,9 @@ public class BlogsEntryTrashHandler extends BaseTrashHandler {
 	public boolean isRestorable(long classPK) throws PortalException {
 		BlogsEntry entry = _blogsEntryLocalService.getEntry(classPK);
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		if (!hasTrashPermission(
-				permissionChecker, entry.getGroupId(), classPK,
-				TrashActionKeys.RESTORE)) {
+				PermissionThreadLocal.getPermissionChecker(),
+				entry.getGroupId(), classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}

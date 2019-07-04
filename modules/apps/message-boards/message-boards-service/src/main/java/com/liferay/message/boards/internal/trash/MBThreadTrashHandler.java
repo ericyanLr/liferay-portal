@@ -221,12 +221,9 @@ public class MBThreadTrashHandler extends BaseTrashHandler {
 			return false;
 		}
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		if (!hasTrashPermission(
-				permissionChecker, thread.getGroupId(), classPK,
-				TrashActionKeys.RESTORE)) {
+				PermissionThreadLocal.getPermissionChecker(),
+				thread.getGroupId(), classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}

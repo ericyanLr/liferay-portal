@@ -152,12 +152,9 @@ public class BookmarksEntryTrashHandler extends BookmarksBaseTrashHandler {
 			return false;
 		}
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		if (!hasTrashPermission(
-				permissionChecker, entry.getGroupId(), classPK,
-				TrashActionKeys.RESTORE)) {
+				PermissionThreadLocal.getPermissionChecker(),
+				entry.getGroupId(), classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}
