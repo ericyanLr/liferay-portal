@@ -73,12 +73,14 @@ else {
 		</c:when>
 	</c:choose>
 
-	<portlet:actionURL name="deleteEntries" var="deleteEntryURL">
-		<portlet:param name="redirect" value="<%= currentURL %>" />
-		<portlet:param name="trashEntryId" value="<%= String.valueOf(trashEntry.getEntryId()) %>" />
-	</portlet:actionURL>
+	<c:if test="<%= trashHandler.isDeletable(trashEntry.getClassPK()) %>">
+		<portlet:actionURL name="deleteEntries" var="deleteEntryURL">
+			<portlet:param name="redirect" value="<%= currentURL %>" />
+			<portlet:param name="trashEntryId" value="<%= String.valueOf(trashEntry.getEntryId()) %>" />
+		</portlet:actionURL>
 
-	<liferay-ui:icon-delete
-		url="<%= deleteEntryURL %>"
-	/>
+		<liferay-ui:icon-delete
+			url="<%= deleteEntryURL %>"
+		/>
+	</c:if>
 </liferay-ui:icon-menu>

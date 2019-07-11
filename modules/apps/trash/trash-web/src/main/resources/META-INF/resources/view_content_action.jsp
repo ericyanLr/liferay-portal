@@ -69,7 +69,7 @@ TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(className);
 		/>
 	</c:if>
 
-	<c:if test="<%= trashHandler.isDeletable() %>">
+	<c:if test="<%= trashHandler.isDeletable(classPK) %>">
 		<portlet:actionURL name="deleteEntries" var="deleteEntryURL">
 			<portlet:param name="redirect" value="<%= currentURL %>" />
 			<portlet:param name="className" value="<%= className %>" />

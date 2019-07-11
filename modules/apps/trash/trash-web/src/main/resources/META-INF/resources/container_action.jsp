@@ -70,7 +70,7 @@ TrashRenderer trashRenderer = trashDisplayContext.getTrashRenderer();
 				</c:when>
 			</c:choose>
 
-			<c:if test="<%= trashHandler.isDeletable() %>">
+			<c:if test="<%= trashHandler.isDeletable(trashRenderer.getClassPK()) %>">
 				<portlet:actionURL name="deleteEntries" var="deleteEntryURL">
 					<portlet:param name="redirect" value="<%= trashDisplayContext.getViewContentRedirectURL() %>" />
 					<portlet:param name="trashEntryId" value="<%= String.valueOf(trashEntry.getEntryId()) %>" />
@@ -116,7 +116,7 @@ TrashRenderer trashRenderer = trashDisplayContext.getTrashRenderer();
 				/>
 			</c:if>
 
-			<c:if test="<%= trashHandler.isDeletable() %>">
+			<c:if test="<%= trashHandler.isDeletable(trashRenderer.getClassPK()) %>">
 				<portlet:actionURL name="deleteEntries" var="deleteEntryURL">
 					<portlet:param name="redirect" value="<%= trashDisplayContext.getViewContentRedirectURL() %>" />
 					<portlet:param name="className" value="<%= trashRenderer.getClassName() %>" />

@@ -91,7 +91,9 @@ public class TrashDisplayContext {
 		};
 	}
 
-	public String getAvailableActions(TrashEntry trashEntry) {
+	public String getAvailableActions(TrashEntry trashEntry)
+		throws PortalException {
+
 		if (_isDeletable(trashEntry)) {
 			return "deleteSelectedEntries";
 		}
@@ -703,7 +705,7 @@ public class TrashDisplayContext {
 		};
 	}
 
-	private boolean _isDeletable(TrashEntry trashEntry) {
+	private boolean _isDeletable(TrashEntry trashEntry) throws PortalException {
 		if (trashEntry.getRootEntry() == null) {
 			return true;
 		}
@@ -711,7 +713,7 @@ public class TrashDisplayContext {
 		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
 			trashEntry.getClassName());
 
-		return trashHandler.isDeletable();
+		return trashHandler.isDeletable(trashEntry.getClassPK());
 	}
 
 	private boolean _approximate;
