@@ -51,7 +51,6 @@ import com.liferay.trash.web.internal.constants.TrashPortletKeys;
 import com.liferay.trash.web.internal.search.EntrySearch;
 import com.liferay.trash.web.internal.search.EntrySearchTerms;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -92,14 +91,12 @@ public class TrashDisplayContext {
 		};
 	}
 
-	public List<String> getAvailableActionDropdownItems(TrashEntry trashEntry) {
-		List<String> availableActionDropdownItems = new ArrayList<>();
-
+	public String getAvailableActions(TrashEntry trashEntry) {
 		if (_isDeletable(trashEntry)) {
-			availableActionDropdownItems.add("deleteSelectedEntries");
+			return "deleteSelectedEntries";
 		}
 
-		return availableActionDropdownItems;
+		return StringPool.BLANK;
 	}
 
 	public String getClassName() {

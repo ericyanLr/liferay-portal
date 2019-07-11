@@ -161,7 +161,7 @@ if (Validator.isNotNull(trashDisplayContext.getKeywords())) {
 
 					Map<String, Object> rowData = new HashMap<>();
 
-					rowData.put("actions", String.join(StringPool.COMMA, trashDisplayContext.getAvailableActionDropdownItems(trashEntry)));
+					rowData.put("actions", trashDisplayContext.getAvailableActions(trashEntry));
 
 					row.setData(rowData);
 
