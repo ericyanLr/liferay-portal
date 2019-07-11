@@ -159,6 +159,12 @@ if (Validator.isNotNull(trashDisplayContext.getKeywords())) {
 						viewContentURLString = viewContentURL.toString();
 					}
 
+					Map<String, Object> rowData = new HashMap<>();
+
+					rowData.put("actions", String.join(StringPool.COMMA, trashDisplayContext.getAvailableActionDropdownItems(trashEntry)));
+
+					row.setData(rowData);
+
 					String actionPath = "/view_content_action.jsp";
 
 					if (Validator.isNotNull(trashRenderer.renderActions(renderRequest, renderResponse))) {
