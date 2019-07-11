@@ -706,10 +706,6 @@ public class TrashDisplayContext {
 	}
 
 	private boolean _isDeletable(TrashEntry trashEntry) throws PortalException {
-		if (trashEntry.getRootEntry() == null) {
-			return true;
-		}
-
 		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
 			trashEntry.getClassName());
 
