@@ -40,10 +40,10 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.trash.TrashActionKeys;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.trash.constants.TrashActionKeys;
 import com.liferay.trash.kernel.exception.RestoreEntryException;
 import com.liferay.trash.kernel.model.TrashEntry;
 import com.liferay.trash.kernel.model.TrashEntryConstants;
@@ -207,6 +207,22 @@ public class DLFolderTrashHandler extends DLBaseTrashHandler {
 	@Override
 	public boolean isContainerModel() {
 		return true;
+	}
+
+	@Override
+	public boolean isMovable(long classPK) throws PortalException {
+		DLFolder dlFolder = fetchDLFolder(classPK);
+
+		if (dlFolder.getParentFolderId() > 0) {
+			DLFolder parentFolder = _dlFolderLocalService.fetchFolder(
+				dlFolder.getParentFolderId());
+
+			if ((parentFolder == null) || parentFolder.isInTrash()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
