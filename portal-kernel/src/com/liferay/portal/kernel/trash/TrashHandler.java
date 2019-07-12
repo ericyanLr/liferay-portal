@@ -574,7 +574,7 @@ public interface TrashHandler {
 	 *
 	 * @return <code>true</code> if the entity can be deleted from the Recycle
 	 *         Bin.
-	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #isDeletable(long)}
 	 */
 	@Deprecated
@@ -634,7 +634,7 @@ public interface TrashHandler {
 	 *
 	 * @return <code>true</code> if the entity can be moved from one container
 	 *         model to another; <code>false</code> otherwise
-	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #isMovable(long)}
 	 */
 	@Deprecated

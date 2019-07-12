@@ -287,7 +287,7 @@ public class TestTrashHandler implements TrashHandler {
 	}
 
 	/**
-	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #isDeletable(long)}
 	 */
 	@Deprecated
@@ -312,7 +312,7 @@ public class TestTrashHandler implements TrashHandler {
 	}
 
 	/**
-	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #isMovable(long)}
 	 */
 	@Deprecated
