@@ -62,8 +62,8 @@ public class S3FileCacheCleanUpTest {
 
 		_cleanUpCacheFiles(expirationTime);
 
-		Assert.assertTrue(_cacheDir.exists());
-		Assert.assertTrue(cacheFile.exists());
+		Assert.assertFalse(_cacheDir.exists());
+		Assert.assertFalse(cacheFile.exists());
 		Assert.assertFalse(subdirectory.exists());
 	}
 
@@ -84,8 +84,8 @@ public class S3FileCacheCleanUpTest {
 
 		_cleanUpCacheFiles(expirationTime);
 
-		Assert.assertTrue(_cacheDir.exists());
-		Assert.assertTrue(cacheFile.exists());
+		Assert.assertFalse(_cacheDir.exists());
+		Assert.assertFalse(cacheFile.exists());
 		Assert.assertFalse(subdirectory.exists());
 
 		expirationTime = _cacheDir.lastModified() + 1;
@@ -111,8 +111,8 @@ public class S3FileCacheCleanUpTest {
 
 		_cleanUpCacheFiles(expirationTime);
 
-		Assert.assertTrue(_cacheDir.exists());
-		Assert.assertTrue(cacheFile.exists());
+		Assert.assertFalse(_cacheDir.exists());
+		Assert.assertFalse(cacheFile.exists());
 		Assert.assertFalse(subdirectory.exists());
 		Assert.assertFalse(subdirectoryCacheFile.exists());
 	}
@@ -136,8 +136,8 @@ public class S3FileCacheCleanUpTest {
 
 		_cleanUpCacheFiles(expirationTime);
 
-		Assert.assertTrue(_cacheDir.exists());
-		Assert.assertTrue(cacheFile.exists());
+		Assert.assertFalse(_cacheDir.exists());
+		Assert.assertFalse(cacheFile.exists());
 		Assert.assertFalse(subdirectory.exists());
 		Assert.assertFalse(subdirectoryCacheFile.exists());
 
