@@ -285,9 +285,7 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 			PortletBag portletBag = PortletBagPool.get(
 				_portlet.getRootPortletId());
 
-			if (portletBag != null) {
-				resourceBundle = portletBag.getResourceBundle(locale);
-			}
+			resourceBundle = portletBag.getResourceBundle(locale);
 		}
 
 		return new PortletResourceBundle(resourceBundle, _portletInfos);
