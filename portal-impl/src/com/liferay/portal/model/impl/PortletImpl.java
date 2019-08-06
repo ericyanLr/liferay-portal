@@ -956,6 +956,10 @@ public class PortletImpl extends PortletBaseImpl {
 		FriendlyURLMapperTracker friendlyURLMapperTracker =
 			portletBag.getFriendlyURLMapperTracker();
 
+		if (friendlyURLMapperTracker == null) {
+			return null;
+		}
+
 		return friendlyURLMapperTracker.getFriendlyURLMapper();
 	}
 
