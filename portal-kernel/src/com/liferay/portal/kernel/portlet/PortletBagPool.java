@@ -23,7 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PortletBagPool {
 
 	public static PortletBag get(String portletId) {
-		return _portletBagPool.get(portletId);
+		PortletBag portletBag = _portletBagPool.get(portletId);
+
+		if (portletBag == null) {
+			portletBag = new DummyPortletBag();
+		}
+
+		return portletBag;
 	}
 
 	public static void put(String portletId, PortletBag portletBag) {
