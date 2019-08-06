@@ -372,6 +372,7 @@ definition {
 
 	@priority = "4"
 	test ViewURLValidate {
+		property test.assert.warning.exceptions = "true";
 		property test.name.skip.portal.instance = "XSSUsecase#ViewURLValidate";
 
 		var maliciousURL1 = '''
