@@ -509,7 +509,9 @@ public class FriendlyURLServlet extends HttpServlet {
 
 			String path = getPath();
 
-			if (path.equals(Portal.PATH_MAIN) || path.startsWith("/c/")) {
+			if ((path.charAt(0) == CharPool.SLASH) ||
+				path.equals(Portal.PATH_MAIN) || path.startsWith("/c/")) {
+
 				return true;
 			}
 
