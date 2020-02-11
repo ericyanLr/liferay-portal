@@ -26,8 +26,10 @@ import com.liferay.portal.configuration.metatype.definitions.ExtendedObjectClass
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.zip.ZipWriter;
@@ -90,6 +92,30 @@ public class ExportConfigurationMVCResourceCommand
 		}
 
 		return false;
+	}
+
+	protected Object escapeProperties(Object properties) {
+		if (properties instanceof String) {
+			return escapeProperty(String.valueOf(properties));
+		}
+
+		if (properties instanceof String[]) {
+			for (String property :
+					ArrayUtil.toStringArray((Object[])properties)) {
+
+				property = escapeProperty(property);
+			}
+		}
+
+		return properties;
+	}
+
+	protected String escapeProperty(String property) {
+		String escapedProperty = StringUtil.replace(property, '{', "\\{");
+
+		escapedProperty = StringUtil.replace(escapedProperty, '}', "\\}");
+
+		return escapedProperty;
 	}
 
 	protected void exportAll(
@@ -269,8 +295,9 @@ public class ExportConfigurationMVCResourceCommand
 				continue;
 			}
 
-			Object value = AttributeDefinitionUtil.getPropertyObject(
-				attributeDefinition, configuration);
+			Object value = escapeProperties(
+				AttributeDefinitionUtil.getPropertyObject(
+					attributeDefinition, configuration));
 
 			if (value == null) {
 				continue;
