@@ -50,7 +50,11 @@ public class EventRequestSummaryStatistics implements PortletSummaryStatistics {
 			}
 		}
 
-		return averageTime / count;
+		if (count > 0) {
+			return averageTime / count;
+		}
+
+		return averageTime;
 	}
 
 	@Override
@@ -85,7 +89,11 @@ public class EventRequestSummaryStatistics implements PortletSummaryStatistics {
 			averageTime += requestStatistics.getAverageTime();
 		}
 
-		return averageTime / companyStatisticsSet.size();
+		if (!companyStatisticsSet.isEmpty()) {
+			return averageTime / companyStatisticsSet.size();
+		}
+
+		return averageTime;
 	}
 
 	@Override
