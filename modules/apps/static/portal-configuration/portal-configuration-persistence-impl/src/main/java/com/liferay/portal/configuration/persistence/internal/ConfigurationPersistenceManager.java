@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
@@ -225,6 +226,17 @@ public class ConfigurationPersistenceManager
 			_FELIX_FILE_INSTALL_FILENAME);
 
 		if (fileName != null) {
+			if (StringUtil.startsWith(fileName, "file:/")) {
+				String fileNameWithoutPath = fileName.substring(
+					fileName.lastIndexOf("/") + 1);
+
+				File fileOnCurrentNode = new File(
+					PropsValues.MODULE_FRAMEWORK_CONFIGS_DIR,
+					fileNameWithoutPath);
+
+				if (fileOnCurrentNode.exists()) return;
+			}
+
 			File file = new File(URI.create(fileName));
 
 			newDictionary.put(_FELIX_FILE_INSTALL_FILENAME, file.getName());
