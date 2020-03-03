@@ -218,7 +218,9 @@ public class KaleoNotificationRecipientCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		kaleoNotificationRecipientId = objectInput.readLong();
@@ -240,7 +242,7 @@ public class KaleoNotificationRecipientCacheModel
 		recipientClassPK = objectInput.readLong();
 
 		recipientRoleType = objectInput.readInt();
-		recipientScript = objectInput.readUTF();
+		recipientScript = (String)objectInput.readObject();
 		recipientScriptLanguage = objectInput.readUTF();
 		recipientScriptContexts = objectInput.readUTF();
 		address = objectInput.readUTF();
@@ -285,10 +287,10 @@ public class KaleoNotificationRecipientCacheModel
 		objectOutput.writeInt(recipientRoleType);
 
 		if (recipientScript == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(recipientScript);
+			objectOutput.writeObject(recipientScript);
 		}
 
 		if (recipientScriptLanguage == null) {

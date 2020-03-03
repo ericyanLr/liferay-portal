@@ -220,7 +220,9 @@ public class KaleoActionCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		kaleoActionId = objectInput.readLong();
@@ -242,7 +244,7 @@ public class KaleoActionCacheModel
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
 		executionType = objectInput.readUTF();
-		script = objectInput.readUTF();
+		script = (String)objectInput.readObject();
 		scriptLanguage = objectInput.readUTF();
 		scriptRequiredContexts = objectInput.readUTF();
 
@@ -311,10 +313,10 @@ public class KaleoActionCacheModel
 		}
 
 		if (script == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(script);
+			objectOutput.writeObject(script);
 		}
 
 		if (scriptLanguage == null) {
