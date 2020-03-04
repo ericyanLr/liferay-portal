@@ -2704,6 +2704,12 @@ public class PortalImpl implements Portal {
 		String layoutActualURL = getLayoutActualURL(layout, mainPath);
 
 		if (Validator.isNotNull(queryString)) {
+			if(!layoutActualURL.contains(StringPool.QUESTION)) {
+				queryString = queryString.replaceFirst(
+					StringPool.AMPERSAND, StringPool.QUESTION
+				);
+			}
+
 			layoutActualURL = layoutActualURL.concat(queryString);
 		}
 		else if (params.isEmpty()) {
@@ -4325,6 +4331,10 @@ public class PortalImpl implements Portal {
 						StringPool.AMPERSAND +
 							HttpUtil.parameterMapToString(actualParams, false);
 				}
+			} else {
+				queryString =
+					StringPool.AMPERSAND +
+					HttpUtil.parameterMapToString(params, false);
 			}
 		}
 
