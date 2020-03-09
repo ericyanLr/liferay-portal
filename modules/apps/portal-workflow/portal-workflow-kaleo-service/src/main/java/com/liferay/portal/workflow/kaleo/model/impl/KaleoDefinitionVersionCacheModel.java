@@ -214,7 +214,9 @@ public class KaleoDefinitionVersionCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		kaleoDefinitionVersionId = objectInput.readLong();
@@ -234,7 +236,7 @@ public class KaleoDefinitionVersionCacheModel
 		name = objectInput.readUTF();
 		title = objectInput.readUTF();
 		description = objectInput.readUTF();
-		content = objectInput.readUTF();
+		content = (String)objectInput.readObject();
 		version = objectInput.readUTF();
 
 		startKaleoNodeId = objectInput.readLong();
@@ -296,10 +298,10 @@ public class KaleoDefinitionVersionCacheModel
 		}
 
 		if (content == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(content);
+			objectOutput.writeObject(content);
 		}
 
 		if (version == null) {
