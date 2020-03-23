@@ -24,10 +24,7 @@ import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.search.spi.model.query.contributor.QueryPreFilterContributor;
-
-import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -47,8 +44,6 @@ public class GroupIdQueryPreFilterContributor
 
 		if (ArrayUtil.isEmpty(groupIds) ||
 			((groupIds.length == 1) && (groupIds[0] == 0))) {
-
-			_addInactiveGroupsBooleanFilter(booleanFilter, searchContext);
 
 			return;
 		}
@@ -104,25 +99,6 @@ public class GroupIdQueryPreFilterContributor
 
 	@Reference
 	protected GroupLocalService groupLocalService;
-
-	private void _addInactiveGroupsBooleanFilter(
-		BooleanFilter booleanFilter, SearchContext searchContext) {
-
-		List<Group> inactiveGroups = groupLocalService.getActiveGroups(
-			searchContext.getCompanyId(), false);
-
-		if (ListUtil.isEmpty(inactiveGroups)) {
-			return;
-		}
-
-		TermsFilter groupIdTermsFilter = new TermsFilter(Field.GROUP_ID);
-
-		groupIdTermsFilter.addValues(
-			ArrayUtil.toStringArray(
-				ListUtil.toArray(inactiveGroups, Group.GROUP_ID_ACCESSOR)));
-
-		booleanFilter.add(groupIdTermsFilter, BooleanClauseOccur.MUST_NOT);
-	}
 
 	private void _addOwnerBooleanFilter(
 		BooleanFilter booleanFilter, SearchContext searchContext) {

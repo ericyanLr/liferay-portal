@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcher;
 import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcherManager;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.search.internal.indexer.PreFilterContributorHelper;
@@ -35,8 +36,9 @@ public class FacetedSearcherManagerImpl implements FacetedSearcherManager {
 	@Override
 	public FacetedSearcher createFacetedSearcher() {
 		return new FacetedSearcherImpl(
-			expandoQueryContributor, indexerRegistry, indexSearcherHelper,
-			preFilterContributorHelper, searchEngineHelper);
+			expandoQueryContributor, groupLocalService, indexerRegistry,
+			indexSearcherHelper, preFilterContributorHelper,
+			searchEngineHelper);
 	}
 
 	protected Localization getLocalization() {
@@ -52,6 +54,9 @@ public class FacetedSearcherManagerImpl implements FacetedSearcherManager {
 
 	@Reference
 	protected ExpandoQueryContributor expandoQueryContributor;
+
+	@Reference
+	protected GroupLocalService groupLocalService;
 
 	@Reference
 	protected IndexerRegistry indexerRegistry;

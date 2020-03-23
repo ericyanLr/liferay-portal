@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.internal.searcher;
 
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.search.BaseSearcher;
 import com.liferay.portal.kernel.search.BooleanClause;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
@@ -31,17 +32,21 @@ import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcher;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
+import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.search.generic.MatchAllQuery;
 import com.liferay.portal.kernel.search.generic.StringQuery;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.constants.SearchContextAttributes;
 import com.liferay.portal.search.internal.indexer.PreFilterContributorHelper;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,12 +57,13 @@ public class FacetedSearcherImpl
 
 	public FacetedSearcherImpl(
 		ExpandoQueryContributor expandoQueryContributor,
-		IndexerRegistry indexerRegistry,
+		GroupLocalService groupLocalService, IndexerRegistry indexerRegistry,
 		IndexSearcherHelper indexSearcherHelper,
 		PreFilterContributorHelper preFilterContributorHelper,
 		SearchEngineHelper searchEngineHelper) {
 
 		_expandoQueryContributor = expandoQueryContributor;
+		_groupLocalService = groupLocalService;
 		_indexerRegistry = indexerRegistry;
 		_indexSearcherHelper = indexSearcherHelper;
 		_preFilterContributorHelper = preFilterContributorHelper;
@@ -86,6 +92,8 @@ public class FacetedSearcherImpl
 		_addSearchTerms(
 			searchQuery, fullQueryBooleanFilter, luceneSyntax,
 			entryClassNameIndexerMap, searchContext);
+
+		_addInactiveGroupsBooleanFilter(fullQueryBooleanFilter, searchContext);
 
 		_addPreFilters(
 			fullQueryBooleanFilter, entryClassNameIndexerMap, searchContext);
@@ -174,6 +182,25 @@ public class FacetedSearcherImpl
 		}
 
 		return super.isFilterSearch();
+	}
+
+	private void _addInactiveGroupsBooleanFilter(
+		BooleanFilter booleanFilter, SearchContext searchContext) {
+
+		List<Group> inactiveGroups = _groupLocalService.getActiveGroups(
+			searchContext.getCompanyId(), false);
+
+		if (ListUtil.isEmpty(inactiveGroups)) {
+			return;
+		}
+
+		TermsFilter groupIdTermsFilter = new TermsFilter(Field.GROUP_ID);
+
+		groupIdTermsFilter.addValues(
+			ArrayUtil.toStringArray(
+				ListUtil.toArray(inactiveGroups, Group.GROUP_ID_ACCESSOR)));
+
+		booleanFilter.add(groupIdTermsFilter, BooleanClauseOccur.MUST_NOT);
 	}
 
 	private void _addIndexerProvidedSearchTerms(
@@ -302,6 +329,7 @@ public class FacetedSearcherImpl
 	}
 
 	private final ExpandoQueryContributor _expandoQueryContributor;
+	private final GroupLocalService _groupLocalService;
 	private final IndexerRegistry _indexerRegistry;
 	private final IndexSearcherHelper _indexSearcherHelper;
 	private final PreFilterContributorHelper _preFilterContributorHelper;
