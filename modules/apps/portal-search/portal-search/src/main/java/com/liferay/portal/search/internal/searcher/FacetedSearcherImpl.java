@@ -93,7 +93,14 @@ public class FacetedSearcherImpl
 			searchQuery, fullQueryBooleanFilter, luceneSyntax,
 			entryClassNameIndexerMap, searchContext);
 
-		_addInactiveGroupsBooleanFilter(fullQueryBooleanFilter, searchContext);
+		long[] groupIds = searchContext.getGroupIds();
+
+		if (ArrayUtil.isEmpty(groupIds) ||
+			((groupIds.length == 1) && (groupIds[0] == 0))) {
+
+			_addInactiveGroupsBooleanFilter(
+				fullQueryBooleanFilter, searchContext);
+		}
 
 		_addPreFilters(
 			fullQueryBooleanFilter, entryClassNameIndexerMap, searchContext);
