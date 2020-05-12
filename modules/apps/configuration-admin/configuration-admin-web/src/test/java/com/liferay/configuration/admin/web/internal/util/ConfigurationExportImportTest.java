@@ -93,50 +93,104 @@ public class ConfigurationExportImportTest {
 	}
 
 	@Test
-	public void testExportImportTypedProperty() throws Exception {
-		_dictionary.put("typedKey1", "${bar}");
-		_dictionary.put("typedKey2", "${foo.${bar}}");
-		_dictionary.put("typedKey3", "${foo");
-		_dictionary.put("typedKey4", "${foo.${bar}");
-		_dictionary.put("typedKey5", "}${foo.${bar");
+	public void testExportImportStringArrayTypedProperty() throws Exception {
+		String arrayKey = "arrayKey";
+		String[] arrayValues = {"value1", "value2", "value3"};
 
-		Dictionary<String, Object> escapedDictionary = new Hashtable<>();
-
-		escapedDictionary.put(
-			"typedKey1", ConfigurationExporter.escapeProperty("${bar}"));
-		escapedDictionary.put(
-			"typedKey2", ConfigurationExporter.escapeProperty("${foo.${bar}}"));
-		escapedDictionary.put(
-			"typedKey3", ConfigurationExporter.escapeProperty("${foo"));
-		escapedDictionary.put(
-			"typedKey4", ConfigurationExporter.escapeProperty("${foo.${bar}"));
-		escapedDictionary.put(
-			"typedKey5", ConfigurationExporter.escapeProperty("}${foo.${bar"));
+		_dictionary.put(arrayKey, arrayValues);
 
 		Dictionary<String, Object> dictionary = _exportImportTypedProperties(
-			escapedDictionary);
+			_dictionary);
+
+		Assert.assertArrayEquals(
+			arrayValues,
+			ArrayUtil.toStringArray((Object[])dictionary.get(arrayKey)));
+	}
+
+	@Test
+	public void testExportImportStringArrayTypedPropertyWithLocationVariable()
+		throws Exception {
+
+		String arrayKey = "location-variables";
+		String[] arrayValues = {
+			"${server-property://foo.bar/foo.bar}",
+			"${resource://foo.bar/foo.bar}", "${file://foo.bar/foo.bar}"
+		};
+
+		_dictionary.put(arrayKey, arrayValues);
+
+		Dictionary<String, Object> dictionary = _exportImportTypedProperties(
+			_dictionary);
+
+		String[] expectedArrayValues = {"", "", ""};
+
+		Assert.assertArrayEquals(
+			expectedArrayValues,
+			ArrayUtil.toStringArray((Object[])dictionary.get(arrayKey)));
+	}
+
+	@Test
+	public void testExportImportStringTypedProperty() throws Exception {
+		String stringKey = "stringKey";
+		String stringValue = "stringValue";
+
+		_dictionary.put(stringKey, stringValue);
+
+		Dictionary<String, Object> dictionary = _exportImportTypedProperties(
+			_dictionary);
 
 		Assert.assertEquals(_dictionary, dictionary);
 	}
 
 	@Test
-	public void testExportImportTypedPropertyArray() throws Exception {
-		String arrayKey = "arrayKey";
-		String[] arrayValues = {"${bar}", "${foo.${bar}}"};
+	public void testExportImportStringTypedPropertyWithLocationVariable()
+		throws Exception {
 
-		_dictionary.put(arrayKey, arrayValues);
+		String stringKey = "server-property";
+		String stringValue = "${server-property://foo.bar/foo.bar}";
 
-		Dictionary<String, Object> escapedDictionary = new Hashtable<>();
+		_dictionary.put(stringKey, stringValue);
 
-		escapedDictionary.put(
-			arrayKey, ConfigurationExporter.escapeProperties(arrayValues));
+		stringKey = "resource";
+		stringValue = "${resource://foo.bar/foo.bar}";
+
+		_dictionary.put(stringKey, stringValue);
 
 		Dictionary<String, Object> dictionary = _exportImportTypedProperties(
-			escapedDictionary);
+			_dictionary);
 
-		Assert.assertArrayEquals(
-			arrayValues,
-			ArrayUtil.toStringArray((Object[])dictionary.get(arrayKey)));
+		Dictionary<String, Object> expectedDictionary = new Hashtable<>();
+
+		expectedDictionary.put("server-property", "");
+		expectedDictionary.put("resource", "");
+
+		Assert.assertEquals(expectedDictionary, dictionary);
+	}
+
+	@Test
+	public void testExportImportStringTypedPropertyWithLocationVariableEscaped()
+		throws Exception {
+
+		String stringKey = "server-property";
+		String stringValue = "$\\{server-property://foo.bar/foo.bar\\}";
+
+		_dictionary.put(stringKey, stringValue);
+
+		stringKey = "resource";
+		stringValue = "$\\{resource://foo.bar/foo.bar\\}";
+
+		_dictionary.put(stringKey, stringValue);
+
+		Dictionary<String, Object> dictionary = _exportImportTypedProperties(
+			_dictionary);
+
+		Dictionary<String, Object> expectedDictionary = new Hashtable<>();
+
+		expectedDictionary.put(
+			"server-property", "${server-property://foo.bar/foo.bar}");
+		expectedDictionary.put("resource", "${resource://foo.bar/foo.bar}");
+
+		Assert.assertEquals(expectedDictionary, dictionary);
 	}
 
 	@SuppressWarnings("unchecked")
