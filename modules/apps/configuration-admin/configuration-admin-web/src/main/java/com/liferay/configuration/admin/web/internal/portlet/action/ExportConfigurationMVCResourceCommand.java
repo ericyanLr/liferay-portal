@@ -130,7 +130,7 @@ public class ExportConfigurationMVCResourceCommand
 
 			for (String value : ArrayUtil.toStringArray((String[])property)) {
 				if (locationVariableResolver.isLocationVariable(value)) {
-					escapedProperties.add(value);
+					escapedProperties.add(escapeLocationVariable(value));
 				}
 
 				escapedProperties.add(value);
