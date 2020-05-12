@@ -31,8 +31,10 @@ import com.liferay.portal.kernel.resource.manager.ClassLoaderResourceManager;
 import com.liferay.portal.kernel.settings.LocationVariableResolver;
 import com.liferay.portal.kernel.settings.SettingsLocatorHelper;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.zip.ZipWriter;
@@ -42,6 +44,7 @@ import com.liferay.portal.util.PropsValues;
 import java.io.FileInputStream;
 import java.io.Serializable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -98,6 +101,47 @@ public class ExportConfigurationMVCResourceCommand
 		}
 
 		return false;
+	}
+
+	protected String escapeLocationVariable(String property) {
+		String escapedProperty = StringUtil.replaceFirst(
+			property, "${", "$\\{");
+
+		return StringUtil.replaceLast(escapedProperty, "}", "\\}");
+	}
+
+	protected Object escapeProperties(
+		Object properties, LocationVariableResolver locationVariableResolver) {
+
+		if (properties instanceof String) {
+			if (locationVariableResolver.isLocationVariable(
+					String.valueOf(properties))) {
+
+				return escapeLocationVariable(String.valueOf(properties));
+			}
+
+			return properties;
+		}
+
+		if (properties instanceof String[]) {
+			List<String> escapedProperties = new ArrayList<>();
+
+			for (String property :
+					ArrayUtil.toStringArray((Object[])properties)) {
+
+				if (locationVariableResolver.isLocationVariable(
+						String.valueOf(properties))) {
+
+					escapedProperties.add(property);
+				}
+
+				escapedProperties.add(property);
+			}
+
+			return ArrayUtil.toStringArray(escapedProperties);
+		}
+
+		return properties;
 	}
 
 	protected void exportAll(
@@ -313,7 +357,7 @@ public class ExportConfigurationMVCResourceCommand
 						configurationModel.getClassLoader()),
 					_settingsLocatorHelper);
 
-			Object value = ConfigurationExporter.escapeProperties(
+			Object value = escapeProperties(
 				AttributeDefinitionUtil.getPropertyObject(
 					attributeDefinition, configuration),
 				locationVariableResolver);
