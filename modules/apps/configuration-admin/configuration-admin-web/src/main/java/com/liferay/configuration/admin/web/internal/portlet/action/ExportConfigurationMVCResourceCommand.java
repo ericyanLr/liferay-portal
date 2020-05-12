@@ -132,8 +132,9 @@ public class ExportConfigurationMVCResourceCommand
 				if (locationVariableResolver.isLocationVariable(value)) {
 					escapedProperties.add(escapeLocationVariable(value));
 				}
-
-				escapedProperties.add(value);
+				else {
+					escapedProperties.add(value);
+				}
 			}
 
 			return ArrayUtil.toStringArray(escapedProperties);
