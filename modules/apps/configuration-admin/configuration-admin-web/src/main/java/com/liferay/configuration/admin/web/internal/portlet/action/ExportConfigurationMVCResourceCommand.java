@@ -21,6 +21,7 @@ import com.liferay.configuration.admin.web.internal.exporter.ConfigurationExport
 import com.liferay.configuration.admin.web.internal.model.ConfigurationModel;
 import com.liferay.configuration.admin.web.internal.util.AttributeDefinitionUtil;
 import com.liferay.configuration.admin.web.internal.util.ConfigurationModelRetriever;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition.Scope;
 import com.liferay.portal.configuration.metatype.definitions.ExtendedAttributeDefinition;
@@ -107,41 +108,38 @@ public class ExportConfigurationMVCResourceCommand
 		String escapedProperty = StringUtil.replaceFirst(
 			property, "${", "$\\{");
 
-		return StringUtil.replaceLast(escapedProperty, "}", "\\}");
+		return StringUtil.replaceLast(
+			escapedProperty, CharPool.CLOSE_CURLY_BRACE, "\\}");
 	}
 
-	protected Object escapeProperties(
-		Object properties, LocationVariableResolver locationVariableResolver) {
+	protected Object escapePropertyObject(
+		Object property, LocationVariableResolver locationVariableResolver) {
 
-		if (properties instanceof String) {
-			if (locationVariableResolver.isLocationVariable(
-					String.valueOf(properties))) {
+		if (property instanceof String) {
+			String value = String.valueOf(property);
 
-				return escapeLocationVariable(String.valueOf(properties));
+			if (locationVariableResolver.isLocationVariable(value)) {
+				return escapeLocationVariable(value);
 			}
 
-			return properties;
+			return property;
 		}
 
-		if (properties instanceof String[]) {
+		if (property instanceof String[]) {
 			List<String> escapedProperties = new ArrayList<>();
 
-			for (String property :
-					ArrayUtil.toStringArray((Object[])properties)) {
-
-				if (locationVariableResolver.isLocationVariable(
-						String.valueOf(properties))) {
-
-					escapedProperties.add(property);
+			for (String value : ArrayUtil.toStringArray((String[])property)) {
+				if (locationVariableResolver.isLocationVariable(value)) {
+					escapedProperties.add(value);
 				}
 
-				escapedProperties.add(property);
+				escapedProperties.add(value);
 			}
 
 			return ArrayUtil.toStringArray(escapedProperties);
 		}
 
-		return properties;
+		return property;
 	}
 
 	protected void exportAll(
@@ -343,6 +341,12 @@ public class ExportConfigurationMVCResourceCommand
 			extendedObjectClassDefinition.getAttributeDefinitions(
 				ConfigurationModel.ALL);
 
+		LocationVariableResolver locationVariableResolver =
+			new LocationVariableResolver(
+				new ClassLoaderResourceManager(
+					configurationModel.getClassLoader()),
+				_settingsLocatorHelper);
+
 		for (AttributeDefinition attributeDefinition : attributeDefinitions) {
 			if (!PropsValues.MODULE_FRAMEWORK_EXPORT_PASSWORD_ATTRIBUTES &&
 				(attributeDefinition.getType() ==
@@ -351,13 +355,7 @@ public class ExportConfigurationMVCResourceCommand
 				continue;
 			}
 
-			LocationVariableResolver locationVariableResolver =
-				new LocationVariableResolver(
-					new ClassLoaderResourceManager(
-						configurationModel.getClassLoader()),
-					_settingsLocatorHelper);
-
-			Object value = escapeProperties(
+			Object value = escapePropertyObject(
 				AttributeDefinitionUtil.getPropertyObject(
 					attributeDefinition, configuration),
 				locationVariableResolver);
