@@ -6545,18 +6545,6 @@
 				<comments>Removed org.json.* because it json-java.jar. See LPS-78517.</comments>
 			</library>
 			<library>
-				<file-name>lib/portal/jackson-databind.jar</file-name>
-				<version>2.10.3.LIFERAY-PATCHED-1</version>
-				<project-name>Jackson Databind</project-name>
-				<project-url>https://github.com/FasterXML/jackson-databind</project-url>
-				<licenses>
-					<license>
-						<license-name>Apache License 2.0</license-name>
-						<license-url>http://www.apache.org/licenses/LICENSE-2.0</license-url>
-					</license>
-				</licenses>
-			</library>
-			<library>
 				<file-name>lib/portal/jai-imageio-core.jar</file-name>
 				<version>1.4.0</version>
 				<project-name>Java Advanced Imaging Image I/O Tools API Core (standalone)</project-name>
