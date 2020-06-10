@@ -153,7 +153,6 @@
 /portal/jai-imageio-jpeg2000.jar
 /portal/jackson-annotations.jar
 /portal/jackson-core.jar
-/portal/jackson-databind.jar
 /portal/jackson-module-jaxb-annotations.jar
 /portal/jai_codec.jar
 /portal/jai_core.jar
