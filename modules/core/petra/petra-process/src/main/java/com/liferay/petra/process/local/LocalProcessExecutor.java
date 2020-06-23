@@ -64,6 +64,12 @@ public class LocalProcessExecutor implements ProcessExecutor {
 			List<String> commands = new ArrayList<>(arguments.size() + 4);
 
 			commands.add(processConfig.getJavaExecutable());
+			int memoryTheshold = processConfig.getMemoryThreshold();
+
+			if (memoryTheshold > 0) {
+				commands.add(String.format("-Xmx%dm", memoryTheshold));
+			}
+
 			commands.add("-cp");
 			commands.add(processConfig.getBootstrapClassPath());
 			commands.addAll(arguments);
