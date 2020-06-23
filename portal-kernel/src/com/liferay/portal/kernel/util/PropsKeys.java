@@ -903,6 +903,9 @@ public interface PropsKeys {
 	public static final String DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_ENABLED =
 		"dl.file.entry.preview.fork.process.enabled";
 
+	public static final String DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_THRESHOLD =
+		"dl.file.entry.preview.fork.process.threshold";
+
 	public static final String
 		DL_FILE_ENTRY_PREVIEW_GENERATION_DECRYPT_PASSWORDS_PDFBOX =
 			"dl.file.entry.preview.generation.decrypt.passwords.pdfbox";
