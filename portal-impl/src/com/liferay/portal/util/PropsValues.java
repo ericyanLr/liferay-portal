@@ -810,6 +810,11 @@ public class PropsValues {
 			PropsUtil.get(
 				PropsKeys.DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_ENABLED));
 
+	public static final int DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_THRESHOLD =
+		GetterUtil.getInteger(
+			PropsUtil.get(
+				PropsKeys.DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_THRESHOLD));
+
 	public static final String[]
 		DL_FILE_ENTRY_PREVIEW_GENERATION_DECRYPT_PASSWORDS_PDFBOX =
 			PropsUtil.getArray(
