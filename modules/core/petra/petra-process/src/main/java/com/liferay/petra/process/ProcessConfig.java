@@ -50,6 +50,10 @@ public class ProcessConfig implements Serializable {
 		return _javaExecutable;
 	}
 
+	public int getMemoryThreshold() {
+		return _memoryThreshold;
+	}
+
 	public Consumer<ProcessLog> getProcessLogConsumer() {
 		return _processLogConsumer;
 	}
@@ -64,6 +68,10 @@ public class ProcessConfig implements Serializable {
 
 	public PathHolder[] getRuntimeClassPathHolders() {
 		return _runtimeClassPathHolders;
+	}
+
+	public void setMemoryThreshold(int memoryThreshold) {
+		_memoryThreshold = memoryThreshold;
 	}
 
 	public static class Builder {
@@ -168,6 +176,8 @@ public class ProcessConfig implements Serializable {
 
 		return classPathHolders;
 	}
+
+	private int _memoryThreshold = 0;
 
 	private static final long serialVersionUID = 1L;
 
