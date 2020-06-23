@@ -50,6 +50,10 @@ public class ProcessConfig implements Serializable {
 		return _javaExecutable;
 	}
 
+	public int getMaxMemory() {
+		return _maxMemory;
+	}
+
 	public Consumer<ProcessLog> getProcessLogConsumer() {
 		return _processLogConsumer;
 	}
@@ -64,6 +68,10 @@ public class ProcessConfig implements Serializable {
 
 	public PathHolder[] getRuntimeClassPathHolders() {
 		return _runtimeClassPathHolders;
+	}
+
+	public void setMaxMemory(int maxMemory) {
+		_maxMemory = maxMemory;
 	}
 
 	public static class Builder {
@@ -168,6 +176,8 @@ public class ProcessConfig implements Serializable {
 
 		return classPathHolders;
 	}
+
+	private int _maxMemory = 0;
 
 	private static final long serialVersionUID = 1L;
 
