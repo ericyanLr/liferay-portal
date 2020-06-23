@@ -25,6 +25,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.petra.log4j.Log4JUtil;
 import com.liferay.petra.process.ProcessCallable;
 import com.liferay.petra.process.ProcessChannel;
+import com.liferay.petra.process.ProcessConfig;
 import com.liferay.petra.process.ProcessException;
 import com.liferay.petra.process.ProcessExecutor;
 import com.liferay.petra.string.StringBundler;
@@ -698,8 +699,14 @@ public class PDFProcessorImpl
 					PropsValues.DL_FILE_ENTRY_PREVIEW_DOCUMENT_MAX_WIDTH,
 					generatePreview, generateThumbnail);
 
+			ProcessConfig processConfig =
+				PortalClassPathUtil.getPortalProcessConfig();
+
+			processConfig.setMemoryThreshold(
+				PropsValues.DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_THRESHOLD);
+
 			ProcessChannel<String> processChannel = _processExecutor.execute(
-				PortalClassPathUtil.getPortalProcessConfig(), processCallable);
+				processConfig, processCallable);
 
 			Future<String> future = processChannel.getProcessNoticeableFuture();
 
