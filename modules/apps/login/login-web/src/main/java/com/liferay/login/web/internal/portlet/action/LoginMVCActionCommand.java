@@ -186,9 +186,8 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 			ActionResponse actionResponse)
 		throws Exception {
 
-		HttpServletRequest httpServletRequest =
-			_portal.getOriginalServletRequest(
-				_portal.getHttpServletRequest(actionRequest));
+		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
+			actionRequest);
 
 		if (!themeDisplay.isSignedIn()) {
 			HttpServletResponse httpServletResponse =
