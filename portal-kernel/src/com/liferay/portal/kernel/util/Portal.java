@@ -1148,6 +1148,8 @@ public interface Portal {
 
 	public boolean isCustomPortletMode(PortletMode portletMode);
 
+	public boolean isForwarded(HttpServletRequest httpServletRequest);
+
 	public boolean isForwardedSecure(HttpServletRequest httpServletRequest);
 
 	public boolean isGroupAdmin(User user, long groupId) throws Exception;
