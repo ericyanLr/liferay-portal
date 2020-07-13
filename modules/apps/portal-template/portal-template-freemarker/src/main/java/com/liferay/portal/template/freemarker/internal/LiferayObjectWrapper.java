@@ -119,6 +119,10 @@ public class LiferayObjectWrapper extends DefaultObjectWrapper {
 			return modelFactory.create(object, this);
 		}
 
+		if (className.startsWith("java.lang.String")) {
+			return _STRING_MODEL_FACTORY.create(object, this);
+		}
+
 		return super.wrap(object);
 	}
 
