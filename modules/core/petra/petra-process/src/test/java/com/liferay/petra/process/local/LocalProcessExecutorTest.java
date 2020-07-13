@@ -45,6 +45,8 @@ import java.io.Serializable;
 import java.io.StreamCorruptedException;
 import java.io.WriteAbortedException;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.lang.reflect.Constructor;
 
 import java.net.InetAddress;
@@ -239,6 +241,43 @@ public class LocalProcessExecutorTest {
 			Throwable throwable = processException.getCause();
 
 			Assert.assertTrue(throwable instanceof IOException);
+		}
+	}
+
+	@Test
+	public void testProcessConfigBuilderMaxMemory()
+		throws Exception {
+		try {
+			ProcessConfig.Builder builder = new ProcessConfig.Builder();
+			ProcessConfig pdfProcessConfig = builder.build();
+			List<String> arguments = new ArrayList<>();
+			arguments.addAll(pdfProcessConfig.getArguments());
+
+			// Use this argument to return full heap size
+			arguments.add("-XX:+UseG1GC");
+
+			builder.setArguments(arguments);
+			pdfProcessConfig = builder.build();
+
+			// Memory in MB
+			int maxMemory = 8;
+
+			pdfProcessConfig.setMaxMemory(maxMemory);
+
+			ProcessChannel<Long> processChannel =
+				_localProcessExecutor.execute(
+					pdfProcessConfig, Operations.GET_MAX_MEMORY);
+
+			NoticeableFuture<Long> future =
+				processChannel.getProcessNoticeableFuture();
+
+			// Convert actual memory threshold from byte to MB
+			long actualMaxMemory = future.get() / 1024 / 1024;
+
+			Assert.assertTrue(actualMaxMemory == maxMemory);
+		}
+		catch (ProcessException processException) {
+			Assert.fail();
 		}
 	}
 
@@ -1340,6 +1379,12 @@ public class LocalProcessExecutorTest {
 
 		public static final ProcessCallable<HashMap<String, String>>
 			GET_ENVIRONMENT = () -> new HashMap<>(System.getenv());
+
+		public static final ProcessCallable<Long> GET_MAX_MEMORY =
+			() -> {
+				MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+				return memoryMXBean.getHeapMemoryUsage().getMax();
+			};
 
 		public static final ProcessCallable<String> GET_RUNTIME_CLASS_PATH =
 			() -> {
