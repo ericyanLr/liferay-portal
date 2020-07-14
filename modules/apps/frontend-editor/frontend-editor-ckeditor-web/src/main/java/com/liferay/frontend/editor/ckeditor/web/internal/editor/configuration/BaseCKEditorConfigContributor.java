@@ -44,6 +44,7 @@ public class BaseCKEditorConfigContributor extends BaseEditorConfigContributor {
 			inputEditorTaglibAttributes.get(
 				CKEditorConstants.ATTRIBUTE_NAMESPACE + ":cssClasses"));
 
+
 		jsonObject.put(
 			"bodyClass", "html-editor " + HtmlUtil.escape(cssClasses)
 		).put(
@@ -60,8 +61,7 @@ public class BaseCKEditorConfigContributor extends BaseEditorConfigContributor {
 				HtmlUtil.escape(
 					PortalUtil.getStaticResourceURL(
 						themeDisplay.getRequest(),
-						"/o/frontend-editor-ckeditor-web/ckeditor/skins" +
-							"/moono-lexicon/editor.css")))
+						"/o/frontend-editor-ckeditor-web/ckeditor/skins/moono-lexicon/editor.css")))
 		).put(
 			"contentsLangDirection",
 			HtmlUtil.escapeJS(
@@ -80,8 +80,7 @@ public class BaseCKEditorConfigContributor extends BaseEditorConfigContributor {
 				HtmlUtil.escape(
 					PortalUtil.getStaticResourceURL(
 						themeDisplay.getRequest(),
-						"/o/frontend-editor-ckeditor-web/ckeditor/skins" +
-							"/moono-lexicon/editor.css")))
+						"/o/frontend-editor-ckeditor-web/ckeditor/skins/moono-lexicon/editor.css")))
 		);
 
 		String contentsLanguageId = getContentsLanguageId(
