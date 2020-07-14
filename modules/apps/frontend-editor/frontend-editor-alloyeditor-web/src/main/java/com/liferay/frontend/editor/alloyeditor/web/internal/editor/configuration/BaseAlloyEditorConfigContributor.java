@@ -74,8 +74,6 @@ public abstract class BaseAlloyEditorConfigContributor
 			"removePlugins",
 			"contextmenu,elementspath,floatingspace,image,link,liststyle," +
 				"resize,table,tabletools,toolbar"
-		).put(
-			"skin", "moono-lisa"
 		);
 
 		String namespace = GetterUtil.getString(
