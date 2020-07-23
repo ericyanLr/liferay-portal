@@ -64,6 +64,7 @@ public class LocalProcessExecutor implements ProcessExecutor {
 			List<String> commands = new ArrayList<>(arguments.size() + 4);
 
 			commands.add(processConfig.getJavaExecutable());
+
 			int memoryTheshold = processConfig.getMaxMemory();
 
 			if (memoryTheshold > 0) {

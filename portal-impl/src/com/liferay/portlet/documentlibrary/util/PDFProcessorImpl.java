@@ -703,36 +703,31 @@ public class PDFProcessorImpl
 
 			ProcessConfig pdfProcessConfig = processConfig;
 
-			if (PropsValues.DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_MAX_MEMORY > 0) {
+			int pdfProcessMaxMemory =
+				PropsValues.DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_MAX_MEMORY;
+
+			if (pdfProcessMaxMemory > 0) {
 				ProcessConfig.Builder pdfProcessBuilder =
 					new ProcessConfig.Builder();
 
-				pdfProcessBuilder =
-					pdfProcessBuilder.setArguments(
-						processConfig.getArguments());
-				pdfProcessBuilder =
-					pdfProcessBuilder.setBootstrapClassPath(
-						processConfig.getBootstrapClassPath());
-				pdfProcessBuilder =
-					pdfProcessBuilder.setEnvironment(
-						processConfig.getEnvironment());
-				pdfProcessBuilder =
-					pdfProcessBuilder.setJavaExecutable(
-						processConfig.getJavaExecutable());
-				pdfProcessBuilder =
-					pdfProcessBuilder.setProcessLogConsumer(
-						processConfig.getProcessLogConsumer());
-				pdfProcessBuilder =
-					pdfProcessBuilder.setReactClassLoader(
-						processConfig.getReactClassLoader());
-				pdfProcessBuilder =
-					pdfProcessBuilder.setRuntimeClassPath(
-						processConfig.getRuntimeClassPath());
+				pdfProcessBuilder = pdfProcessBuilder.setArguments(
+					processConfig.getArguments());
+				pdfProcessBuilder = pdfProcessBuilder.setBootstrapClassPath(
+					processConfig.getBootstrapClassPath());
+				pdfProcessBuilder = pdfProcessBuilder.setEnvironment(
+					processConfig.getEnvironment());
+				pdfProcessBuilder = pdfProcessBuilder.setJavaExecutable(
+					processConfig.getJavaExecutable());
+				pdfProcessBuilder = pdfProcessBuilder.setProcessLogConsumer(
+					processConfig.getProcessLogConsumer());
+				pdfProcessBuilder = pdfProcessBuilder.setReactClassLoader(
+					processConfig.getReactClassLoader());
+				pdfProcessBuilder = pdfProcessBuilder.setRuntimeClassPath(
+					processConfig.getRuntimeClassPath());
 
 				pdfProcessConfig = pdfProcessBuilder.build();
 
-				pdfProcessConfig.setMaxMemory(
-					PropsValues.DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_MAX_MEMORY);
+				pdfProcessConfig.setMaxMemory(pdfProcessMaxMemory);
 			}
 
 			ProcessChannel<String> processChannel = _processExecutor.execute(

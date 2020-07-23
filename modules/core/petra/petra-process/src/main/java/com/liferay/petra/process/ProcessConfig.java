@@ -177,14 +177,13 @@ public class ProcessConfig implements Serializable {
 		return classPathHolders;
 	}
 
-	private int _maxMemory = 0;
-
 	private static final long serialVersionUID = 1L;
 
 	private final List<String> _arguments;
 	private final PathHolder[] _bootstrapClassPathHolders;
 	private final Map<String, String> _environment;
 	private final String _javaExecutable;
+	private int _maxMemory;
 	private final transient Consumer<ProcessLog> _processLogConsumer;
 	private final transient ClassLoader _reactClassLoader;
 	private final PathHolder[] _runtimeClassPathHolders;
