@@ -718,6 +718,8 @@ public class PDFProcessorImpl
 					processConfig.getEnvironment());
 				pdfProcessBuilder = pdfProcessBuilder.setJavaExecutable(
 					processConfig.getJavaExecutable());
+				pdfProcessBuilder = pdfProcessBuilder.setMaxMemory(
+					pdfProcessMaxMemory);
 				pdfProcessBuilder = pdfProcessBuilder.setProcessLogConsumer(
 					processConfig.getProcessLogConsumer());
 				pdfProcessBuilder = pdfProcessBuilder.setReactClassLoader(
@@ -726,8 +728,6 @@ public class PDFProcessorImpl
 					processConfig.getRuntimeClassPath());
 
 				pdfProcessConfig = pdfProcessBuilder.build();
-
-				pdfProcessConfig.setMaxMemory(pdfProcessMaxMemory);
 			}
 
 			ProcessChannel<String> processChannel = _processExecutor.execute(

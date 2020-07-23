@@ -262,13 +262,13 @@ public class LocalProcessExecutorTest {
 
 			builder.setArguments(arguments);
 
-			pdfProcessConfig = builder.build();
-
 			// Memory in MB
 
 			int maxMemory = 8;
 
-			pdfProcessConfig.setMaxMemory(maxMemory);
+			builder.setMaxMemory(maxMemory);
+
+			pdfProcessConfig = builder.build();
 
 			ProcessChannel<Long> processChannel = _localProcessExecutor.execute(
 				pdfProcessConfig, Operations.GET_MAX_MEMORY);
