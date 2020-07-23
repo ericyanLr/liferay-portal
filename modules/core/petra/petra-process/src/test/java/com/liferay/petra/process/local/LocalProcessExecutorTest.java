@@ -247,44 +247,30 @@ public class LocalProcessExecutorTest {
 
 	@Test
 	public void testProcessConfigBuilderMaxMemory() throws Exception {
-		try {
-			ProcessConfig.Builder builder = new ProcessConfig.Builder();
+		ProcessConfig.Builder builder = new ProcessConfig.Builder();
 
-			ProcessConfig pdfProcessConfig = builder.build();
+		// Use this argument to return full heap size
 
-			List<String> arguments = new ArrayList<>();
+		List<String> arguments = Collections.singletonList("-XX:+UseG1GC");
 
-			arguments.addAll(pdfProcessConfig.getArguments());
+		// Memory in MB
 
-			// Use this argument to return full heap size
+		int maxMemory = 8;
 
-			arguments.add("-XX:+UseG1GC");
+		builder.setArguments(arguments);
+		builder.setMaxMemory(maxMemory);
 
-			builder.setArguments(arguments);
+		ProcessChannel<Long> processChannel = _localProcessExecutor.execute(
+			builder.build(), Operations.GET_MAX_MEMORY);
 
-			// Memory in MB
+		NoticeableFuture<Long> future =
+			processChannel.getProcessNoticeableFuture();
 
-			int maxMemory = 8;
+		// Convert actual memory threshold from byte to MB
 
-			builder.setMaxMemory(maxMemory);
+		long actualMaxMemory = future.get() / 1024 / 1024;
 
-			pdfProcessConfig = builder.build();
-
-			ProcessChannel<Long> processChannel = _localProcessExecutor.execute(
-				pdfProcessConfig, Operations.GET_MAX_MEMORY);
-
-			NoticeableFuture<Long> future =
-				processChannel.getProcessNoticeableFuture();
-
-			// Convert actual memory threshold from byte to MB
-
-			long actualMaxMemory = future.get() / 1024 / 1024;
-
-			Assert.assertTrue(actualMaxMemory == maxMemory);
-		}
-		catch (ProcessException processException) {
-			Assert.fail();
-		}
+		Assert.assertEquals(maxMemory, actualMaxMemory);
 	}
 
 	@Test
