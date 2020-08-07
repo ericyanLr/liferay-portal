@@ -24,8 +24,8 @@ Boolean editable = (Boolean)request.getAttribute("edit_message.jsp-editable");
 MBMessage message = (MBMessage)request.getAttribute("edit_message.jsp-message");
 Boolean showPermanentLink = (Boolean)request.getAttribute("edit-message.jsp-showPermanentLink");
 Boolean showRecentPosts = (Boolean)request.getAttribute("edit-message.jsp-showRecentPosts");
-MBThread thread = (MBThread)request.getAttribute("edit_message.jsp-thread");
-
+long threadId = BeanParamUtil.getLong(message, request, "threadId");
+MBThread thread = MBThreadLocalServiceUtil.getThread(threadId);
 if (message.isAnonymous() || thread.isInTrash()) {
 	showRecentPosts = false;
 }
