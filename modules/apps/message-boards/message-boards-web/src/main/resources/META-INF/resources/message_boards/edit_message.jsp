@@ -35,6 +35,7 @@ MBMessage curParentMessage = null;
 
 if (threadId > 0) {
 	try {
+		thread = MBThreadLocalServiceUtil.getThread(threadId);
 		curParentMessage = MBMessageServiceUtil.getMessage(parentMessageId);
 
 		if (Validator.isNull(subject)) {
@@ -332,7 +333,6 @@ if (portletTitleBasedNavigation) {
 					String displayStyle = category.getDisplayStyle();
 
 					if (message != null) {
-						thread = MBThreadLocalServiceUtil.getThread(threadId);
 
 						if (thread.isQuestion() || message.isAnswer()) {
 							question = true;
