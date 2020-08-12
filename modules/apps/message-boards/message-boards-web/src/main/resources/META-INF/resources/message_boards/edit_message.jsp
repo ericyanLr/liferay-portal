@@ -30,13 +30,12 @@ long parentMessageId = BeanParamUtil.getLong(message, request, "parentMessageId"
 String subject = BeanParamUtil.getString(message, request, "subject");
 
 MBThread thread = null;
-
 MBMessage curParentMessage = null;
-
 if (threadId > 0) {
 	thread = MBThreadLocalServiceUtil.getThread(threadId);
 
 	try {
+		thread = MBThreadLocalServiceUtil.getThread(threadId);
 		curParentMessage = MBMessageServiceUtil.getMessage(parentMessageId);
 
 		if (Validator.isNull(subject)) {
