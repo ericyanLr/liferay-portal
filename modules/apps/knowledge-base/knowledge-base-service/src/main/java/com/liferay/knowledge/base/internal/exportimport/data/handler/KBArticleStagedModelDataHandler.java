@@ -129,7 +129,8 @@ public class KBArticleStagedModelDataHandler
 				KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 
 			if (kbArticle.getParentResourceClassNameId() ==
-					kbArticle.getClassNameId()) {
+				_classNameLocalService.getClassNameId(
+					KBArticleConstants.getClassName())) {
 
 				KBArticle parentKBArticle =
 					_kbArticleLocalService.getLatestKBArticle(
@@ -187,7 +188,8 @@ public class KBArticleStagedModelDataHandler
 			KBFolderConstants.getClassName());
 		long parentResourcePrimKey = KBFolderConstants.DEFAULT_PARENT_FOLDER_ID;
 
-		if (kbArticle.getClassNameId() ==
+		if ( _classNameLocalService.getClassNameId(
+			KBArticleConstants.getClassName()) ==
 				kbArticle.getParentResourceClassNameId()) {
 
 			parentResourceClassNameId = _classNameLocalService.getClassNameId(
