@@ -183,6 +183,10 @@ public class KBArticleStagedModelDataHandler
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				KBArticle.class);
 
+		Map<Long, Long> kbFolderResourcePrimKeys =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				KBFolder.class);
+
 		long parentResourceClassNameId = _classNameLocalService.getClassNameId(
 			KBFolderConstants.getClassName());
 		long parentResourcePrimKey = KBFolderConstants.DEFAULT_PARENT_FOLDER_ID;
@@ -196,12 +200,31 @@ public class KBArticleStagedModelDataHandler
 				kbArticleResourcePrimKeys, kbArticle.getParentResourcePrimKey(),
 				KBFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 		}
+		else if (!kbArticleResourcePrimKeys.isEmpty() ||
+				 !kbFolderResourcePrimKeys.isEmpty()) {
+
+			if (kbArticleResourcePrimKeys.containsKey(
+					kbArticle.getParentResourcePrimKey())) {
+
+				parentResourcePrimKey = MapUtil.getLong(
+					kbArticleResourcePrimKeys,
+					kbArticle.getParentResourcePrimKey(),
+					KBFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+				parentResourceClassNameId =
+					kbArticle.getParentResourceClassNameId();
+			}
+
+			if (kbFolderResourcePrimKeys.containsKey(
+					kbArticle.getParentResourcePrimKey())) {
+
+				parentResourcePrimKey = MapUtil.getLong(
+					kbFolderResourcePrimKeys,
+					kbArticle.getParentResourcePrimKey(),
+					KBFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+			}
+		}
 		else if (kbArticle.getParentResourcePrimKey() !=
 					KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-
-			Map<Long, Long> kbFolderResourcePrimKeys =
-				(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-					KBFolder.class);
 
 			parentResourcePrimKey = MapUtil.getLong(
 				kbFolderResourcePrimKeys, kbArticle.getParentResourcePrimKey(),
