@@ -283,15 +283,7 @@ public class CPSearchResultsDisplayContext {
 		String requestURL = null;
 		String queryString = null;
 
-		boolean forwarded = false;
-
-		if (httpServletRequest.getAttribute(
-				JavaConstants.JAVAX_SERVLET_FORWARD_REQUEST_URI) != null) {
-
-			forwarded = true;
-		}
-
-		if (forwarded) {
+		if (PortalUtil.isForwarded(httpServletRequest)) {
 			requestURL = PortalUtil.getAbsoluteURL(
 				httpServletRequest,
 				(String)httpServletRequest.getAttribute(
