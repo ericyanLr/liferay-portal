@@ -32,4 +32,6 @@ public interface ViewCountManager {
 	public void incrementViewCount(
 		long companyId, long classNameId, long classPK, int increment);
 
+	public boolean isViewCountEnabled(String className);
+
 }
