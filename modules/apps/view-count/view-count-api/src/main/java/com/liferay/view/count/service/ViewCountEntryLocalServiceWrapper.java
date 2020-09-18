@@ -331,6 +331,11 @@ public class ViewCountEntryLocalServiceWrapper
 			companyId, classNameId, classPK, increment);
 	}
 
+	@Override
+	public boolean isViewCountEnabled(String className) {
+		return _viewCountEntryLocalService.isViewCountEnabled(className);
+	}
+
 	/**
 	 * Updates the view count entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
