@@ -331,7 +331,7 @@ if (portletTitleBasedNavigation && (folderId != DLFolderConstants.DEFAULT_PARENT
 										<liferay-ui:search-container-column-text
 											cssClass="table-cell-expand-smallest"
 											name="downloads"
-											value="<%= String.valueOf(fileEntry.getReadCount()) %>"
+											value='<%= ViewCountManagerUtil.isViewCountEnabled(DLFileEntry.class.getSimpleName()) ? String.valueOf(fileEntry.getReadCount()) : "--" %>'
 										/>
 									</c:when>
 									<c:when test='<%= curEntryColumn.equals("create-date") %>'>
