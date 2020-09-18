@@ -16,23 +16,34 @@ package com.liferay.view.count.service.impl;
 
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.change.tracking.CTAware;
+import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.increment.BufferedIncrement;
 import com.liferay.portal.kernel.increment.NumberIncrement;
+import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.SQLStateAcceptor;
 import com.liferay.portal.kernel.spring.aop.Property;
 import com.liferay.portal.kernel.spring.aop.Retry;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.view.count.ViewCountManager;
+import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.view.count.model.ViewCountEntry;
 import com.liferay.view.count.service.ViewCountEntryLocalService;
 import com.liferay.view.count.service.base.ViewCountEntryLocalServiceBaseImpl;
 import com.liferay.view.count.service.persistence.ViewCountEntryPK;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Preston Crary
@@ -72,7 +83,7 @@ public class ViewCountEntryLocalServiceImpl
 	public long getViewCount(long companyId, long classNameId, long classPK) {
 		ViewCountEntry viewCountEntry = null;
 
-		if (PropsValues.VIEW_COUNT_ENABLED) {
+		if (isViewCountEnabled(classNameId)) {
 			viewCountEntry = viewCountEntryPersistence.fetchByPrimaryKey(
 				new ViewCountEntryPK(companyId, classNameId, classPK));
 		}
@@ -99,10 +110,40 @@ public class ViewCountEntryLocalServiceImpl
 	public void incrementViewCount(
 		long companyId, long classNameId, long classPK, int increment) {
 
-		if (PropsValues.VIEW_COUNT_ENABLED) {
+		if (isViewCountEnabled(classNameId)) {
 			viewCountEntryFinder.incrementViewCount(
 				companyId, classNameId, classPK, increment);
 		}
 	}
+
+	@Override
+	public boolean isViewCountEnabled(String className) {
+		if (_viewCountEnabledFilterableEntities.contains(className)) {
+			Filter filter = new Filter(className);
+
+			return GetterUtil.getBoolean(
+				PropsUtil.get(PropsKeys.VIEW_COUNT_ENABLED, filter));
+		}
+
+		return PropsValues.VIEW_COUNT_ENABLED;
+	}
+
+	protected boolean isViewCountEnabled(long classNameId) {
+		ClassName className = _classNameLocalService.fetchClassName(
+			classNameId);
+		String classNameValue = null;
+
+		if (className != null) {
+			classNameValue = className.getValue();
+		}
+
+		return isViewCountEnabled(classNameValue);
+	}
+
+	private static final List<String> _viewCountEnabledFilterableEntities =
+		Collections.unmodifiableList(Arrays.asList());
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
 
 }
