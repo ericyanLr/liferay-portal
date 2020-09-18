@@ -141,7 +141,7 @@ public class ViewCountEntryLocalServiceImpl
 	}
 
 	private static final List<String> _viewCountEnabledFilterableEntities =
-		Collections.unmodifiableList(Arrays.asList());
+		Collections.unmodifiableList(Arrays.asList("DLFileEntry"));
 
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
