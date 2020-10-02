@@ -3400,6 +3400,12 @@ public interface PropsKeys {
 	@Deprecated
 	public static final String VERIFY_PROCESSES = "verify.processes";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             com.liferay.view.count.configuration.ViewCountsConfiguration
+	 *             #enabled()}
+	 */
+	@Deprecated
 	public static final String VIEW_COUNT_ENABLED = "view.count.enabled";
 
 	public static final String VIRTUAL_HOSTS_DEFAULT_SITE_NAME =
