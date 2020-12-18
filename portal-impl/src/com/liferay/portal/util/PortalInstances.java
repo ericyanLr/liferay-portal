@@ -483,6 +483,9 @@ public class PortalInstances {
 
 					httpServletRequest.setAttribute(
 						WebKeys.I18N_LANGUAGE_ID, languageId);
+
+					httpServletRequest.setAttribute(
+						WebKeys.VIRTUAL_HOST_I18N_LANGUAGE_ID, languageId);
 				}
 			}
 
