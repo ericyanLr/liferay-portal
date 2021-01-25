@@ -72,9 +72,20 @@ public class OutputTag extends PositionTagSupport {
 					OutputData outputData = _getOutputData(
 						pageContext.getRequest());
 
-					outputData.addDataSB(
-						_outputKey, _webKey,
-						new StringBundler(bodyContentString));
+					StringBundler outputDataSB = outputData.getDataSB(
+						_outputKey, _webKey);
+
+					String outputString = "";
+
+					if (outputDataSB != null) {
+						outputString = outputDataSB.toString();
+					}
+
+					if (!outputString.contains(bodyContentString)) {
+						outputData.addDataSB(
+							_outputKey, _webKey,
+							new StringBundler(bodyContentString));
+					}
 				}
 			}
 
