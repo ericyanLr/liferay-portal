@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
@@ -118,16 +119,31 @@ public class UpdateLanguageActionTest {
 			ThemeDisplay themeDisplay, String expectedRedirect, String url)
 		throws Exception {
 
+		_assertRedirect(themeDisplay, expectedRedirect, url, null);
+	}
+
+	private void _assertRedirect(
+			ThemeDisplay themeDisplay, String expectedRedirect, String url,
+			String virtualHostLanguageId)
+		throws Exception {
+
 		UpdateLanguageAction updateLanguageAction = new UpdateLanguageAction();
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
+
+		if (Validator.isNotNull(virtualHostLanguageId)) {
+			mockHttpServletRequest.setAttribute(
+				WebKeys.VIRTUAL_HOST_I18N_LANGUAGE_ID, virtualHostLanguageId);
+		}
 
 		HttpSession httpSession = mockHttpServletRequest.getSession();
 
 		httpSession.setAttribute(WebKeys.LOCALE, _targetLocale);
 
 		mockHttpServletRequest.setParameter("redirect", url);
+
+		themeDisplay.setRequest(mockHttpServletRequest);
 
 		String redirect = updateLanguageAction.getRedirect(
 			mockHttpServletRequest, themeDisplay, _targetLocale);
@@ -177,10 +193,19 @@ public class UpdateLanguageActionTest {
 
 		_assertRedirect(themeDisplay, controlPanelURL, controlPanelURL);
 
+		_assertRedirect(
+			themeDisplay, "/" + _targetLocale.getLanguage() + controlPanelURL,
+			controlPanelURL, LocaleUtil.toLanguageId(_sourceLocale));
+
 		if (i18n) {
 			_assertRedirect(
 				themeDisplay, controlPanelURL,
 				"/" + _sourceLocale.getLanguage() + controlPanelURL);
+
+			_assertRedirect(
+				themeDisplay, controlPanelURL,
+				"/" + _sourceLocale.getLanguage() + controlPanelURL,
+				LocaleUtil.toLanguageId(_targetLocale));
 		}
 		else {
 			_assertRedirect(
@@ -237,6 +262,17 @@ public class UpdateLanguageActionTest {
 		_assertRedirect(
 			themeDisplay, targetURL,
 			"/" + _sourceLocale.getLanguage() + sourceURL);
+
+		_assertRedirect(
+			themeDisplay, targetURL,
+			"/" + _sourceLocale.getLanguage() + sourceURL,
+			LocaleUtil.toLanguageId(_targetLocale));
+
+		if (!i18n) {
+			_assertRedirect(
+				themeDisplay, "/" + _targetLocale.getLanguage() + targetURL,
+				sourceURL, LocaleUtil.toLanguageId(_sourceLocale));
+		}
 	}
 
 	private void _testGetRedirectWithPortletFriendlyURL(boolean i18n)
@@ -286,6 +322,17 @@ public class UpdateLanguageActionTest {
 		_assertRedirect(
 			themeDisplay, targetURL,
 			"/" + _sourceLocale.getLanguage() + sourceURL);
+
+		_assertRedirect(
+			themeDisplay, targetURL,
+			"/" + _sourceLocale.getLanguage() + sourceURL,
+			LocaleUtil.toLanguageId(_targetLocale));
+
+		if (!i18n) {
+			_assertRedirect(
+				themeDisplay, "/" + _targetLocale.getLanguage() + targetURL,
+				sourceURL, LocaleUtil.toLanguageId(_sourceLocale));
+		}
 	}
 
 	private static final String _FRIENDLY_URL_SEPARATOR_JOURNAL_ARTICLE = "/w/";
