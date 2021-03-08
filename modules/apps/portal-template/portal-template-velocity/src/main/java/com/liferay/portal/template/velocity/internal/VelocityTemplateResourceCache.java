@@ -74,6 +74,11 @@ public class VelocityTemplateResourceCache extends BaseTemplateResourceCache {
 	@Deactivate
 	protected void deactivate() {
 		destroy();
+
+		if (_secondLevelPortalCache != null) {
+			_singleVMPool.removePortalCache(
+				_secondLevelPortalCache.getPortalCacheName());
+		}
 	}
 
 	private static final String _PORTAL_CACHE_NAME =

@@ -127,10 +127,6 @@ public class LiferayResourceManager extends ResourceManagerImpl {
 			(PortalCache<TemplateResource, Template>)extendedProperties.get(
 				"liferay." + VelocityEngine.RESOURCE_LOADER + "portal.cache");
 
-		if (_portalCache != null) {
-			_portalCache.removeAll();
-		}
-
 		super.initialize(runtimeServices);
 	}
 
