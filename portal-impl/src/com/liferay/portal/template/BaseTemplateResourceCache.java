@@ -180,6 +180,12 @@ public abstract class BaseTemplateResourceCache
 		}
 	}
 
+	protected void setModificationCheckInterval(
+		long modificationCheckInterval) {
+
+		_modificationCheckInterval = modificationCheckInterval;
+	}
+
 	protected static final TemplateResource DUMMY_TEMPLATE_RESOURCE =
 		ProxyFactory.newDummyInstance(TemplateResource.class);
 
