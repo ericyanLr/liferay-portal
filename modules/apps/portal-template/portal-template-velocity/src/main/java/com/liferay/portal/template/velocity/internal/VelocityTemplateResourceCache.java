@@ -46,6 +46,15 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class VelocityTemplateResourceCache extends BaseTemplateResourceCache {
 
+	@Override
+	public void clear() {
+		super.clear();
+
+		if (_secondLevelPortalCache != null) {
+			_secondLevelPortalCache.removeAll();
+		}
+	}
+
 	public PortalCache<TemplateResource, Template> getSecondLevelPortalCache() {
 		return _secondLevelPortalCache;
 	}
@@ -86,9 +95,22 @@ public class VelocityTemplateResourceCache extends BaseTemplateResourceCache {
 
 	@Modified
 	protected void modified(Map<String, Object> properties) {
-		deactivate();
+		VelocityEngineConfiguration velocityEngineConfiguration =
+			ConfigurableUtil.createConfigurable(
+				VelocityEngineConfiguration.class, properties);
 
-		activate(properties);
+		long modificationCheckInterval =
+			velocityEngineConfiguration.resourceModificationCheckInterval();
+
+		if (isEnabled() && (modificationCheckInterval != 0)) {
+			clear();
+			setModificationCheckInterval(modificationCheckInterval);
+		}
+		else {
+			deactivate();
+
+			activate(properties);
+		}
 	}
 
 	private static final String _PORTAL_CACHE_NAME =
