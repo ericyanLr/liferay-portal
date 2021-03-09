@@ -46,6 +46,15 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class FreeMarkerTemplateResourceCache extends BaseTemplateResourceCache {
 
+	@Override
+	public void clear() {
+		super.clear();
+
+		if (_secondLevelPortalCache != null) {
+			_secondLevelPortalCache.removeAll();
+		}
+	}
+
 	public PortalCache<TemplateResource, TemplateCache.MaybeMissingTemplate>
 		getSecondLevelPortalCache() {
 
@@ -90,9 +99,22 @@ public class FreeMarkerTemplateResourceCache extends BaseTemplateResourceCache {
 
 	@Modified
 	protected void modified(Map<String, Object> properties) {
-		deactivate();
+		FreeMarkerEngineConfiguration freeMarkerEngineConfiguration =
+			ConfigurableUtil.createConfigurable(
+				FreeMarkerEngineConfiguration.class, properties);
 
-		activate(properties);
+		long modificationCheckInterval =
+			freeMarkerEngineConfiguration.resourceModificationCheck();
+
+		if (isEnabled() && (modificationCheckInterval != 0)) {
+			clear();
+			setModificationCheckInterval(modificationCheckInterval);
+		}
+		else {
+			deactivate();
+
+			activate(properties);
+		}
 	}
 
 	private static final String _PORTAL_CACHE_NAME =
