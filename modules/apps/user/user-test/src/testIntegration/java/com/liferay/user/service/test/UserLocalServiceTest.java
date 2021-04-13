@@ -34,6 +34,7 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DataGuard;
@@ -398,6 +399,9 @@ public class UserLocalServiceTest {
 		PermissionThreadLocal.setPermissionChecker(
 			PermissionCheckerFactoryUtil.create(groupAdminUser));
 
+		ServiceContextThreadLocal.pushServiceContext(
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
+
 		try {
 			LinkedHashMap<String, Object> userParams =
 				LinkedHashMapBuilder.<String, Object>put(
@@ -421,6 +425,7 @@ public class UserLocalServiceTest {
 		}
 		finally {
 			PermissionThreadLocal.setPermissionChecker(oldPermissionChecker);
+			ServiceContextThreadLocal.popServiceContext();
 		}
 	}
 
