@@ -14,9 +14,12 @@
 
 package com.liferay.users.admin.internal.search.spi.model.permission.contributor;
 
+import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.ContactTable;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
@@ -24,13 +27,17 @@ import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.service.ContactLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.search.spi.model.permission.SearchPermissionFilterContributor;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+
+import java.util.List;
 
 /**
  * @author Jesse Yeh
@@ -75,7 +82,32 @@ public class UserSearchPermissionFilterContributor
 					portalException);
 			}
 		}
+		else {
+			DSLQuery dslQuery = DSLQueryFactoryUtil.select(
+				ContactTable.INSTANCE.classPK
+			).from(
+				ContactTable.INSTANCE
+			).where(
+				ContactTable.INSTANCE.userId.eq(userId)
+			);
+
+			List<Long> createdUsersIds = contactLocalService.dslQuery(dslQuery);
+
+			if (!createdUsersIds.isEmpty()) {
+				TermsFilter userIdTermsFilter = new TermsFilter(
+					Field.USER_ID);
+
+				userIdTermsFilter.addValues(
+					ArrayUtil.toStringArray(
+						createdUsersIds.toArray(new Long[0])));
+
+				booleanFilter.add(userIdTermsFilter);
+			}
+		}
 	}
+
+	@Reference
+	protected ContactLocalService contactLocalService;
 
 	@Reference
 	protected RoleLocalService roleLocalService;
