@@ -35,6 +35,7 @@ import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.FacetPostProcessor;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -47,6 +48,7 @@ import com.liferay.portal.search.configuration.DefaultSearchResultPermissionFilt
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -123,24 +125,38 @@ public class DefaultSearchResultPermissionFilter
 		List<Document> excludeDocs = new ArrayList<>();
 		List<Float> scores = new ArrayList<>();
 
-		boolean companyAdmin = _permissionChecker.isCompanyAdmin(
-			_permissionChecker.getCompanyId());
 		int status = GetterUtil.getInteger(
 			searchContext.getAttribute(Field.STATUS),
 			WorkflowConstants.STATUS_APPROVED);
 
 		Document[] documents = hits.getDocs();
 
-		for (int i = 0; i < documents.length; i++) {
-			if (_isIncludeDocument(
-					documents[i], _permissionChecker.getCompanyId(),
-					companyAdmin, status)) {
+		Map<String, Boolean> companyScopeViewPermissions = new HashMap<>();
 
-				docs.add(documents[i]);
+		for (int i = 0; i < documents.length; i++) {
+			Document document = documents[i];
+
+			boolean companyScopeViewPermission =
+				companyScopeViewPermissions.computeIfAbsent(
+					document.get(Field.ENTRY_CLASS_NAME),
+					className -> {
+						if (_permissionChecker.isCompanyAdmin()) {
+							return true;
+						}
+
+						return PortalPermissionUtil.contains(
+							_permissionChecker, ActionKeys.VIEW);
+					});
+
+			if (companyScopeViewPermission ||
+				_isIncludeDocument(
+					document, _permissionChecker.getCompanyId(), status)) {
+
+				docs.add(document);
 				scores.add(hits.score(i));
 			}
 			else {
-				excludeDocs.add(documents[i]);
+				excludeDocs.add(document);
 			}
 		}
 
@@ -218,17 +234,13 @@ public class DefaultSearchResultPermissionFilter
 	}
 
 	private boolean _isIncludeDocument(
-		Document document, long companyId, boolean companyAdmin, int status) {
+		Document document, long companyId, int status) {
 
 		long entryCompanyId = GetterUtil.getLong(
 			document.get(Field.COMPANY_ID));
 
 		if (entryCompanyId != companyId) {
 			return false;
-		}
-
-		if (companyAdmin) {
-			return true;
 		}
 
 		String entryClassName = document.get(Field.ENTRY_CLASS_NAME);
