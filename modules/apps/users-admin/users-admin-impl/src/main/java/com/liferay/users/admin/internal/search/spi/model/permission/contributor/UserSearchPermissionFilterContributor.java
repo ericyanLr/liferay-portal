@@ -14,17 +14,16 @@
 
 package com.liferay.users.admin.internal.search.spi.model.permission.contributor;
 
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.model.role.RoleConstants;
-import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.TermsFilter;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.UserBag;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.search.spi.model.permission.SearchPermissionFilterContributor;
 
 import org.osgi.service.component.annotations.Component;
@@ -32,6 +31,7 @@ import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Jesse Yeh
+ * @author Drew Brokke
  */
 @Component(
 	immediate = true,
@@ -51,18 +51,29 @@ public class UserSearchPermissionFilterContributor
 		}
 
 		try {
-			TermsFilter roleIdsTermsFilter = new TermsFilter(Field.ROLE_IDS);
+			TermsFilter termsFilter = new TermsFilter("organizationIds");
 
-			Role role = roleLocalService.getRole(companyId, RoleConstants.USER);
+			UserBag userBag = permissionChecker.getUserBag();
 
-			roleIdsTermsFilter.addValue(String.valueOf(role.getRoleId()));
+			long[] userOrgIds = userBag.getUserOrgIds();
 
-			booleanFilter.add(roleIdsTermsFilter);
+			for (long userOrgId : userOrgIds) {
+				if (OrganizationPermissionUtil.contains(
+						permissionChecker, userOrgId,
+						ActionKeys.MANAGE_USERS)) {
+
+					termsFilter.addValue(String.valueOf(userOrgId));
+				}
+			}
+
+			if (!termsFilter.isEmpty()) {
+				booleanFilter.add(termsFilter);
+			}
 		}
-		catch (PortalException portalException) {
-			_log.error(
-				"Unable to get the User role for company " + companyId,
-				portalException);
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(exception, exception);
+			}
 		}
 	}
 
