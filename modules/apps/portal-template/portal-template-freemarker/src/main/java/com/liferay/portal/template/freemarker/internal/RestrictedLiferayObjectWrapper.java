@@ -220,7 +220,7 @@ public class RestrictedLiferayObjectWrapper extends LiferayObjectWrapper {
 				Map<String, Object> modelAttributes =
 					baseModel.getModelAttributes();
 
-				if (!modelAttributes.isEmpty() &&
+				if (modelAttributes.containsKey("companyId") &&
 					(currentCompanyId != (Long)modelAttributes.get(
 						"companyId"))) {
 
