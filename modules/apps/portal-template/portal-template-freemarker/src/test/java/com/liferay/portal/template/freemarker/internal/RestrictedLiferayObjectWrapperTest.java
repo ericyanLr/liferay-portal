@@ -47,6 +47,7 @@ import freemarker.template.TemplateModelException;
 import java.io.Serializable;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -412,9 +413,8 @@ public class RestrictedLiferayObjectWrapperTest
 						objectWrapper.wrap(
 							new TestBaseModel(123L) {
 
-								public Map
-									<String, Function<TestBaseModel, Object>>
-										getAttributeGetterFunctions() {
+								public Map<String, Object>
+									getModelAttributes() {
 
 									return Collections.emptyMap();
 								}
@@ -509,9 +509,24 @@ public class RestrictedLiferayObjectWrapperTest
 			return _companyId;
 		}
 
-		@Override
 		public Map<String, Object> getModelAttributes() {
-			return null;
+			Map<String, Object> attributes = new HashMap<>();
+
+			Map<String, Function<TestBaseModel, Object>>
+				attributeGetterFunctions = getAttributeGetterFunctions();
+
+			for (Map.Entry<String, Function<TestBaseModel, Object>> entry :
+					attributeGetterFunctions.entrySet()) {
+
+				String attributeName = entry.getKey();
+				Function<TestBaseModel, Object> attributeGetterFunction =
+					entry.getValue();
+
+				attributes.put(
+					attributeName, attributeGetterFunction.apply(this));
+			}
+
+			return attributes;
 		}
 
 		@Override

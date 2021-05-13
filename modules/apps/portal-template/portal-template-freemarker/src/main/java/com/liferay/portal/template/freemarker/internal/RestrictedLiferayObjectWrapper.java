@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 /**
  * @author Mika Koivisto
@@ -218,15 +217,12 @@ public class RestrictedLiferayObjectWrapper extends LiferayObjectWrapper {
 			if (currentCompanyId != CompanyConstants.SYSTEM) {
 				BaseModel<?> baseModel = (BaseModel<?>)object;
 
-				Map<String, Function<Object, Object>> getterFunctions =
-					(Map<String, Function<Object, Object>>)
-						(Map<String, ?>)baseModel.getAttributeGetterFunctions();
+				Map<String, Object> modelAttributes =
+					baseModel.getModelAttributes();
 
-				Function<Object, Object> function = getterFunctions.get(
-					"companyId");
-
-				if ((function != null) &&
-					(currentCompanyId != (Long)function.apply(object))) {
+				if (!modelAttributes.isEmpty() &&
+					(currentCompanyId != (Long)modelAttributes.get(
+						"companyId"))) {
 
 					throw new TemplateModelException(
 						StringBundler.concat(
