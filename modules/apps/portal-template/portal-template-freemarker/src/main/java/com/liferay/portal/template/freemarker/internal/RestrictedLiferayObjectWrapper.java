@@ -225,8 +225,11 @@ public class RestrictedLiferayObjectWrapper extends LiferayObjectWrapper {
 				Function<Object, Object> function = getterFunctions.get(
 					"companyId");
 
+				long objectCompanyId = (Long)function.apply(object);
+
 				if ((function != null) &&
-					(currentCompanyId != (Long)function.apply(object))) {
+					(currentCompanyId != objectCompanyId) &&
+						(CompanyConstants.SYSTEM != objectCompanyId)) {
 
 					throw new TemplateModelException(
 						StringBundler.concat(
