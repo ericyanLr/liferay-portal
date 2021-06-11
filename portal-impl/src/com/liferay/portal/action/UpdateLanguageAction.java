@@ -77,13 +77,15 @@ public class UpdateLanguageAction implements Action {
 
 				Contact contact = user.getContact();
 
-				AdminUtil.updateUser(
+				user = AdminUtil.updateUser(
 					httpServletRequest, user.getUserId(), user.getScreenName(),
 					user.getEmailAddress(), user.getFacebookId(),
 					user.getOpenId(), languageId, user.getTimeZoneId(),
 					user.getGreeting(), user.getComments(), contact.getSmsSn(),
 					contact.getFacebookSn(), contact.getJabberSn(),
 					contact.getSkypeSn(), contact.getTwitterSn());
+
+				themeDisplay.setUser(user);
 			}
 
 			HttpSession session = httpServletRequest.getSession();
