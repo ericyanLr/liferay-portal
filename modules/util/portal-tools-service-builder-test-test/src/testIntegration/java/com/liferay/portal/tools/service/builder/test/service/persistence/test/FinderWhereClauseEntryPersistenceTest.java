@@ -244,14 +244,11 @@ public class FinderWhereClauseEntryPersistenceTest {
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereNoPrimaryKeysExist()
 		throws Exception {
 
-		long pk1 = RandomTestUtil.nextLong();
-
-		long pk2 = RandomTestUtil.nextLong();
-
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
-		primaryKeys.add(pk1);
-		primaryKeys.add(pk2);
+		for (long pk = -1; pk > -2000; pk--) {
+			primaryKeys.add(pk);
+		}
 
 		Map<Serializable, FinderWhereClauseEntry> finderWhereClauseEntries =
 			_persistence.fetchByPrimaryKeys(primaryKeys);
@@ -266,12 +263,13 @@ public class FinderWhereClauseEntryPersistenceTest {
 		FinderWhereClauseEntry newFinderWhereClauseEntry =
 			addFinderWhereClauseEntry();
 
-		long pk = RandomTestUtil.nextLong();
-
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
 		primaryKeys.add(newFinderWhereClauseEntry.getPrimaryKey());
-		primaryKeys.add(pk);
+
+		for (long pk = -1; pk > -2000; pk--) {
+			primaryKeys.add(pk);
+		}
 
 		Map<Serializable, FinderWhereClauseEntry> finderWhereClauseEntries =
 			_persistence.fetchByPrimaryKeys(primaryKeys);
