@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.exception.UserScreenNameException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
@@ -36,6 +37,7 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.AuthException;
 import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManager;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Http;
@@ -234,11 +236,31 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 
 		if (Validator.isNotNull(redirect)) {
 			if (!themeDisplay.isSignedIn()) {
-				actionRequest.setAttribute(
-					WebKeys.REDIRECT,
-					_http.addParameter(
-						_portal.getPathMain() + "/portal/login", "redirect",
-						redirect));
+				User user = _userLocalService.getUserByEmailAddress(
+					themeDisplay.getCompanyId(),
+					actionRequest.getParameter("login"));
+
+				if (!user.isPasswordReset()) {
+					PortletURL actionURL = PortletURLBuilder.createActionURL(
+						_portal.getLiferayPortletResponse(actionResponse)
+					).setActionName(
+						"/login/login"
+					).setRedirect(
+						redirect
+					).setParameter(
+						"saveLastPath", Boolean.FALSE.toString()
+					).build();
+
+					actionRequest.setAttribute(
+						WebKeys.REDIRECT, actionURL.toString());
+				}
+				else {
+					actionRequest.setAttribute(
+						WebKeys.REDIRECT,
+						_http.addParameter(
+							_portal.getPathMain() + "/portal/login", "redirect",
+							redirect));
+				}
 
 				return;
 			}
@@ -319,5 +341,8 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 }
