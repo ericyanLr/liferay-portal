@@ -133,14 +133,12 @@ public class RememberMeAutoLogin extends BaseAutoLogin {
 		Cookie cookie = new Cookie(CookieKeys.ID, StringPool.BLANK);
 
 		cookie.setMaxAge(0);
-		cookie.setPath(StringPool.SLASH);
 
 		CookieKeys.addCookie(httpServletRequest, httpServletResponse, cookie);
 
 		cookie = new Cookie(CookieKeys.PASSWORD, StringPool.BLANK);
 
 		cookie.setMaxAge(0);
-		cookie.setPath(StringPool.SLASH);
 
 		CookieKeys.addCookie(httpServletRequest, httpServletResponse, cookie);
 	}

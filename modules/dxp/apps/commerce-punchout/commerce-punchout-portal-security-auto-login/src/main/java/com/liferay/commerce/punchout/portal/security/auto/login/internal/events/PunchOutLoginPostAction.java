@@ -166,7 +166,6 @@ public class PunchOutLoginPostAction extends Action {
 		Cookie cookie = new Cookie(cookieName, commerceOrder.getUuid());
 
 		cookie.setMaxAge(-1);
-		cookie.setPath(StringPool.SLASH);
 
 		CookieKeys.addCookie(httpServletRequest, httpServletResponse, cookie);
 

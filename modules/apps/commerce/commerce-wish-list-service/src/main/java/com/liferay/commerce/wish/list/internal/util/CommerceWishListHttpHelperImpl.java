@@ -108,7 +108,6 @@ public class CommerceWishListHttpHelperImpl
 					cookieName, commerceWishList.getUuid());
 
 				cookie.setMaxAge(CookieKeys.MAX_AGE);
-				cookie.setPath(StringPool.SLASH);
 
 				CookieKeys.addCookie(
 					httpServletRequest, httpServletResponse, cookie);

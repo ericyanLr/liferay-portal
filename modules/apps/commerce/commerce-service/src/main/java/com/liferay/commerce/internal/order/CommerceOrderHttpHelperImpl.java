@@ -256,7 +256,6 @@ public class CommerceOrderHttpHelperImpl implements CommerceOrderHttpHelper {
 						WebKeys.THEME_DISPLAY);
 
 				cookie.setMaxAge(CookieKeys.MAX_AGE);
-				cookie.setPath(StringPool.SLASH);
 
 				CookieKeys.addCookie(
 					httpServletRequest, themeDisplay.getResponse(), cookie);
@@ -388,7 +387,6 @@ public class CommerceOrderHttpHelperImpl implements CommerceOrderHttpHelper {
 		}
 
 		cookie.setMaxAge(CookieKeys.MAX_AGE);
-		cookie.setPath(StringPool.SLASH);
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(

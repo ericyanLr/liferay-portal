@@ -178,8 +178,6 @@ public class AuthenticatedSessionManagerImpl
 			companyIdCookie.setDomain(domain);
 		}
 
-		companyIdCookie.setPath(StringPool.SLASH);
-
 		Cookie idCookie = new Cookie(
 			CookieKeys.ID,
 			Encryptor.encrypt(company.getKeyObj(), userIdString));
@@ -187,8 +185,6 @@ public class AuthenticatedSessionManagerImpl
 		if (domain != null) {
 			idCookie.setDomain(domain);
 		}
-
-		idCookie.setPath(StringPool.SLASH);
 
 		int loginMaxAge = PropsValues.COMPANY_SECURITY_AUTO_LOGIN_MAX_AGE;
 
@@ -235,7 +231,6 @@ public class AuthenticatedSessionManagerImpl
 			}
 
 			loginCookie.setMaxAge(loginMaxAge);
-			loginCookie.setPath(StringPool.SLASH);
 
 			CookieKeys.addCookie(
 				httpServletRequest, httpServletResponse, loginCookie, secure);
@@ -249,7 +244,6 @@ public class AuthenticatedSessionManagerImpl
 			}
 
 			passwordCookie.setMaxAge(loginMaxAge);
-			passwordCookie.setPath(StringPool.SLASH);
 
 			CookieKeys.addCookie(
 				httpServletRequest, httpServletResponse, passwordCookie,
@@ -263,7 +257,6 @@ public class AuthenticatedSessionManagerImpl
 			}
 
 			rememberMeCookie.setMaxAge(loginMaxAge);
-			rememberMeCookie.setPath(StringPool.SLASH);
 
 			CookieKeys.addCookie(
 				httpServletRequest, httpServletResponse, rememberMeCookie,
@@ -278,7 +271,6 @@ public class AuthenticatedSessionManagerImpl
 			}
 
 			screenNameCookie.setMaxAge(loginMaxAge);
-			screenNameCookie.setPath(StringPool.SLASH);
 
 			CookieKeys.addCookie(
 				httpServletRequest, httpServletResponse, screenNameCookie,
@@ -295,8 +287,6 @@ public class AuthenticatedSessionManagerImpl
 		Cookie userUUIDCookie = new Cookie(
 			CookieKeys.USER_UUID,
 			Encryptor.encrypt(company.getKeyObj(), userUUID));
-
-		userUUIDCookie.setPath(StringPool.SLASH);
 
 		session.setAttribute(CookieKeys.USER_UUID, userUUID);
 

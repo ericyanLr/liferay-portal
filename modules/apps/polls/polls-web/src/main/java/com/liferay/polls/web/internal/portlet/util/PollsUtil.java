@@ -111,7 +111,6 @@ public class PollsUtil {
 		Cookie cookie = new Cookie(_getCookieName(questionId), StringPool.TRUE);
 
 		cookie.setMaxAge((int)(Time.WEEK / 1000));
-		cookie.setPath(StringPool.SLASH);
 		cookie.setHttpOnly(true);
 
 		CookieKeys.addCookie(httpServletRequest, httpServletResponse, cookie);

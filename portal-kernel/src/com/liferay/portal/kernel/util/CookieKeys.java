@@ -99,13 +99,24 @@ public class CookieKeys {
 		cookie.setValue(encodedValue);
 		cookie.setVersion(0);
 
-		httpServletResponse.addCookie(cookie);
-
 		if (httpServletRequest != null) {
 			Map<String, Cookie> cookieMap = _getCookieMap(httpServletRequest);
 
+			if (cookie.getPath() == null) {
+				String contextPath = httpServletRequest.getContextPath();
+
+				if (Validator.isNotNull(contextPath)) {
+					cookie.setPath(contextPath);
+				}
+				else {
+					cookie.setPath(StringPool.SLASH);
+				}
+			}
+
 			cookieMap.put(StringUtil.toUpperCase(name), cookie);
 		}
+
+		httpServletResponse.addCookie(cookie);
 	}
 
 	public static void addSupportCookie(
@@ -113,8 +124,15 @@ public class CookieKeys {
 		HttpServletResponse httpServletResponse) {
 
 		Cookie cookieSupportCookie = new Cookie(COOKIE_SUPPORT, "true");
+		String contextPath = httpServletRequest.getContextPath();
 
-		cookieSupportCookie.setPath(StringPool.SLASH);
+		if (Validator.isNotNull(contextPath)) {
+			cookieSupportCookie.setPath(contextPath);
+		}
+		else {
+			cookieSupportCookie.setPath(StringPool.SLASH);
+		}
+
 		cookieSupportCookie.setMaxAge(MAX_AGE);
 
 		addCookie(
@@ -132,6 +150,15 @@ public class CookieKeys {
 		}
 
 		Map<String, Cookie> cookieMap = _getCookieMap(httpServletRequest);
+		String contextPath = httpServletRequest.getContextPath();
+		String path;
+
+		if (Validator.isNotNull(contextPath)) {
+			path = contextPath;
+		}
+		else {
+			path = StringPool.SLASH;
+		}
 
 		for (String cookieName : cookieNames) {
 			Cookie cookie = cookieMap.remove(
@@ -143,7 +170,7 @@ public class CookieKeys {
 				}
 
 				cookie.setMaxAge(0);
-				cookie.setPath(StringPool.SLASH);
+				cookie.setPath(path);
 				cookie.setValue(StringPool.BLANK);
 
 				httpServletResponse.addCookie(cookie);

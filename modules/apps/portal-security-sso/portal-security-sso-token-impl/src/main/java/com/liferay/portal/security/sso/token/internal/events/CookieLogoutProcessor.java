@@ -51,7 +51,6 @@ public class CookieLogoutProcessor implements LogoutProcessor {
 			}
 
 			cookie.setMaxAge(0);
-			cookie.setPath(StringPool.SLASH);
 
 			CookieKeys.addCookie(
 				httpServletRequest, httpServletResponse, cookie);

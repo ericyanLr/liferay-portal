@@ -395,7 +395,6 @@ public abstract class BaseProfile {
 		}
 
 		companyIdCookie.setMaxAge(0);
-		companyIdCookie.setPath(StringPool.SLASH);
 
 		Cookie idCookie = new Cookie(CookieKeys.ID, StringPool.BLANK);
 
@@ -404,7 +403,6 @@ public abstract class BaseProfile {
 		}
 
 		idCookie.setMaxAge(0);
-		idCookie.setPath(StringPool.SLASH);
 
 		Cookie passwordCookie = new Cookie(
 			CookieKeys.PASSWORD, StringPool.BLANK);
@@ -414,7 +412,6 @@ public abstract class BaseProfile {
 		}
 
 		passwordCookie.setMaxAge(0);
-		passwordCookie.setPath(StringPool.SLASH);
 
 		boolean rememberMe = GetterUtil.getBoolean(
 			CookieKeys.getCookie(httpServletRequest, CookieKeys.REMEMBER_ME));
@@ -427,7 +424,6 @@ public abstract class BaseProfile {
 			}
 
 			loginCookie.setMaxAge(0);
-			loginCookie.setPath(StringPool.SLASH);
 
 			CookieKeys.addCookie(
 				httpServletRequest, httpServletResponse, loginCookie);
@@ -441,7 +437,6 @@ public abstract class BaseProfile {
 		}
 
 		rememberMeCookie.setMaxAge(0);
-		rememberMeCookie.setPath(StringPool.SLASH);
 
 		CookieKeys.addCookie(
 			httpServletRequest, httpServletResponse, companyIdCookie);
