@@ -18,6 +18,7 @@ import com.liferay.admin.kernel.util.PortalMyAccountApplicationType;
 import com.liferay.expando.kernel.model.CustomAttributesDisplay;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.petra.content.ContentUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -34,6 +35,7 @@ import com.liferay.portal.kernel.image.SpriteProcessor;
 import com.liferay.portal.kernel.image.SpriteProcessorUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.EventDefinition;
 import com.liferay.portal.kernel.model.Portlet;
@@ -66,6 +68,7 @@ import com.liferay.portal.kernel.scheduler.SchedulerEntryImpl;
 import com.liferay.portal.kernel.scheduler.TimeUnit;
 import com.liferay.portal.kernel.scheduler.Trigger;
 import com.liferay.portal.kernel.scheduler.TriggerFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.LayoutLocalService;
@@ -74,6 +77,9 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.servlet.ServletContextClassLoaderPool;
 import com.liferay.portal.kernel.servlet.ServletContextUtil;
+import com.liferay.portal.kernel.transaction.Propagation;
+import com.liferay.portal.kernel.transaction.TransactionConfig;
+import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -126,7 +132,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -174,6 +184,8 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 	@Override
 	public void afterPropertiesSet() {
 		super.afterPropertiesSet();
+
+		_executorService = Executors.newWorkStealingPool();
 
 		Registry registry = RegistryUtil.getRegistry();
 
@@ -352,12 +364,48 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 		clearCache();
 
-		companyLocalService.forEachCompanyId(
-			companyId -> {
-				_deployRemotePortlet(portlet, categoryNames, companyId);
+		List<Future<Void>> futures = new ArrayList<>();
 
-				portletPersistence.flush();
-			});
+		List<Company> companies = companyLocalService.getCompanies(false);
+
+		for (Company company : companies) {
+			Callable<Void> callable = () -> {
+				try {
+					TransactionInvokerUtil.invoke(
+						_transactionConfig,
+						() -> {
+							try (SafeCloseable safeCloseable =
+									CompanyThreadLocal.setWithSafeCloseable(
+										company.getCompanyId())) {
+
+								_deployRemotePortlet(
+									portlet, categoryNames,
+									company.getCompanyId());
+
+								portletPersistence.flush();
+							}
+
+							return null;
+						});
+				}
+				catch (Throwable throwable) {
+					throw new PortalException(throwable);
+				}
+
+				return null;
+			};
+
+			futures.add(_executorService.submit(callable));
+		}
+
+		for (Future<Void> future : futures) {
+			try {
+				future.get();
+			}
+			catch (Exception exception) {
+				throw new PortalException(exception);
+			}
+		}
 
 		return portlet;
 	}
@@ -366,6 +414,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 	public void destroy() {
 		super.destroy();
 
+		_executorService.shutdownNow();
 		_serviceTracker.close();
 	}
 
@@ -2822,7 +2871,11 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		new ConcurrentHashMap<>();
 	private static final Map<Long, Map<String, Portlet>> _portletsMaps =
 		new ConcurrentHashMap<>();
+	private static final TransactionConfig _transactionConfig =
+		TransactionConfig.Factory.create(
+			Propagation.REQUIRED, new Class<?>[] {Exception.class});
 
+	private ExecutorService _executorService;
 	private final AtomicReference<String[]> _friendlyURLMapperRootPortletIds =
 		new AtomicReference<>(new String[0]);
 
