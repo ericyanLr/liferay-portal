@@ -150,13 +150,10 @@ public class CookieKeys {
 		}
 
 		Map<String, Cookie> cookieMap = _getCookieMap(httpServletRequest);
-		String contextPath = httpServletRequest.getContextPath();
-		String path;
 
-		if (Validator.isNotNull(contextPath)) {
-			path = contextPath;
-		}
-		else {
+		String path = httpServletRequest.getContextPath();
+
+		if (Validator.isNull(path)) {
 			path = StringPool.SLASH;
 		}
 
