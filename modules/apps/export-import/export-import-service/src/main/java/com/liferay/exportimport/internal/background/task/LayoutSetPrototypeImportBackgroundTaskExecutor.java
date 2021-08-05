@@ -27,8 +27,14 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.UserConstants;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalServiceUtil;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -131,7 +137,29 @@ public class LayoutSetPrototypeImportBackgroundTaskExecutor
 
 				_log.error(sb.toString(), throwable);
 
-				SitesUtil.setMergeFailCount(layoutSetPrototype, mergeFailCount);
+				PermissionChecker permissionChecker =
+					PermissionThreadLocal.getPermissionChecker();
+				long userId = exportImportConfiguration.getUserId();
+
+				User user = null;
+
+				if (userId != UserConstants.USER_ID_DEFAULT) {
+					user = UserLocalServiceUtil.fetchUser(userId);
+				}
+
+				try {
+					if (user != null) {
+						PermissionThreadLocal.setPermissionChecker(
+							PermissionCheckerFactoryUtil.create(user));
+					}
+
+					SitesUtil.setMergeFailCount(
+						layoutSetPrototype, mergeFailCount);
+				}
+				finally {
+					PermissionThreadLocal.setPermissionChecker(
+						permissionChecker);
+				}
 			}
 			finally {
 				MergeLayoutPrototypesThreadLocal.setInProgress(false);
