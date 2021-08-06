@@ -2186,7 +2186,8 @@ public class SitesImpl implements Sites {
 		long groupId, LayoutSet layoutSet, boolean completed,
 		long lastMergeVersion) {
 
-		return _isSkipImport(groupId, layoutSet, completed, lastMergeVersion);
+		return _isSkipImport(
+			groupId, null, layoutSet, completed, lastMergeVersion);
 	}
 
 	protected void setLayoutSetPrototypeLinkEnabledParameter(
@@ -2343,8 +2344,8 @@ public class SitesImpl implements Sites {
 	}
 
 	private boolean _isSkipImport(
-		long groupId, LayoutSet layoutSet, boolean completed,
-		long lastMergeVersion) {
+		long groupId, LayoutSetPrototype layoutSetPrototype,
+		LayoutSet layoutSet, boolean completed, long lastMergeVersion) {
 
 		BackgroundTask previousBackgroundTask =
 			BackgroundTaskManagerUtil.fetchFirstBackgroundTask(
@@ -2385,6 +2386,30 @@ public class SitesImpl implements Sites {
 
 			UnicodeProperties settingsUnicodeProperties =
 				layoutSet.getSettingsProperties();
+
+			if (completed && (layoutSetPrototype != null)) {
+				String taskExecutorClassName =
+					BackgroundTaskExecutorNames.
+						LAYOUT_SET_PROTOTYPE_IMPORT_BACKGROUND_TASK_EXECUTOR;
+
+				BackgroundTask backgroundTask =
+					BackgroundTaskManagerUtil.fetchFirstBackgroundTask(
+						groupId, taskExecutorClassName, false,
+						new BackgroundTaskCreateDateComparator(false));
+
+				if (backgroundTask == null) {
+					long lastMergeTime = GetterUtil.getLong(
+						settingsUnicodeProperties.getProperty(LAST_MERGE_TIME));
+
+					Date modifiedDate = layoutSetPrototype.getModifiedDate();
+
+					if ((lastMergeTime > 0) &&
+						(lastMergeTime < modifiedDate.getTime())) {
+
+						return false;
+					}
+				}
+			}
 
 			long lastResetTime = GetterUtil.getLong(
 				settingsUnicodeProperties.getProperty(LAST_RESET_TIME));
