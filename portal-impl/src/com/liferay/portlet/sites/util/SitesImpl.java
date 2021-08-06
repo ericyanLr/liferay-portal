@@ -2112,8 +2112,12 @@ public class SitesImpl implements Sites {
 			groupId, privateLayout);
 
 		if ((file == null) ||
-			isSkipImport(groupId, layoutSet, false, lastMergeVersion) ||
-			isSkipImport(groupId, layoutSet, true, lastMergeVersion)) {
+			_isSkipImport(
+				groupId, layoutSetPrototype, layoutSet, false,
+				lastMergeVersion) ||
+			_isSkipImport(
+				groupId, layoutSetPrototype, layoutSet, true,
+				lastMergeVersion)) {
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
