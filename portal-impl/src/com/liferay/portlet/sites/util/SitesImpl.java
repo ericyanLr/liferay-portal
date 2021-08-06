@@ -2186,58 +2186,7 @@ public class SitesImpl implements Sites {
 		long groupId, LayoutSet layoutSet, boolean completed,
 		long lastMergeVersion) {
 
-		BackgroundTask previousBackgroundTask =
-			BackgroundTaskManagerUtil.fetchFirstBackgroundTask(
-				groupId,
-				BackgroundTaskExecutorNames.
-					LAYOUT_SET_PROTOTYPE_IMPORT_BACKGROUND_TASK_EXECUTOR,
-				completed, new BackgroundTaskCreateDateComparator(false));
-
-		if (previousBackgroundTask == null) {
-			return false;
-		}
-
-		Map<String, Serializable> contextMap =
-			previousBackgroundTask.getTaskContextMap();
-
-		ExportImportConfiguration previousExportImportConfiguration =
-			ExportImportConfigurationLocalServiceUtil.
-				fetchExportImportConfiguration(
-					MapUtil.getLong(contextMap, "exportImportConfigurationId"));
-
-		if (previousExportImportConfiguration == null) {
-			return false;
-		}
-
-		Map<String, Serializable> settingsMap =
-			previousExportImportConfiguration.getSettingsMap();
-
-		Map<String, String[]> parameterMap =
-			(Map<String, String[]>)settingsMap.get("parameterMap");
-
-		long previousLastMergeVersion = MapUtil.getLong(
-			parameterMap, "lastMergeVersion");
-
-		if (previousLastMergeVersion == lastMergeVersion) {
-			if (isAnyFailedLayoutModifiedSinceLastMerge(layoutSet)) {
-				return false;
-			}
-
-			UnicodeProperties settingsUnicodeProperties =
-				layoutSet.getSettingsProperties();
-
-			long lastResetTime = GetterUtil.getLong(
-				settingsUnicodeProperties.getProperty(LAST_RESET_TIME));
-
-			Date previousBackgroundTaskCreateDate =
-				previousBackgroundTask.getCreateDate();
-
-			if (previousBackgroundTaskCreateDate.getTime() > lastResetTime) {
-				return true;
-			}
-		}
-
-		return false;
+		return _isSkipImport(groupId, layoutSet, completed, lastMergeVersion);
 	}
 
 	protected void setLayoutSetPrototypeLinkEnabledParameter(
@@ -2391,6 +2340,64 @@ public class SitesImpl implements Sites {
 		}
 
 		return owner;
+	}
+
+	private boolean _isSkipImport(
+		long groupId, LayoutSet layoutSet, boolean completed,
+		long lastMergeVersion) {
+
+		BackgroundTask previousBackgroundTask =
+			BackgroundTaskManagerUtil.fetchFirstBackgroundTask(
+				groupId,
+				BackgroundTaskExecutorNames.
+					LAYOUT_SET_PROTOTYPE_IMPORT_BACKGROUND_TASK_EXECUTOR,
+				completed, new BackgroundTaskCreateDateComparator(false));
+
+		if (previousBackgroundTask == null) {
+			return false;
+		}
+
+		Map<String, Serializable> contextMap =
+			previousBackgroundTask.getTaskContextMap();
+
+		ExportImportConfiguration previousExportImportConfiguration =
+			ExportImportConfigurationLocalServiceUtil.
+				fetchExportImportConfiguration(
+					MapUtil.getLong(contextMap, "exportImportConfigurationId"));
+
+		if (previousExportImportConfiguration == null) {
+			return false;
+		}
+
+		Map<String, Serializable> settingsMap =
+			previousExportImportConfiguration.getSettingsMap();
+
+		Map<String, String[]> parameterMap =
+			(Map<String, String[]>)settingsMap.get("parameterMap");
+
+		long previousLastMergeVersion = MapUtil.getLong(
+			parameterMap, "lastMergeVersion");
+
+		if (previousLastMergeVersion == lastMergeVersion) {
+			if (isAnyFailedLayoutModifiedSinceLastMerge(layoutSet)) {
+				return false;
+			}
+
+			UnicodeProperties settingsUnicodeProperties =
+				layoutSet.getSettingsProperties();
+
+			long lastResetTime = GetterUtil.getLong(
+				settingsUnicodeProperties.getProperty(LAST_RESET_TIME));
+
+			Date previousBackgroundTaskCreateDate =
+				previousBackgroundTask.getCreateDate();
+
+			if (previousBackgroundTaskCreateDate.getTime() > lastResetTime) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private void _releaseLock(String className, long classPK, String owner) {
