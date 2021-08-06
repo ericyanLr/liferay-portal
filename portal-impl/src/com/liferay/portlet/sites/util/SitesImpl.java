@@ -2186,6 +2186,10 @@ public class SitesImpl implements Sites {
 		return false;
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
 	protected boolean isSkipImport(
 		long groupId, LayoutSet layoutSet, boolean completed,
 		long lastMergeVersion) {
