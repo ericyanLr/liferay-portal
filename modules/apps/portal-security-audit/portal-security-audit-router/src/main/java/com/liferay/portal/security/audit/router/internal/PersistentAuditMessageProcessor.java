@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.audit.AuditMessage;
 import com.liferay.portal.kernel.change.tracking.CTTransactionException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.security.audit.AuditEventManager;
 import com.liferay.portal.security.audit.AuditMessageProcessor;
 import com.liferay.portal.security.audit.router.configuration.PersistentAuditMessageProcessorConfiguration;
@@ -76,7 +77,11 @@ public class PersistentAuditMessageProcessor implements AuditMessageProcessor {
 			return;
 		}
 
-		_auditEventManager.addAuditEvent(auditMessage);
+		String auditMessUsrName = auditMessage.getUserName();
+
+		if (!Validator.isNull(auditMessUsrName)) {
+			_auditEventManager.addAuditEvent(auditMessage);
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
