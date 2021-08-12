@@ -1079,6 +1079,10 @@ public class ServicePreAction extends Action {
 				viewableStaging = true;
 			}
 
+			if (layout.isPrivateLayout() && !signedIn) {
+				loginRequest = true;
+			}
+
 			if (viewableStaging) {
 				layouts = LayoutLocalServiceUtil.getLayouts(
 					layout.getGroupId(), layout.isPrivateLayout(),
