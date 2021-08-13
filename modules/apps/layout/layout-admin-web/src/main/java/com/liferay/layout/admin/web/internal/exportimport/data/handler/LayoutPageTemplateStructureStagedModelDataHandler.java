@@ -25,6 +25,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureRelLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.xml.Element;
@@ -179,15 +180,43 @@ public class LayoutPageTemplateStructureStagedModelDataHandler
 			layoutPageTemplateStructure.getLayoutPageTemplateStructureId(),
 			layoutPageTemplateStructure.getLayoutPageTemplateStructureId());
 
-		_layoutPageTemplateStructureRelLocalService.
-			deleteLayoutPageTemplateStructureRels(
-				layoutPageTemplateStructureId);
+		List<LayoutPageTemplateStructureRel>
+			orphanLayoutPageTemplateStructureRels =
+				_layoutPageTemplateStructureRelLocalService.
+					getLayoutPageTemplateStructureRels(
+						layoutPageTemplateStructureId);
 
 		List<Element> layoutPageTemplateStructureRelElements =
 			portletDataContext.getReferenceDataElements(
 				layoutPageTemplateStructure,
 				LayoutPageTemplateStructureRel.class,
 				PortletDataContext.REFERENCE_TYPE_CHILD);
+
+		for (Element layoutPageTemplateStructureRelElement :
+				layoutPageTemplateStructureRelElements) {
+
+			long groupId = portletDataContext.getScopeGroupId();
+			String uuid = layoutPageTemplateStructureRelElement.attributeValue(
+				"uuid");
+
+			orphanLayoutPageTemplateStructureRels = ListUtil.filter(
+				orphanLayoutPageTemplateStructureRels,
+				layoutPageTemplateStructureRel ->
+					!(layoutPageTemplateStructureRel.getUuid(
+					).equals(
+						uuid
+					) &&
+					  (layoutPageTemplateStructureRel.getGroupId() ==
+						  groupId)));
+		}
+
+		for (LayoutPageTemplateStructureRel layoutPageTemplateStructureRel :
+				orphanLayoutPageTemplateStructureRels) {
+
+			_layoutPageTemplateStructureRelLocalService.
+				deleteLayoutPageTemplateStructureRel(
+					layoutPageTemplateStructureRel);
+		}
 
 		for (Element layoutPageTemplateStructureRelElement :
 				layoutPageTemplateStructureRelElements) {
