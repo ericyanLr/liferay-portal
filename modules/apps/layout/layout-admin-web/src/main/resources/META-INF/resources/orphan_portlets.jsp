@@ -23,6 +23,8 @@ OrphanPortletsManagementToolbarDisplayContext orphanPortletsManagementToolbarDis
 
 Layout selLayout = orphanPortletsDisplayContext.getSelLayout();
 
+List<Portlet> orphanPortlets = orphanPortletsDisplayContext.getOrphanPortlets();
+
 portletDisplay.setDescription(LanguageUtil.get(request, "orphan-widgets-description"));
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(orphanPortletsDisplayContext.getBackURL());
@@ -66,6 +68,10 @@ renderResponse.setTitle(LanguageUtil.get(request, "orphan-widgets"));
 	<liferay-ui:search-container
 		searchContainer="<%= orphanPortletsDisplayContext.getOrphanPortletsSearchContainer() %>"
 	>
+		<liferay-ui:search-container-results
+			results="<%= orphanPortlets.subList(searchContainer.getStart(), searchContainer.getResultEnd()) %>"
+		/>
+
 		<liferay-ui:search-container-row
 			className="com.liferay.portal.kernel.model.Portlet"
 			escapedModel="<%= true %>"
