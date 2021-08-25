@@ -2139,7 +2139,9 @@ public class SitesImpl implements Sites {
 		ExportImportConfiguration exportImportConfiguration =
 			ExportImportConfigurationLocalServiceUtil.
 				addExportImportConfiguration(
-					user.getUserId(), groupId, StringPool.BLANK,
+					user.getUserId(), groupId,
+					String.valueOf(
+						layoutSetPrototype.getLayoutSetPrototypeId()),
 					StringPool.BLANK,
 					ExportImportConfigurationConstants.TYPE_IMPORT_LAYOUT,
 					importLayoutSettingsMap, WorkflowConstants.STATUS_DRAFT,
