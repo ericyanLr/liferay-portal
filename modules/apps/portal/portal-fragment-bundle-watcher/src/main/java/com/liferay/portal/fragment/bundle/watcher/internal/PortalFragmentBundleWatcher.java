@@ -29,6 +29,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.component.annotations.Activate;
@@ -69,6 +70,10 @@ public class PortalFragmentBundleWatcher {
 			FrameworkWiring.class);
 
 		_resolvedBundleListener = bundleEvent -> {
+			if (!_resolvedBundleListenerEnabled) {
+				return;
+			}
+
 			Bundle bundleEventBundle = bundleEvent.getBundle();
 
 			if (((bundleEvent.getType() == BundleEvent.INSTALLED) &&
@@ -102,17 +107,17 @@ public class PortalFragmentBundleWatcher {
 				List<Bundle> hostBundles = new ArrayList<>();
 
 				for (Bundle bundle : bundleContext.getBundles()) {
-					List<Bundle> fragmantBundles = fragmentBundlesMap.remove(
+					List<Bundle> fragmentBundles = fragmentBundlesMap.remove(
 						bundle.getSymbolicName());
 
-					if (fragmantBundles == null) {
+					if (fragmentBundles == null) {
 						continue;
 					}
 
 					if (originBundleId != bundle.getBundleId()) {
 						boolean needRefresh = false;
 
-						for (Bundle fragmentBundle : fragmantBundles) {
+						for (Bundle fragmentBundle : fragmentBundles) {
 							if (fragmentBundle.getState() == Bundle.INSTALLED) {
 								needRefresh = true;
 
@@ -131,7 +136,17 @@ public class PortalFragmentBundleWatcher {
 				}
 
 				if (!hostBundles.isEmpty()) {
-					frameworkWiring.refreshBundles(hostBundles);
+					_resolvedBundleListenerEnabled = false;
+
+					frameworkWiring.refreshBundles(
+						hostBundles,
+						frameworkEvent -> {
+							if (frameworkEvent.getType() ==
+									FrameworkEvent.PACKAGES_REFRESHED) {
+
+								_resolvedBundleListenerEnabled = true;
+							}
+						});
 				}
 			}
 		};
@@ -185,5 +200,6 @@ public class PortalFragmentBundleWatcher {
 	private ModuleServiceLifecycle _moduleServiceLifecycle;
 
 	private BundleListener _resolvedBundleListener;
+	private boolean _resolvedBundleListenerEnabled = true;
 
 }
