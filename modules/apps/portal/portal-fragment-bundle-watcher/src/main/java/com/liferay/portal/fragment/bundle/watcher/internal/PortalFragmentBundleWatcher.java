@@ -16,6 +16,8 @@ package com.liferay.portal.fragment.bundle.watcher.internal;
 
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 
 import java.util.ArrayList;
@@ -144,7 +146,17 @@ public class PortalFragmentBundleWatcher {
 							if (frameworkEvent.getType() ==
 									FrameworkEvent.PACKAGES_REFRESHED) {
 
-								_resolvedBundleListenerEnabled = true;
+								new Thread(() -> {
+									try {
+										_log.error("Waiting 30 seconds before re-enabling resolved bundle listener.");
+										Thread.sleep(30000);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+
+									_resolvedBundleListenerEnabled = true;
+									_log.error("Re-enabled resolved bundle listener.");
+								}).start();
 							}
 						});
 				}
@@ -201,5 +213,8 @@ public class PortalFragmentBundleWatcher {
 
 	private BundleListener _resolvedBundleListener;
 	private boolean _resolvedBundleListenerEnabled = true;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		PortalFragmentBundleWatcher.class);
 
 }
