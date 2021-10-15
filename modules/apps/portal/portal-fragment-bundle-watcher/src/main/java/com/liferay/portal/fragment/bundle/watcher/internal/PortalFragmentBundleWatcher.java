@@ -68,6 +68,8 @@ public class PortalFragmentBundleWatcher {
 		FrameworkWiring frameworkWiring = systemBundle.adapt(
 			FrameworkWiring.class);
 
+		List<Long> duplicateHostBundleIds = new ArrayList<>();
+
 		_resolvedBundleListener = bundleEvent -> {
 			Bundle bundleEventBundle = bundleEvent.getBundle();
 
@@ -102,17 +104,19 @@ public class PortalFragmentBundleWatcher {
 				List<Bundle> hostBundles = new ArrayList<>();
 
 				for (Bundle bundle : bundleContext.getBundles()) {
-					List<Bundle> fragmantBundles = fragmentBundlesMap.remove(
+					List<Bundle> fragmentBundles = fragmentBundlesMap.remove(
 						bundle.getSymbolicName());
 
-					if (fragmantBundles == null) {
+					if (fragmentBundles == null) {
 						continue;
 					}
 
-					if (originBundleId != bundle.getBundleId()) {
+					long bundleId = bundle.getBundleId();
+
+					if (originBundleId != bundleId) {
 						boolean needRefresh = false;
 
-						for (Bundle fragmentBundle : fragmantBundles) {
+						for (Bundle fragmentBundle : fragmentBundles) {
 							if (fragmentBundle.getState() == Bundle.INSTALLED) {
 								needRefresh = true;
 
@@ -120,8 +124,11 @@ public class PortalFragmentBundleWatcher {
 							}
 						}
 
-						if (needRefresh) {
+						if (needRefresh &&
+							!duplicateHostBundleIds.contains(bundleId)) {
+
 							hostBundles.add(bundle);
+							duplicateHostBundleIds.add(bundleId);
 						}
 					}
 
