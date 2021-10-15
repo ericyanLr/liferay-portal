@@ -16,6 +16,8 @@ package com.liferay.portal.fragment.bundle.watcher.internal;
 
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.component.annotations.Activate;
@@ -138,7 +141,30 @@ public class PortalFragmentBundleWatcher {
 				}
 
 				if (!hostBundles.isEmpty()) {
-					frameworkWiring.refreshBundles(hostBundles);
+					_log.error("Bundle(s) to refresh: " + hostBundles.size());
+
+					for (Bundle hostBundle : hostBundles) {
+						_log.error(
+							"Bundle name: " + hostBundle.getSymbolicName());
+					}
+
+					frameworkWiring.refreshBundles(
+						hostBundles,
+						frameworkEvent -> {
+							if (frameworkEvent.getType() ==
+									FrameworkEvent.PACKAGES_REFRESHED) {
+
+								_log.error(
+									"Refresh finished for " +
+										hostBundles.size() + " bundle(s).");
+
+								for (Bundle hostBundle : hostBundles) {
+									_log.error(
+										"Refreshed bundle: " +
+											hostBundle.getSymbolicName());
+								}
+							}
+						});
 				}
 			}
 		};
@@ -184,6 +210,9 @@ public class PortalFragmentBundleWatcher {
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		PortalFragmentBundleWatcher.class);
 
 	private BundleContext _bundleContext;
 	private BundleTracker<String> _installedFragmentBundleTracker;
