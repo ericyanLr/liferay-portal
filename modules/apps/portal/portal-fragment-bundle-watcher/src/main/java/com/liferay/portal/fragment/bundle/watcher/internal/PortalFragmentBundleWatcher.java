@@ -28,12 +28,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.FrameworkWiring;
@@ -138,8 +142,17 @@ public class PortalFragmentBundleWatcher {
 						break;
 					}
 				}
+			}
+		};
 
-				if (!_hostBundles.isEmpty()) {
+		_bundleContext.addBundleListener(_resolvedBundleListener);
+
+		_scheduledExecutorService =
+			Executors.newSingleThreadScheduledExecutor();
+
+		_scheduledExecutorService.scheduleWithFixedDelay(
+			() -> {
+				if (!_refreshingBundles && !_hostBundles.isEmpty()) {
 					Iterator<Bundle> iterator = _hostBundles.iterator();
 					Set<Bundle> bundles = new HashSet<>();
 
@@ -149,18 +162,26 @@ public class PortalFragmentBundleWatcher {
 						iterator.remove();
 					}
 
-					if (!bundles.isEmpty()) {
-						_frameworkWiring.refreshBundles(bundles);
-					}
-				}
-			}
-		};
+					_refreshingBundles = true;
 
-		_bundleContext.addBundleListener(_resolvedBundleListener);
+					_frameworkWiring.refreshBundles(
+						bundles,
+						frameworkEvent -> {
+							if (frameworkEvent.getType() ==
+									FrameworkEvent.PACKAGES_REFRESHED) {
+
+								_refreshingBundles = false;
+							}
+						});
+				}
+			},
+			0, 3, TimeUnit.SECONDS);
 	}
 
 	@Deactivate
 	protected void deactivate() {
+		_scheduledExecutorService.shutdownNow();
+
 		_bundleContext.removeBundleListener(_resolvedBundleListener);
 
 		_installedFragmentBundleTracker.close();
@@ -221,6 +242,8 @@ public class PortalFragmentBundleWatcher {
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED)
 	private ModuleServiceLifecycle _moduleServiceLifecycle;
 
+	private boolean _refreshingBundles;
 	private BundleListener _resolvedBundleListener;
+	private ScheduledExecutorService _scheduledExecutorService;
 
 }
