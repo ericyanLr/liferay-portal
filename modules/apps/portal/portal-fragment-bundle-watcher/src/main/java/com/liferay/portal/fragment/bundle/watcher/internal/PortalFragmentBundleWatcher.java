@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -101,7 +103,7 @@ public class PortalFragmentBundleWatcher {
 
 				long originBundleId = originBundle.getBundleId();
 
-				List<Bundle> hostBundles = new ArrayList<>();
+				Set<Bundle> hostBundles = new HashSet<>();
 
 				for (Bundle bundle : bundleContext.getBundles()) {
 					List<Bundle> fragmantBundles = fragmentBundlesMap.remove(
