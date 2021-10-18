@@ -23,9 +23,11 @@ import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -72,6 +74,8 @@ public class PortalFragmentBundleWatcher {
 
 		_frameworkWiring = systemBundle.adapt(FrameworkWiring.class);
 
+		_hostBundles = ConcurrentHashMap.newKeySet();
+
 		_resolvedBundleListener = bundleEvent -> {
 			Bundle bundleEventBundle = bundleEvent.getBundle();
 
@@ -103,8 +107,6 @@ public class PortalFragmentBundleWatcher {
 
 				long originBundleId = originBundle.getBundleId();
 
-				Set<Bundle> hostBundles = new HashSet<>();
-
 				for (Bundle bundle : bundleContext.getBundles()) {
 					List<Bundle> fragmantBundles = fragmentBundlesMap.remove(
 						bundle.getSymbolicName());
@@ -128,7 +130,7 @@ public class PortalFragmentBundleWatcher {
 						}
 
 						if (needRefresh) {
-							hostBundles.add(bundle);
+							_hostBundles.add(bundle);
 						}
 					}
 
@@ -137,8 +139,19 @@ public class PortalFragmentBundleWatcher {
 					}
 				}
 
-				if (!hostBundles.isEmpty()) {
-					_frameworkWiring.refreshBundles(hostBundles);
+				if (!_hostBundles.isEmpty()) {
+					Iterator<Bundle> iterator = _hostBundles.iterator();
+					Set<Bundle> bundles = new HashSet<>();
+
+					while (iterator.hasNext()) {
+						bundles.add(iterator.next());
+
+						iterator.remove();
+					}
+
+					if (!bundles.isEmpty()) {
+						_frameworkWiring.refreshBundles(bundles);
+					}
 				}
 			}
 		};
@@ -202,6 +215,7 @@ public class PortalFragmentBundleWatcher {
 
 	private BundleContext _bundleContext;
 	private FrameworkWiring _frameworkWiring;
+	private Set<Bundle> _hostBundles;
 	private BundleTracker<String> _installedFragmentBundleTracker;
 
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED)
