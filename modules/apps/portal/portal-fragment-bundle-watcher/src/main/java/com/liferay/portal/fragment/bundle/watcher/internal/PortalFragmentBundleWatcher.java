@@ -19,6 +19,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +30,10 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.Constants;
+import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.FrameworkWiring;
+import org.osgi.resource.Requirement;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -65,8 +68,7 @@ public class PortalFragmentBundleWatcher {
 
 		Bundle systemBundle = _bundleContext.getBundle(0);
 
-		FrameworkWiring frameworkWiring = systemBundle.adapt(
-			FrameworkWiring.class);
+		_frameworkWiring = systemBundle.adapt(FrameworkWiring.class);
 
 		_resolvedBundleListener = bundleEvent -> {
 			Bundle bundleEventBundle = bundleEvent.getBundle();
@@ -113,7 +115,10 @@ public class PortalFragmentBundleWatcher {
 						boolean needRefresh = false;
 
 						for (Bundle fragmentBundle : fragmantBundles) {
-							if (fragmentBundle.getState() == Bundle.INSTALLED) {
+							if ((fragmentBundle.getState() ==
+									Bundle.INSTALLED) &&
+								!_hasMissingRequirements(fragmentBundle)) {
+
 								needRefresh = true;
 
 								break;
@@ -131,7 +136,7 @@ public class PortalFragmentBundleWatcher {
 				}
 
 				if (!hostBundles.isEmpty()) {
-					frameworkWiring.refreshBundles(hostBundles);
+					_frameworkWiring.refreshBundles(hostBundles);
 				}
 			}
 		};
@@ -165,6 +170,21 @@ public class PortalFragmentBundleWatcher {
 		return fragmentHost;
 	}
 
+	private boolean _hasMissingRequirements(Bundle bundle) {
+		BundleRevision bundleRevision = bundle.adapt(BundleRevision.class);
+
+		for (Requirement requirement : bundleRevision.getRequirements(null)) {
+			Collection<BundleCapability> providers =
+				_frameworkWiring.findProviders(requirement);
+
+			if (providers.isEmpty()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/**
 	 * @see com.liferay.portal.file.install.internal.DirectoryWatcher#_isFragment
 	 */
@@ -179,6 +199,7 @@ public class PortalFragmentBundleWatcher {
 	}
 
 	private BundleContext _bundleContext;
+	private FrameworkWiring _frameworkWiring;
 	private BundleTracker<String> _installedFragmentBundleTracker;
 
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED)
