@@ -147,6 +147,7 @@ public class PortalFragmentBundleWatcher {
 
 		_bundleContext.addBundleListener(_resolvedBundleListener);
 
+		_refreshingBundles = false;
 		_scheduledExecutorService =
 			Executors.newSingleThreadScheduledExecutor();
 
