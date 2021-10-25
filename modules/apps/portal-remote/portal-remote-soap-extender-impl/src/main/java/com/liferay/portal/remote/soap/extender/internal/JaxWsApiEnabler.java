@@ -30,6 +30,7 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.jaxws22.spi.ProviderImpl;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -38,6 +39,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 /**
  * @author Carlos Sierra Andrés
@@ -64,24 +66,50 @@ public class JaxWsApiEnabler {
 			StringBundler.concat(
 				"(&(objectClass=org.apache.cxf.Bus)(",
 				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_PATH, "=",
-				contextPath, "))"));
+				contextPath, "))"),
+			new ServiceTrackerCustomizer<Bus, Bus>() {
 
-		_bus = _serviceTracker.waitForService(jaxWsApiConfiguration.timeout());
+				@Override
+				public Bus addingService(
+					ServiceReference<Bus> serviceReference) {
 
-		if (_bus != null) {
-			BusFactory.setDefaultBus(_bus);
+					Bus bus = bundleContext.getService(serviceReference);
 
-			ProviderImpl providerImpl = new ProviderImpl();
+					if (_bus == null) {
+						_bus = bus;
 
-			Dictionary<String, Object> providerProperties = new Hashtable<>();
+						BusFactory.setDefaultBus(_bus);
 
-			providerProperties.put(
-				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_PATH,
-				contextPath);
+						ProviderImpl providerImpl = new ProviderImpl();
 
-			_serviceRegistration = bundleContext.registerService(
-				Provider.class, providerImpl, providerProperties);
-		}
+						Dictionary<String, Object> providerProperties =
+							new Hashtable<>();
+
+						providerProperties.put(
+							HttpWhiteboardConstants.
+								HTTP_WHITEBOARD_CONTEXT_PATH,
+							contextPath);
+
+						_serviceRegistration = bundleContext.registerService(
+							Provider.class, providerImpl, providerProperties);
+					}
+
+					return bus;
+				}
+
+				@Override
+				public void modifiedService(
+					ServiceReference<Bus> serviceReference, Bus bus) {
+				}
+
+				@Override
+				public void removedService(
+					ServiceReference<Bus> serviceReference, Bus bus) {
+				}
+
+			});
+
+		_serviceTracker.waitForService(jaxWsApiConfiguration.timeout());
 	}
 
 	@Deactivate
