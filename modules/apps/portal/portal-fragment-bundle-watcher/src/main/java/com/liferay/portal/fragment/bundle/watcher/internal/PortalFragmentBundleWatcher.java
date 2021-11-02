@@ -176,7 +176,7 @@ public class PortalFragmentBundleWatcher {
 						});
 				}
 			},
-			0, 3, TimeUnit.SECONDS);
+			0, 100, TimeUnit.MILLISECONDS);
 	}
 
 	@Deactivate
