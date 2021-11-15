@@ -45,7 +45,7 @@ dependencies {
 	compileOnly group: "org.apache.geronimo.specs", name: "geronimo-json_1.1_spec", version: "1.5"
 	compileOnly group: "org.apache.johnzon", name: "johnzon-core", version: "1.2.11"
 	compileOnly group: "org.eclipse.platform", name: "org.eclipse.equinox.console", version: "1.4.300"
-	compileOnly group: "org.glassfish", name: "javax.el", version: "3.0.1-b10"
+	compileOnly group: "org.glassfish", name: "javax.el", version: "3.0.1-b08"
 	compileOnly group: "org.jboss.classfilewriter", name: "jboss-classfilewriter", version: "1.2.3.Final"
 	compileOnly group: "org.jboss.logging", name: "jboss-logging", version: "3.3.2.Final"
 	compileOnly group: "org.jboss.weld", name: "weld-osgi-bundle", version: "3.0.5.Final"
