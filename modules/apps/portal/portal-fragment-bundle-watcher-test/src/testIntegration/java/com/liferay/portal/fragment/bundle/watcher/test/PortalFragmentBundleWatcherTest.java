@@ -357,7 +357,7 @@ public class PortalFragmentBundleWatcherTest {
 				dependencyBSymbolicName);
 
 			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
-			Thread.sleep(60000);
+			Thread.sleep(200);
 
 			int expectedHostRefreshCount = 1;
 
@@ -374,6 +374,91 @@ public class PortalFragmentBundleWatcherTest {
 			_uninstallBundle(dependencyASymbolicName);
 			_uninstallBundle(fragmentASymbolicName);
 			_uninstallBundle(fragmentBSymbolicName);
+		}
+	}
+
+	@Test
+	public void testDeployTwoSetsOfTwoFragmentsWithDependenciesWhereOneIsMissing()
+		throws Exception {
+
+		String dependencyASymbolicName = _PACKAGE_NAME.concat(".dependency.a");
+		String dependencyBSymbolicName = _PACKAGE_NAME.concat(".dependency.b");
+		String fragmentASymbolicName = _HOST_SYMBOLIC_NAME.concat(
+			".fragment.a");
+		String fragmentBSymbolicName = _HOST_SYMBOLIC_NAME.concat(
+			".fragment.b");
+
+		String secondHostSymbolicName = _HOST_SYMBOLIC_NAME + ".second";
+
+		String secondDependencyASymbolicName =
+			_PACKAGE_NAME.concat(".second.dependency.a");
+		String secondDependencyBSymbolicName =
+			_PACKAGE_NAME.concat(".second.dependency.b");
+		String secondFragmentASymbolicName = secondHostSymbolicName.concat(
+			".fragment.a");
+		String secondFragmentBSymbolicName = secondHostSymbolicName.concat(
+			".fragment.b");
+
+		try {
+			// Start First Set
+			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
+
+			hostBundle.start();
+
+			Bundle dependencyBundleA = _installDependencyBundle(
+				dependencyASymbolicName);
+
+			dependencyBundleA.start();
+
+			_installFragmentBundleWithDependency(
+				fragmentASymbolicName, _HOST_SYMBOLIC_NAME,
+				dependencyASymbolicName);
+
+			Bundle fragmentBundleB = _installFragmentBundleWithDependency(
+				fragmentBSymbolicName, _HOST_SYMBOLIC_NAME,
+				dependencyBSymbolicName);
+
+			// Start Second Set
+			Bundle secondHostBundle = _installBundle(secondHostSymbolicName);
+
+			secondHostBundle.start();
+
+			Bundle secondDependencyBundleA = _installDependencyBundle(
+				secondDependencyASymbolicName);
+
+			secondDependencyBundleA.start();
+
+			_installFragmentBundleWithDependency(
+				secondFragmentASymbolicName, secondHostSymbolicName,
+				secondDependencyASymbolicName);
+
+			Bundle secondFragmentBundleB = _installFragmentBundleWithDependency(
+				secondFragmentBSymbolicName, secondHostSymbolicName,
+				secondDependencyBSymbolicName);
+
+			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
+			Thread.sleep(200);
+
+			int expectedHostRefreshCount = 1;
+
+			Assert.assertEquals(
+				expectedHostRefreshCount, _actualHostRefreshCount.intValue());
+
+			Assert.assertNotEquals(
+				"Fragment B is in the resolved state, but should actually be " +
+				"in the installed state, since it has a missing dependency",
+				fragmentBundleB.getState(), Bundle.RESOLVED);
+		}
+		finally {
+			_uninstallBundle(_HOST_SYMBOLIC_NAME);
+			_uninstallBundle(dependencyASymbolicName);
+			_uninstallBundle(fragmentASymbolicName);
+			_uninstallBundle(fragmentBSymbolicName);
+
+			_uninstallBundle(secondHostSymbolicName);
+			_uninstallBundle(secondDependencyASymbolicName);
+			_uninstallBundle(secondFragmentASymbolicName);
+			_uninstallBundle(secondFragmentBSymbolicName);
 		}
 	}
 
