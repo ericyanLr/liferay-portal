@@ -80,252 +80,252 @@ public class PortalFragmentBundleWatcherTest {
 		_bundleContext.removeBundleListener(_hostRefreshCountBundleListener);
 	}
 
-	@Test
-	public void testDeployFragment() throws Exception {
-		String fragmentSymbolicName = _HOST_SYMBOLIC_NAME.concat(".fragment");
-
-		try {
-			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
-
-			hostBundle.start();
-
-			Bundle fragmentBundle = _installFragmentBundle(
-				fragmentSymbolicName, _HOST_SYMBOLIC_NAME);
-
-			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
-			Thread.sleep(200);
-
-			int expectedHostRefreshCount = 1;
-
-			Assert.assertEquals(
-				expectedHostRefreshCount, _actualHostRefreshCount.intValue());
-
-			Assert.assertEquals(
-				"Fragment should be in resolved state",
-				fragmentBundle.getState(), Bundle.RESOLVED);
-		}
-		finally {
-			_uninstallBundle(_HOST_SYMBOLIC_NAME);
-			_uninstallBundle(fragmentSymbolicName);
-		}
-	}
-
-	@Test
-	public void testDeployFragmentWithDependency() throws Exception {
-		String fragmentSymbolicName = _HOST_SYMBOLIC_NAME.concat(".fragment");
-		String dependencySymbolicName = _PACKAGE_NAME.concat(".dependency");
-
-		try {
-			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
-
-			hostBundle.start();
-
-			Bundle dependencyBundle = _installDependencyBundle(
-				dependencySymbolicName);
-
-			dependencyBundle.start();
-
-			Bundle fragmentBundle = _installFragmentBundleWithDependency(
-				fragmentSymbolicName, _HOST_SYMBOLIC_NAME,
-				dependencySymbolicName);
-
-			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
-			Thread.sleep(200);
-
-			int expectedHostRefreshCount = 1;
-
-			Assert.assertEquals(
-				expectedHostRefreshCount, _actualHostRefreshCount.intValue());
-
-			Assert.assertEquals(
-				"Fragment should be in resolved state",
-				fragmentBundle.getState(), Bundle.RESOLVED);
-		}
-		finally {
-			_uninstallBundle(_HOST_SYMBOLIC_NAME);
-			_uninstallBundle(dependencySymbolicName);
-			_uninstallBundle(fragmentSymbolicName);
-		}
-	}
-
-	@Test
-	public void testDeployFragmentWithMissingDependency() throws Exception {
-		String fragmentSymbolicName = _HOST_SYMBOLIC_NAME.concat(".fragment");
-		String dependencySymbolicName = _PACKAGE_NAME.concat(".dependency");
-
-		try {
-			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
-
-			hostBundle.start();
-
-			Bundle fragmentBundle = _installFragmentBundleWithDependency(
-				fragmentSymbolicName, _HOST_SYMBOLIC_NAME,
-				dependencySymbolicName);
-
-			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
-			Thread.sleep(200);
-
-			int expectedHostRefreshCount = 0;
-
-			Assert.assertEquals(
-				expectedHostRefreshCount, _actualHostRefreshCount.intValue());
-
-			Assert.assertNotEquals(
-				"Fragment is in the resolved state, but should actually be " +
-					"in the installed state, since it has a missing dependency",
-				fragmentBundle.getState(), Bundle.RESOLVED);
-		}
-		finally {
-			_uninstallBundle(_HOST_SYMBOLIC_NAME);
-			_uninstallBundle(fragmentSymbolicName);
-		}
-	}
-
-	@Test
-	public void testDeployTwoFragmentsAndUnrelatedBundlesSimultaneously()
-		throws Exception {
-
-		String fragmentASymbolicName = _HOST_SYMBOLIC_NAME.concat(
-			".fragment.a");
-		String fragmentBSymbolicName = _HOST_SYMBOLIC_NAME.concat(
-			".fragment.b");
-		String unrelatedASymbolicName = _PACKAGE_NAME.concat(".unrelated.a");
-		String unrelatedBSymbolicName = _PACKAGE_NAME.concat(".unrelated.b");
-		String unrelatedCSymbolicName = _PACKAGE_NAME.concat(".unrelated.c");
-		String unrelatedDSymbolicName = _PACKAGE_NAME.concat(".unrelated.d");
-		String unrelatedESymbolicName = _PACKAGE_NAME.concat(".unrelated.e");
-		String unrelatedFSymbolicName = _PACKAGE_NAME.concat(".unrelated.f");
-
-		ExecutorService executorService = Executors.newFixedThreadPool(2);
-
-		try {
-			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
-
-			hostBundle.start();
-
-			//Install unrelated bundles
-			Bundle unrelatedABundle = _installBundle(unrelatedASymbolicName);
-			Bundle unrelatedBBundle = _installBundle(unrelatedBSymbolicName);
-			Bundle unrelatedCBundle = _installBundle(unrelatedCSymbolicName);
-			Bundle unrelatedDBundle = _installBundle(unrelatedDSymbolicName);
-			Bundle unrelatedEBundle = _installBundle(unrelatedESymbolicName);
-			Bundle unrelatedFBundle = _installBundle(unrelatedFSymbolicName);
-
-			//Create callables to install fragments and start unrelated bundles
-			Callable<Bundle> installFragmentACallable =
-				() -> _installFragmentBundle(
-					fragmentASymbolicName, _HOST_SYMBOLIC_NAME);
-			Callable<Bundle> installFragmentBCallable =
-				() -> _installFragmentBundle(
-					fragmentBSymbolicName, _HOST_SYMBOLIC_NAME);
-			Callable<Bundle> startUnrelatedBundleACallable = () -> _startBundle(
-				unrelatedABundle);
-			Callable<Bundle> startUnrelatedBundleBCallable = () -> _startBundle(
-				unrelatedBBundle);
-			Callable<Bundle> startUnrelatedBundleCCallable = () -> _startBundle(
-				unrelatedCBundle);
-			Callable<Bundle> startUnrelatedBundleDCallable = () -> _startBundle(
-				unrelatedDBundle);
-			Callable<Bundle> startUnrelatedBundleECallable = () -> _startBundle(
-				unrelatedEBundle);
-			Callable<Bundle> startUnrelatedBundleFCallable = () -> _startBundle(
-				unrelatedFBundle);
-
-			List<Callable<Bundle>> callables = Arrays.asList(
-				installFragmentACallable, startUnrelatedBundleACallable,
-				startUnrelatedBundleBCallable, startUnrelatedBundleCCallable,
-				installFragmentBCallable, startUnrelatedBundleDCallable,
-				startUnrelatedBundleECallable, startUnrelatedBundleFCallable);
-
-			//Simulate multiple fragments and unrelated bundles being deployed
-			//together and starting at the same time
-			List<Future<Bundle>> futures = executorService.invokeAll(callables);
-
-			for (Future<Bundle> future : futures) {
-				future.get();
-			}
-
-			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
-			Thread.sleep(200);
-
-			int expectedMaxHostRefreshCount = 2;
-
-			Assert.assertTrue(
-				StringBundler.concat(
-					"Expected host to refresh at most ",
-					expectedMaxHostRefreshCount, " times, but was refreshed ",
-					_actualHostRefreshCount.intValue(), " times instead."),
-				_actualHostRefreshCount.intValue() <=
-					expectedMaxHostRefreshCount);
-		}
-		finally {
-			executorService.shutdownNow();
-
-			_uninstallBundle(_HOST_SYMBOLIC_NAME);
-			_uninstallBundle(fragmentASymbolicName);
-			_uninstallBundle(fragmentBSymbolicName);
-			_uninstallBundle(unrelatedASymbolicName);
-			_uninstallBundle(unrelatedBSymbolicName);
-			_uninstallBundle(unrelatedCSymbolicName);
-			_uninstallBundle(unrelatedDSymbolicName);
-			_uninstallBundle(unrelatedESymbolicName);
-			_uninstallBundle(unrelatedFSymbolicName);
-		}
-	}
-
-	@Test
-	public void testDeployTwoFragmentsWithDependencies() throws Exception {
-		String dependencyASymbolicName = _PACKAGE_NAME.concat(".dependency.a");
-		String dependencyBSymbolicName = _PACKAGE_NAME.concat(".dependency.b");
-		String fragmentASymbolicName = _HOST_SYMBOLIC_NAME.concat(
-			".fragment.a");
-		String fragmentBSymbolicName = _HOST_SYMBOLIC_NAME.concat(
-			".fragment.b");
-
-		try {
-			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
-
-			hostBundle.start();
-
-			Bundle dependencyBundleA = _installDependencyBundle(
-				dependencyASymbolicName);
-
-			dependencyBundleA.start();
-
-			_installFragmentBundleWithDependency(
-				fragmentASymbolicName, _HOST_SYMBOLIC_NAME,
-				dependencyASymbolicName);
-
-			Bundle dependencyBundleB = _installDependencyBundle(
-				dependencyBSymbolicName);
-
-			dependencyBundleB.start();
-
-			_installFragmentBundleWithDependency(
-				fragmentBSymbolicName, _HOST_SYMBOLIC_NAME,
-				dependencyBSymbolicName);
-
-			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
-			Thread.sleep(200);
-
-			int expectedMaxHostRefreshCount = 2;
-
-			Assert.assertTrue(
-				StringBundler.concat(
-					"Expected host to refresh at most ",
-					expectedMaxHostRefreshCount, " times, but was refreshed ",
-					_actualHostRefreshCount.intValue(), " times instead."),
-				_actualHostRefreshCount.intValue() <=
-					expectedMaxHostRefreshCount);
-		}
-		finally {
-			_uninstallBundle(_HOST_SYMBOLIC_NAME);
-			_uninstallBundle(dependencyASymbolicName);
-			_uninstallBundle(dependencyBSymbolicName);
-			_uninstallBundle(fragmentASymbolicName);
-			_uninstallBundle(fragmentBSymbolicName);
-		}
-	}
+//	@Test
+//	public void testDeployFragment() throws Exception {
+//		String fragmentSymbolicName = _HOST_SYMBOLIC_NAME.concat(".fragment");
+//
+//		try {
+//			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
+//
+//			hostBundle.start();
+//
+//			Bundle fragmentBundle = _installFragmentBundle(
+//				fragmentSymbolicName, _HOST_SYMBOLIC_NAME);
+//
+//			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
+//			Thread.sleep(200);
+//
+//			int expectedHostRefreshCount = 1;
+//
+//			Assert.assertEquals(
+//				expectedHostRefreshCount, _actualHostRefreshCount.intValue());
+//
+//			Assert.assertEquals(
+//				"Fragment should be in resolved state",
+//				fragmentBundle.getState(), Bundle.RESOLVED);
+//		}
+//		finally {
+//			_uninstallBundle(_HOST_SYMBOLIC_NAME);
+//			_uninstallBundle(fragmentSymbolicName);
+//		}
+//	}
+//
+//	@Test
+//	public void testDeployFragmentWithDependency() throws Exception {
+//		String fragmentSymbolicName = _HOST_SYMBOLIC_NAME.concat(".fragment");
+//		String dependencySymbolicName = _PACKAGE_NAME.concat(".dependency");
+//
+//		try {
+//			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
+//
+//			hostBundle.start();
+//
+//			Bundle dependencyBundle = _installDependencyBundle(
+//				dependencySymbolicName);
+//
+//			dependencyBundle.start();
+//
+//			Bundle fragmentBundle = _installFragmentBundleWithDependency(
+//				fragmentSymbolicName, _HOST_SYMBOLIC_NAME,
+//				dependencySymbolicName);
+//
+//			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
+//			Thread.sleep(200);
+//
+//			int expectedHostRefreshCount = 1;
+//
+//			Assert.assertEquals(
+//				expectedHostRefreshCount, _actualHostRefreshCount.intValue());
+//
+//			Assert.assertEquals(
+//				"Fragment should be in resolved state",
+//				fragmentBundle.getState(), Bundle.RESOLVED);
+//		}
+//		finally {
+//			_uninstallBundle(_HOST_SYMBOLIC_NAME);
+//			_uninstallBundle(dependencySymbolicName);
+//			_uninstallBundle(fragmentSymbolicName);
+//		}
+//	}
+//
+//	@Test
+//	public void testDeployFragmentWithMissingDependency() throws Exception {
+//		String fragmentSymbolicName = _HOST_SYMBOLIC_NAME.concat(".fragment");
+//		String dependencySymbolicName = _PACKAGE_NAME.concat(".dependency");
+//
+//		try {
+//			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
+//
+//			hostBundle.start();
+//
+//			Bundle fragmentBundle = _installFragmentBundleWithDependency(
+//				fragmentSymbolicName, _HOST_SYMBOLIC_NAME,
+//				dependencySymbolicName);
+//
+//			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
+//			Thread.sleep(200);
+//
+//			int expectedHostRefreshCount = 0;
+//
+//			Assert.assertEquals(
+//				expectedHostRefreshCount, _actualHostRefreshCount.intValue());
+//
+//			Assert.assertNotEquals(
+//				"Fragment is in the resolved state, but should actually be " +
+//					"in the installed state, since it has a missing dependency",
+//				fragmentBundle.getState(), Bundle.RESOLVED);
+//		}
+//		finally {
+//			_uninstallBundle(_HOST_SYMBOLIC_NAME);
+//			_uninstallBundle(fragmentSymbolicName);
+//		}
+//	}
+//
+//	@Test
+//	public void testDeployTwoFragmentsAndUnrelatedBundlesSimultaneously()
+//		throws Exception {
+//
+//		String fragmentASymbolicName = _HOST_SYMBOLIC_NAME.concat(
+//			".fragment.a");
+//		String fragmentBSymbolicName = _HOST_SYMBOLIC_NAME.concat(
+//			".fragment.b");
+//		String unrelatedASymbolicName = _PACKAGE_NAME.concat(".unrelated.a");
+//		String unrelatedBSymbolicName = _PACKAGE_NAME.concat(".unrelated.b");
+//		String unrelatedCSymbolicName = _PACKAGE_NAME.concat(".unrelated.c");
+//		String unrelatedDSymbolicName = _PACKAGE_NAME.concat(".unrelated.d");
+//		String unrelatedESymbolicName = _PACKAGE_NAME.concat(".unrelated.e");
+//		String unrelatedFSymbolicName = _PACKAGE_NAME.concat(".unrelated.f");
+//
+//		ExecutorService executorService = Executors.newFixedThreadPool(2);
+//
+//		try {
+//			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
+//
+//			hostBundle.start();
+//
+//			//Install unrelated bundles
+//			Bundle unrelatedABundle = _installBundle(unrelatedASymbolicName);
+//			Bundle unrelatedBBundle = _installBundle(unrelatedBSymbolicName);
+//			Bundle unrelatedCBundle = _installBundle(unrelatedCSymbolicName);
+//			Bundle unrelatedDBundle = _installBundle(unrelatedDSymbolicName);
+//			Bundle unrelatedEBundle = _installBundle(unrelatedESymbolicName);
+//			Bundle unrelatedFBundle = _installBundle(unrelatedFSymbolicName);
+//
+//			//Create callables to install fragments and start unrelated bundles
+//			Callable<Bundle> installFragmentACallable =
+//				() -> _installFragmentBundle(
+//					fragmentASymbolicName, _HOST_SYMBOLIC_NAME);
+//			Callable<Bundle> installFragmentBCallable =
+//				() -> _installFragmentBundle(
+//					fragmentBSymbolicName, _HOST_SYMBOLIC_NAME);
+//			Callable<Bundle> startUnrelatedBundleACallable = () -> _startBundle(
+//				unrelatedABundle);
+//			Callable<Bundle> startUnrelatedBundleBCallable = () -> _startBundle(
+//				unrelatedBBundle);
+//			Callable<Bundle> startUnrelatedBundleCCallable = () -> _startBundle(
+//				unrelatedCBundle);
+//			Callable<Bundle> startUnrelatedBundleDCallable = () -> _startBundle(
+//				unrelatedDBundle);
+//			Callable<Bundle> startUnrelatedBundleECallable = () -> _startBundle(
+//				unrelatedEBundle);
+//			Callable<Bundle> startUnrelatedBundleFCallable = () -> _startBundle(
+//				unrelatedFBundle);
+//
+//			List<Callable<Bundle>> callables = Arrays.asList(
+//				installFragmentACallable, startUnrelatedBundleACallable,
+//				startUnrelatedBundleBCallable, startUnrelatedBundleCCallable,
+//				installFragmentBCallable, startUnrelatedBundleDCallable,
+//				startUnrelatedBundleECallable, startUnrelatedBundleFCallable);
+//
+//			//Simulate multiple fragments and unrelated bundles being deployed
+//			//together and starting at the same time
+//			List<Future<Bundle>> futures = executorService.invokeAll(callables);
+//
+//			for (Future<Bundle> future : futures) {
+//				future.get();
+//			}
+//
+//			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
+//			Thread.sleep(200);
+//
+//			int expectedMaxHostRefreshCount = 2;
+//
+//			Assert.assertTrue(
+//				StringBundler.concat(
+//					"Expected host to refresh at most ",
+//					expectedMaxHostRefreshCount, " times, but was refreshed ",
+//					_actualHostRefreshCount.intValue(), " times instead."),
+//				_actualHostRefreshCount.intValue() <=
+//					expectedMaxHostRefreshCount);
+//		}
+//		finally {
+//			executorService.shutdownNow();
+//
+//			_uninstallBundle(_HOST_SYMBOLIC_NAME);
+//			_uninstallBundle(fragmentASymbolicName);
+//			_uninstallBundle(fragmentBSymbolicName);
+//			_uninstallBundle(unrelatedASymbolicName);
+//			_uninstallBundle(unrelatedBSymbolicName);
+//			_uninstallBundle(unrelatedCSymbolicName);
+//			_uninstallBundle(unrelatedDSymbolicName);
+//			_uninstallBundle(unrelatedESymbolicName);
+//			_uninstallBundle(unrelatedFSymbolicName);
+//		}
+//	}
+//
+//	@Test
+//	public void testDeployTwoFragmentsWithDependencies() throws Exception {
+//		String dependencyASymbolicName = _PACKAGE_NAME.concat(".dependency.a");
+//		String dependencyBSymbolicName = _PACKAGE_NAME.concat(".dependency.b");
+//		String fragmentASymbolicName = _HOST_SYMBOLIC_NAME.concat(
+//			".fragment.a");
+//		String fragmentBSymbolicName = _HOST_SYMBOLIC_NAME.concat(
+//			".fragment.b");
+//
+//		try {
+//			Bundle hostBundle = _installBundle(_HOST_SYMBOLIC_NAME);
+//
+//			hostBundle.start();
+//
+//			Bundle dependencyBundleA = _installDependencyBundle(
+//				dependencyASymbolicName);
+//
+//			dependencyBundleA.start();
+//
+//			_installFragmentBundleWithDependency(
+//				fragmentASymbolicName, _HOST_SYMBOLIC_NAME,
+//				dependencyASymbolicName);
+//
+//			Bundle dependencyBundleB = _installDependencyBundle(
+//				dependencyBSymbolicName);
+//
+//			dependencyBundleB.start();
+//
+//			_installFragmentBundleWithDependency(
+//				fragmentBSymbolicName, _HOST_SYMBOLIC_NAME,
+//				dependencyBSymbolicName);
+//
+//			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
+//			Thread.sleep(200);
+//
+//			int expectedMaxHostRefreshCount = 2;
+//
+//			Assert.assertTrue(
+//				StringBundler.concat(
+//					"Expected host to refresh at most ",
+//					expectedMaxHostRefreshCount, " times, but was refreshed ",
+//					_actualHostRefreshCount.intValue(), " times instead."),
+//				_actualHostRefreshCount.intValue() <=
+//					expectedMaxHostRefreshCount);
+//		}
+//		finally {
+//			_uninstallBundle(_HOST_SYMBOLIC_NAME);
+//			_uninstallBundle(dependencyASymbolicName);
+//			_uninstallBundle(dependencyBSymbolicName);
+//			_uninstallBundle(fragmentASymbolicName);
+//			_uninstallBundle(fragmentBSymbolicName);
+//		}
+//	}
 
 	@Test
 	public void testDeployTwoFragmentsWithDependenciesWhereOneIsMissing()
@@ -357,7 +357,7 @@ public class PortalFragmentBundleWatcherTest {
 				dependencyBSymbolicName);
 
 			//Add delay to wait for PortalFragmentBundleWatcher bundle refreshes
-			Thread.sleep(200);
+			Thread.sleep(60000);
 
 			int expectedHostRefreshCount = 1;
 
