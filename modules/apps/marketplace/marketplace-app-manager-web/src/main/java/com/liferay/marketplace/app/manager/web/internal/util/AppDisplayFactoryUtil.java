@@ -243,7 +243,9 @@ public class AppDisplayFactoryUtil {
 		while (iterator.hasNext()) {
 			AppDisplay appDisplay = iterator.next();
 
-			if ((state > 0) && (appDisplay.getState() != state)) {
+			if ((appDisplay.getState() == 1) &&
+				(appDisplay.getState() != state)) {
+
 				iterator.remove();
 			}
 		}
