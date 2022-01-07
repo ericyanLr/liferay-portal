@@ -5365,10 +5365,20 @@ public class PortalImpl implements Portal {
 
 		sb.append(themeDisplay.getLanguageId());
 
-		// Build number
+		// Build identifier
 
 		sb.append("&b=");
-		sb.append(ReleaseInfo.getBuildNumber());
+
+		if (Validator.isNotNull(
+				PropsValues.STATIC_RESOURCE_URL_BUILD_IDENTIFIER)) {
+
+			sb.append(
+				URLCodec.encodeURL(
+					PropsValues.STATIC_RESOURCE_URL_BUILD_IDENTIFIER));
+		}
+		else {
+			sb.append(ReleaseInfo.getBuildNumber());
+		}
 
 		// Timestamp
 
