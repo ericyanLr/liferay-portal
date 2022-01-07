@@ -2831,6 +2831,9 @@ public class PropsValues {
 		GetterUtil.getInteger(
 			PropsUtil.get(PropsKeys.STAGING_SYSTEM_EVENT_MAX_AGE));
 
+	public static final String STATIC_RESOURCE_URL_BUILD_IDENTIFIER =
+		PropsUtil.get(PropsKeys.STATIC_RESOURCE_URL_BUILD_IDENTIFIER);
+
 	public static boolean STRIP_CSS_SASS_ENABLED = GetterUtil.getBoolean(
 		PropsUtil.get(PropsKeys.STRIP_CSS_SASS_ENABLED));
 

@@ -3210,6 +3210,9 @@ public interface PropsKeys {
 	public static final String STAGING_SYSTEM_EVENT_MAX_AGE =
 		"staging.system.event.max.age";
 
+	public static final String STATIC_RESOURCE_URL_BUILD_IDENTIFIER =
+		"static.resource.url.build.identifier";
+
 	public static final String STRIP_CSS_SASS_ENABLED =
 		"strip.css.sass.enabled";
 
