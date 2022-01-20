@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.settings.LocationVariableProtocol;
 import com.liferay.portal.kernel.settings.LocationVariableResolver;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
 
@@ -176,10 +177,17 @@ public class DDMFormValuesToPropertiesConverter {
 		}
 
 		if (valueString.equals(StringPool.BLANK)) {
-			String dataType = getDDMFormFieldDataType(
-				ddmFormFieldValue.getName());
+			DDMFormField ddmFormField = ddmFormFieldValue.getDDMFormField();
 
-			valueString = _getDataTypeDefaultValue(dataType);
+			if (ddmFormField.isRepeatable()) {
+				valueString = null;
+			}
+			else {
+				String dataType = getDDMFormFieldDataType(
+					ddmFormFieldValue.getName());
+
+				valueString = _getDataTypeDefaultValue(dataType);
+			}
 		}
 
 		return valueString;
@@ -253,7 +261,12 @@ public class DDMFormValuesToPropertiesConverter {
 		Vector<Serializable> values = new Vector<>();
 
 		for (DDMFormFieldValue ddmFormFieldValue : ddmFormFieldValues) {
-			values.add(_toSimpleValue(ddmFormFieldValue));
+			Serializable simpleDDMFormFieldValue = _toSimpleValue(
+				ddmFormFieldValue);
+
+			if (Validator.isNotNull(simpleDDMFormFieldValue)) {
+				values.add(simpleDDMFormFieldValue);
+			}
 		}
 
 		return values;
