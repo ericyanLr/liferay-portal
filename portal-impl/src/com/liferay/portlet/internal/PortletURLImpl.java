@@ -52,6 +52,7 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.xml.QName;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.PortletURLListenerFactory;
 import com.liferay.portlet.PublicRenderParametersPool;
@@ -353,8 +354,15 @@ public class PortletURLImpl
 		}
 
 		if (name.startsWith(PortletQName.PUBLIC_RENDER_PARAMETER_NAMESPACE)) {
-			name = name.substring(
-				PortletQName.PUBLIC_RENDER_PARAMETER_NAMESPACE.length());
+			QName qName = PortletQNameUtil.getQName(name);
+
+			if (qName != null) {
+				name = qName.getLocalPart();
+			}
+			else {
+				name = name.substring(
+					PortletQName.PUBLIC_RENDER_PARAMETER_NAMESPACE.length());
+			}
 
 			if (_parametersIncludedInPath.contains(name)) {
 				return true;
