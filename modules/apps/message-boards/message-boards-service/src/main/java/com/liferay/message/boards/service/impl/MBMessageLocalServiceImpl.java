@@ -1947,8 +1947,12 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 		String portletId = PortletProviderUtil.getPortletId(
 			MBMessage.class.getName(), PortletProvider.Action.VIEW);
 
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
 		String layoutURL = _getLayoutFullURL(
-			message, portletId, serviceContext);
+			message, portletId, serviceContext, themeDisplay);
 
 		if (Validator.isNotNull(layoutURL)) {
 			return StringBundler.concat(
@@ -2607,11 +2611,15 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 	}
 
 	private String _getLayoutFullURL(
-			MBMessage message, String portletId, ServiceContext serviceContext)
+			MBMessage message, String portletId, ServiceContext serviceContext,
+			ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		String layoutFullURL = _portal.getLayoutFullURL(
+		long plid = _portal.getPlidFromPortletId(
 			message.getGroupId(), portletId);
+
+		String layoutFullURL = _portal.getLayoutFullURL(
+			_layoutLocalService.getLayout(plid), themeDisplay);
 
 		if (Validator.isNotNull(layoutFullURL)) {
 			return layoutFullURL;
