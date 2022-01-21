@@ -1150,6 +1150,10 @@ public class PortletURLImpl
 					name);
 
 				if (Validator.isNotNull(publicRenderParameterName)) {
+					if (isParameterIncludedInPath(name)) {
+						continue;
+					}
+
 					name = publicRenderParameterName;
 				}
 			}
