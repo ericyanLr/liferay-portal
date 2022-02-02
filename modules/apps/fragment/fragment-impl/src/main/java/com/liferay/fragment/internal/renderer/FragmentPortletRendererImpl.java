@@ -21,7 +21,11 @@ import com.liferay.fragment.renderer.FragmentPortletRenderer;
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.portlet.PortletContainerUtil;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.constants.PortletPreferencesFactoryConstants;
+import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -67,12 +71,26 @@ public class FragmentPortletRendererImpl implements FragmentPortletRenderer {
 		}
 
 		try {
-			RuntimeTag.doTag(
-				portletName, instanceId, StringPool.BLANK,
-				PortletPreferencesFactoryConstants.
-					SETTINGS_SCOPE_PORTLET_INSTANCE,
-				defaultPreferences, inheritedFromMaster, null,
-				httpServletRequest, pipingServletResponse);
+			String portletId = PortletIdCodec.encode(
+				PortletIdCodec.decodePortletName(portletName),
+				PortletIdCodec.decodeUserId(portletName), instanceId);
+
+			Portlet portlet = PortletLocalServiceUtil.getPortletById(
+				themeDisplay.getCompanyId(), portletId);
+
+			httpServletRequest =
+				PortletContainerUtil.setupOptionalRenderParameters(
+					httpServletRequest, null, null, null, null);
+
+			PortletContainerUtil.render(
+				httpServletRequest, pipingServletResponse, portlet);
+
+//			RuntimeTag.doTag(
+//				portletName, instanceId, StringPool.BLANK,
+//				PortletPreferencesFactoryConstants.
+//					SETTINGS_SCOPE_PORTLET_INSTANCE,
+//				defaultPreferences, inheritedFromMaster, null,
+//				httpServletRequest, pipingServletResponse);
 		}
 		catch (Exception exception) {
 			throw new FragmentEntryContentException(exception);
