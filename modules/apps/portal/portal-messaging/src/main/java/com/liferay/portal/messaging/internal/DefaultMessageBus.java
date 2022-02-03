@@ -523,6 +523,8 @@ public class DefaultMessageBus implements ManagedServiceFactory, MessageBus {
 		if (oldDestination != null) {
 			oldDestination.copyDestinationEventListeners(destination);
 			oldDestination.copyMessageListeners(destination);
+
+			oldDestination.close(true);
 		}
 		else {
 			List<MessageListener> messageListeners =
