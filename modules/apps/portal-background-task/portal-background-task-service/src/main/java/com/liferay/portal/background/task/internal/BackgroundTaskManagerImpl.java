@@ -638,10 +638,15 @@ public class BackgroundTaskManagerImpl implements BackgroundTaskManager {
 		backgroundTaskStatusDestination.register(
 			removeOnCompletionBackgroundTaskStatusMessageListener);
 
-		if (!_clusterMasterExecutor.isEnabled() ||
-			_clusterMasterExecutor.isMaster()) {
+		try {
+			if (!_clusterMasterExecutor.isEnabled() ||
+				_clusterMasterExecutor.isMaster()) {
 
-			cleanUpBackgroundTasks();
+				cleanUpBackgroundTasks();
+			}
+		}
+		catch (Throwable throwable) {
+			deactivate();
 		}
 	}
 
