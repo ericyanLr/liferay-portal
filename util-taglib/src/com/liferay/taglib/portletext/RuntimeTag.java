@@ -230,8 +230,10 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 			}
 		}
 
-		queryString = PortletParameterUtil.addNamespace(
-			portletInstanceKey, queryString);
+		if (Validator.isNotNull(queryString)) {
+			queryString = PortletParameterUtil.addNamespace(
+				portletInstanceKey, queryString);
+		}
 
 		httpServletRequest = DynamicServletRequest.addQueryString(
 			restrictPortletServletRequest, parameterMap, queryString, false);
