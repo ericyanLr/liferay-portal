@@ -244,9 +244,6 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 		}
 
 		try {
-			httpServletRequest.setAttribute(
-				WebKeys.RENDER_PORTLET_RESOURCE, Boolean.TRUE);
-
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)httpServletRequest.getAttribute(
 					WebKeys.THEME_DISPLAY);
@@ -364,6 +361,9 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 				WebKeys.RENDER_PORTLET);
 
 			try {
+				httpServletRequest.setAttribute(
+					WebKeys.RENDER_PORTLET_RESOURCE, Boolean.TRUE);
+
 				if (resetLifecycleRender) {
 					themeDisplay.setLifecycleRender(true);
 				}
