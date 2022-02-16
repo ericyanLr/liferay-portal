@@ -359,6 +359,9 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 			boolean lifecycleRender = themeDisplay.isLifecycleRender();
 			Portlet renderPortlet = (Portlet)httpServletRequest.getAttribute(
 				WebKeys.RENDER_PORTLET);
+			Boolean renderPortletResource =
+				(Boolean)httpServletRequest.getAttribute(
+					WebKeys.RENDER_PORTLET_RESOURCE);
 
 			try {
 				httpServletRequest.setAttribute(
@@ -379,6 +382,15 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 
 				if (resetLifecycleRender) {
 					themeDisplay.setLifecycleRender(lifecycleRender);
+				}
+
+				if (renderPortletResource == null) {
+					httpServletRequest.removeAttribute(
+						WebKeys.RENDER_PORTLET_RESOURCE);
+				}
+				else {
+					httpServletRequest.setAttribute(
+						WebKeys.RENDER_PORTLET_RESOURCE, renderPortletResource);
 				}
 			}
 
