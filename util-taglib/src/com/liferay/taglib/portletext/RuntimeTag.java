@@ -360,6 +360,8 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 			embeddedPortletIds.push(rootPortletId);
 
 			boolean lifecycleRender = themeDisplay.isLifecycleRender();
+			Portlet renderPortlet = (Portlet)httpServletRequest.getAttribute(
+				WebKeys.RENDER_PORTLET);
 
 			try {
 				if (resetLifecycleRender) {
@@ -370,6 +372,11 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 					httpServletRequest, httpServletResponse, portlet);
 			}
 			finally {
+				if (renderPortlet != null) {
+					httpServletRequest.setAttribute(
+						WebKeys.RENDER_PORTLET, renderPortlet);
+				}
+
 				if (resetLifecycleRender) {
 					themeDisplay.setLifecycleRender(lifecycleRender);
 				}
