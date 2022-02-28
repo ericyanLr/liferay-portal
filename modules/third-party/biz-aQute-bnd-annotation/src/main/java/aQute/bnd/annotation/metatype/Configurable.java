@@ -278,6 +278,8 @@ public class Configurable<T> {
 					return s.getBytes(UTF_8);
 				if (componentType == Character.class || componentType == char.class)
 					return s.toCharArray();
+				if (s.isEmpty())
+					return new String[0];
 			}
 			Collection<?> input = toCollection(o);
 			Class<?> componentClass = getRawClass(componentType);
@@ -400,3 +402,5 @@ public class Configurable<T> {
 	}
 
 }
+
+/* @generated */
