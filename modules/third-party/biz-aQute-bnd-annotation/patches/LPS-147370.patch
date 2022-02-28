@@ -1,0 +1,20 @@
+diff --git a/aQute/bnd/annotation/metatype/Configurable.java b/aQute/bnd/annotation/metatype/Configurable.java
+index 6742c3999bb50..647723abfa590 100644
+--- a/aQute/bnd/annotation/metatype/Configurable.java
++++ b/aQute/bnd/annotation/metatype/Configurable.java
+@@ -278,6 +278,8 @@ public class Configurable<T> {
+ 					return s.getBytes(UTF_8);
+ 				if (componentType == Character.class || componentType == char.class)
+ 					return s.toCharArray();
++				if (s.isEmpty())
++					return new String[0];
+ 			}
+ 			Collection<?> input = toCollection(o);
+ 			Class<?> componentClass = getRawClass(componentType);
+@@ -400,3 +402,5 @@ public class Configurable<T> {
+ 	}
+
+ }
++
++/* @generated */
+\ No newline at end of file
