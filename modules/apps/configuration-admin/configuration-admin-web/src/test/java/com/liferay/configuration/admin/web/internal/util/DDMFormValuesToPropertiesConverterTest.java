@@ -125,7 +125,7 @@ public class DDMFormValuesToPropertiesConverterTest extends Mockito {
 	}
 
 	@Test
-	public void testEmptyStringValue() {
+	public void testArrayStringValuesWithSingleEmptyString() {
 		DDMForm ddmForm = new DDMForm();
 
 		ddmForm.addAvailableLocale(_enLocale);
@@ -179,7 +179,7 @@ public class DDMFormValuesToPropertiesConverterTest extends Mockito {
 	}
 
 	@Test
-	public void testEmptyValueArrayStringValues() {
+	public void testArrayStringValuesWithEmptyString() {
 		DDMForm ddmForm = new DDMForm();
 
 		ddmForm.addAvailableLocale(_enLocale);
@@ -234,6 +234,8 @@ public class DDMFormValuesToPropertiesConverterTest extends Mockito {
 
 		Assert.assertEquals(
 			Arrays.toString(stringValues), 2, stringValues.length);
+		Assert.assertEquals("A", stringValues[0]);
+		Assert.assertEquals("B", stringValues[1]);
 	}
 
 	@Test
