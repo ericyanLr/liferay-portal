@@ -125,60 +125,6 @@ public class DDMFormValuesToPropertiesConverterTest extends Mockito {
 	}
 
 	@Test
-	public void testArrayStringValuesWithSingleEmptyString() {
-		DDMForm ddmForm = new DDMForm();
-
-		ddmForm.addAvailableLocale(_enLocale);
-		ddmForm.setDefaultLocale(_enLocale);
-
-		DDMFormField booleanDDMFormField = DDMFormTestUtil.createDDMFormField(
-			"String", "String", DDMFormFieldType.TEXT, "string", false, true,
-			false);
-
-		ddmForm.addDDMFormField(booleanDDMFormField);
-
-		DDMFormValues ddmFormValues = new DDMFormValues(ddmForm);
-
-		ddmFormValues.addAvailableLocale(_enLocale);
-		ddmFormValues.setDefaultLocale(_enLocale);
-
-		ddmFormValues.addDDMFormFieldValue(
-			createDDMFormFieldValue("String", "", _enLocale));
-
-		ExtendedObjectClassDefinition extendedObjectClassDefinition = mock(
-			ExtendedObjectClassDefinition.class);
-
-		ExtendedAttributeDefinition extendedAttributeDefinition = mock(
-			ExtendedAttributeDefinition.class);
-
-		Configuration configuration = mock(Configuration.class);
-
-		whenGetAttributeDefinitions(
-			extendedObjectClassDefinition,
-			new ExtendedAttributeDefinition[] {extendedAttributeDefinition});
-
-		whenGetCardinality(extendedAttributeDefinition, 1);
-		whenGetID(extendedAttributeDefinition, "String");
-
-		ConfigurationModel configurationModel = new ConfigurationModel(
-			null, null, configuration, extendedObjectClassDefinition, false);
-
-		DDMFormValuesToPropertiesConverter ddmFormValuesToPropertiesConverter =
-			new DDMFormValuesToPropertiesConverter(
-				configurationModel, ddmFormValues, _jsonFactory, _enLocale);
-
-		Dictionary<String, Object> properties =
-			ddmFormValuesToPropertiesConverter.getProperties();
-
-		Object value = properties.get("String");
-
-		String[] stringValues = (String[])value;
-
-		Assert.assertEquals(
-			Arrays.toString(stringValues), 0, stringValues.length);
-	}
-
-	@Test
 	public void testArrayStringValuesWithEmptyString() {
 		DDMForm ddmForm = new DDMForm();
 
@@ -236,6 +182,60 @@ public class DDMFormValuesToPropertiesConverterTest extends Mockito {
 			Arrays.toString(stringValues), 2, stringValues.length);
 		Assert.assertEquals("A", stringValues[0]);
 		Assert.assertEquals("B", stringValues[1]);
+	}
+
+	@Test
+	public void testArrayStringValuesWithSingleEmptyString() {
+		DDMForm ddmForm = new DDMForm();
+
+		ddmForm.addAvailableLocale(_enLocale);
+		ddmForm.setDefaultLocale(_enLocale);
+
+		DDMFormField booleanDDMFormField = DDMFormTestUtil.createDDMFormField(
+			"String", "String", DDMFormFieldType.TEXT, "string", false, true,
+			false);
+
+		ddmForm.addDDMFormField(booleanDDMFormField);
+
+		DDMFormValues ddmFormValues = new DDMFormValues(ddmForm);
+
+		ddmFormValues.addAvailableLocale(_enLocale);
+		ddmFormValues.setDefaultLocale(_enLocale);
+
+		ddmFormValues.addDDMFormFieldValue(
+			createDDMFormFieldValue("String", "", _enLocale));
+
+		ExtendedObjectClassDefinition extendedObjectClassDefinition = mock(
+			ExtendedObjectClassDefinition.class);
+
+		ExtendedAttributeDefinition extendedAttributeDefinition = mock(
+			ExtendedAttributeDefinition.class);
+
+		Configuration configuration = mock(Configuration.class);
+
+		whenGetAttributeDefinitions(
+			extendedObjectClassDefinition,
+			new ExtendedAttributeDefinition[] {extendedAttributeDefinition});
+
+		whenGetCardinality(extendedAttributeDefinition, 1);
+		whenGetID(extendedAttributeDefinition, "String");
+
+		ConfigurationModel configurationModel = new ConfigurationModel(
+			null, null, configuration, extendedObjectClassDefinition, false);
+
+		DDMFormValuesToPropertiesConverter ddmFormValuesToPropertiesConverter =
+			new DDMFormValuesToPropertiesConverter(
+				configurationModel, ddmFormValues, _jsonFactory, _enLocale);
+
+		Dictionary<String, Object> properties =
+			ddmFormValuesToPropertiesConverter.getProperties();
+
+		Object value = properties.get("String");
+
+		String[] stringValues = (String[])value;
+
+		Assert.assertEquals(
+			Arrays.toString(stringValues), 0, stringValues.length);
 	}
 
 	@Test
