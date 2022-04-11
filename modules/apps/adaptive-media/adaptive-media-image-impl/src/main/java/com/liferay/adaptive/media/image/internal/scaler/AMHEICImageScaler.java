@@ -87,11 +87,13 @@ public class AMHEICImageScaler implements AMImageScaler {
 
 			RenderedImage scaledRenderedImage = imageBag.getRenderedImage();
 
+			String targetMimeType = ContentTypes.IMAGE_PNG;
+
 			return new AMImageScaledImageImpl(
 				RenderedImageUtil.getRenderedImageContentStream(
-					scaledRenderedImage, ContentTypes.IMAGE_PNG),
-				scaledRenderedImage.getHeight(),
-				scaledRenderedImage.getWidth());
+					scaledRenderedImage, targetMimeType),
+				scaledRenderedImage.getHeight(), scaledRenderedImage.getWidth(),
+				targetMimeType);
 		}
 		catch (Exception exception) {
 			throw new AMRuntimeException.IOException(
