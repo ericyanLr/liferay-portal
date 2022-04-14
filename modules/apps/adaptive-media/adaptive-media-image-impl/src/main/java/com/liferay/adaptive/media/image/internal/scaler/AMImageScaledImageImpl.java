@@ -24,10 +24,13 @@ import java.io.InputStream;
  */
 public class AMImageScaledImageImpl implements AMImageScaledImage {
 
-	public AMImageScaledImageImpl(byte[] bytes, int height, int width) {
+	public AMImageScaledImageImpl(
+		byte[] bytes, int height, int width, String mimeType) {
+
 		_bytes = bytes;
 		_height = height;
 		_width = width;
+		_mimeType = mimeType;
 	}
 
 	@Override
@@ -38,6 +41,11 @@ public class AMImageScaledImageImpl implements AMImageScaledImage {
 	@Override
 	public InputStream getInputStream() {
 		return new UnsyncByteArrayInputStream(_bytes);
+	}
+
+	@Override
+	public String getMimeType() {
+		return _mimeType;
 	}
 
 	@Override
@@ -52,6 +60,7 @@ public class AMImageScaledImageImpl implements AMImageScaledImage {
 
 	private final byte[] _bytes;
 	private final int _height;
+	private final String _mimeType;
 	private final int _width;
 
 }
