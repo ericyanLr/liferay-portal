@@ -20,11 +20,13 @@ import com.liferay.adaptive.media.image.internal.processor.util.TiffOrientationT
 import com.liferay.adaptive.media.image.internal.util.RenderedImageUtil;
 import com.liferay.adaptive.media.image.scaler.AMImageScaledImage;
 import com.liferay.adaptive.media.image.scaler.AMImageScaler;
+import com.liferay.document.library.kernel.util.ImageProcessor;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.image.ImageTool;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.MimeTypesUtil;
 
 import java.awt.image.RenderedImage;
 
@@ -61,9 +63,12 @@ public class AMDefaultImageScaler implements AMImageScaler {
 			RenderedImage scaledRenderedImage = _imageTool.scale(
 				renderedImage, maxHeight, maxWidth);
 
+			String targetImageMimeType = MimeTypesUtil.getExtensionContentType(
+				_imageProcessor.getPreviewType(fileVersion));
+
 			return new AMImageScaledImageImpl(
 				RenderedImageUtil.getRenderedImageContentStream(
-					scaledRenderedImage, fileVersion.getMimeType()),
+					scaledRenderedImage, targetImageMimeType),
 				scaledRenderedImage.getHeight(),
 				scaledRenderedImage.getWidth());
 		}
@@ -85,6 +90,9 @@ public class AMDefaultImageScaler implements AMImageScaler {
 			throw new AMRuntimeException.IOException(portalException);
 		}
 	}
+
+	@Reference
+	private ImageProcessor _imageProcessor;
 
 	@Reference
 	private ImageTool _imageTool;
