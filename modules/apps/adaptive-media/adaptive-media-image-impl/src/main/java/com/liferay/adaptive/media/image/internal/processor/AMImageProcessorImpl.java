@@ -28,6 +28,9 @@ import com.liferay.adaptive.media.processor.AMProcessor;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
+import com.liferay.portal.kernel.repository.model.FileVersionWrapper;
+import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.MimeTypesUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,8 +124,28 @@ public final class AMImageProcessorImpl implements AMImageProcessor {
 			try (InputStream inputStream =
 					amImageScaledImage.getInputStream()) {
 
+				String amImageScaledImageMimeType =
+					MimeTypesUtil.getContentType(
+						amImageScaledImage.getInputStream(), null);
+
+				FileVersionWrapper fileVersionWrapper = new FileVersionWrapper(
+					fileVersion) {
+
+					@Override
+					public String getMimeType() {
+						if (amImageScaledImageMimeType.equals(
+								ContentTypes.APPLICATION_OCTET_STREAM)) {
+
+							return fileVersion.getMimeType();
+						}
+
+						return amImageScaledImageMimeType;
+					}
+
+				};
+
 				_amImageEntryLocalService.addAMImageEntry(
-					amImageConfigurationEntry, fileVersion,
+					amImageConfigurationEntry, fileVersionWrapper,
 					amImageScaledImage.getHeight(),
 					amImageScaledImage.getWidth(), inputStream,
 					amImageScaledImage.getSize());
