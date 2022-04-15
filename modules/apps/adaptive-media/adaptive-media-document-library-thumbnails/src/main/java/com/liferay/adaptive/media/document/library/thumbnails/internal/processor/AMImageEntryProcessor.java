@@ -31,6 +31,7 @@ import com.liferay.document.library.security.io.InputStreamSanitizer;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.image.ImageTool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
@@ -50,6 +51,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -168,6 +170,12 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 
 	@Override
 	public String getPreviewType(FileVersion fileVersion) {
+		String previewType = _getType(fileVersion);
+
+		if (previewType != null) {
+			return previewType;
+		}
+
 		return _imageProcessor.getPreviewType(fileVersion);
 	}
 
@@ -216,6 +224,12 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 
 	@Override
 	public String getThumbnailType(FileVersion fileVersion) {
+		String thumbnailType = _getType(fileVersion);
+
+		if (thumbnailType != null) {
+			return thumbnailType;
+		}
+
 		return _imageProcessor.getThumbnailType(fileVersion);
 	}
 
@@ -357,6 +371,16 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH),
 			PrefsPropsUtil.getInteger(
 				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT));
+	}
+
+	private String _getType(FileVersion fileVersion) {
+		if ((fileVersion != null) &&
+			Objects.equals(fileVersion.getMimeType(), "image/heic")) {
+
+			return ImageTool.TYPE_PNG;
+		}
+
+		return null;
 	}
 
 	private boolean _isMimeTypeSupported(String mimeType) {
