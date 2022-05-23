@@ -928,7 +928,20 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 
 		UserBag userBag = getUserBag();
 
-		return userBag.hasUserGroup(group);
+		if (userBag.hasUserGroup(group)) {
+			return true;
+		}
+
+		for (long userGroupId : userBag.getUserUserGroupsIds()) {
+			List<Group> groups = GroupLocalServiceUtil.getUserGroupGroups(
+				userGroupId);
+
+			if (groups.contains(group)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	protected boolean isGroupOwnerImpl(Group group) throws PortalException {
