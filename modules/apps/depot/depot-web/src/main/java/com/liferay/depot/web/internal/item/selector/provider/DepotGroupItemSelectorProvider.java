@@ -25,8 +25,12 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutPrototype;
+import com.liferay.portal.kernel.security.auth.GuestOrUserUtil;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupService;
 import com.liferay.portal.kernel.service.LayoutPrototypeService;
+import com.liferay.portal.kernel.service.permission.GroupPermission;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 
 import java.util.ArrayList;
@@ -74,7 +78,7 @@ public class DepotGroupItemSelectorProvider
 				groups.add(depotEntry.getGroup());
 			}
 
-			return groups;
+			return _filterGroups(groups);
 		}
 		catch (PortalException portalException) {
 			_log.error(portalException);
@@ -111,6 +115,27 @@ public class DepotGroupItemSelectorProvider
 		return _language.get(locale, "asset-library");
 	}
 
+	private List<Group> _filterGroups(List<Group> groups)
+		throws PortalException {
+
+		List<Group> filteredGroups = new ArrayList<>();
+
+		PermissionChecker permissionChecker =
+			GuestOrUserUtil.getPermissionChecker();
+
+		for (Group group : groups) {
+			if (group.isCompany() ||
+				permissionChecker.isGroupAdmin(group.getGroupId()) ||
+				_groupPermission.contains(
+					permissionChecker, group, ActionKeys.VIEW)) {
+
+				filteredGroups.add(group);
+			}
+		}
+
+		return filteredGroups;
+	}
+
 	private long _getGroupId(long groupId) throws PortalException {
 		Group group = _groupService.getGroup(groupId);
 
@@ -139,6 +164,9 @@ public class DepotGroupItemSelectorProvider
 
 	@Reference
 	private DepotEntryService _depotEntryService;
+
+	@Reference
+	private GroupPermission _groupPermission;
 
 	@Reference
 	private GroupService _groupService;
