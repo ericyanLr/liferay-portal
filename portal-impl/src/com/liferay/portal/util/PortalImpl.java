@@ -1395,6 +1395,11 @@ public class PortalImpl implements Portal {
 				parametersURL = completeURL.substring(pos);
 			}
 		}
+		else {
+			groupFriendlyURL = getGroupFriendlyURL(
+				layout.getLayoutSet(), themeDisplay, true,
+				layout.isTypeControlPanel());
+		}
 
 		if (layout == null) {
 			layout = themeDisplay.getLayout();
@@ -1428,10 +1433,6 @@ public class PortalImpl implements Portal {
 
 			canonicalLayoutFriendlyURL = defaultLayoutFriendlyURL;
 		}
-
-		groupFriendlyURL = getGroupFriendlyURL(
-			layout.getLayoutSet(), themeDisplay, true,
-			layout.isTypeControlPanel());
 
 		if (PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 2) {
 			String groupFriendlyURLDomain = HttpComponentsUtil.getDomain(
