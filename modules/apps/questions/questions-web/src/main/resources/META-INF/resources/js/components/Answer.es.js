@@ -134,8 +134,8 @@ export default withRouter(
 												answer.status !== 'pending' &&
 												!comments.length && (
 													<ClayButton
-														className="btn-sm c-px-2 c-py-1 text-reset text-secondary"
-														displayType="secondary"
+														className="text-reset"
+														displayType="unstyled"
 														onClick={() =>
 															setShowNewComment(
 																true
@@ -292,8 +292,8 @@ export default withRouter(
 							{answer.actions['reply-to-message'] &&
 								answer.status !== 'pending' && (
 									<ClayButton
-										className="btn-sm c-px-2 c-py-1 text-reset text-secondary"
-										displayType="secondary"
+										className="text-reset"
+										displayType="unstyled"
 										onClick={() => setShowNewComment(true)}
 									>
 										{Liferay.Language.get('add-comment')}
