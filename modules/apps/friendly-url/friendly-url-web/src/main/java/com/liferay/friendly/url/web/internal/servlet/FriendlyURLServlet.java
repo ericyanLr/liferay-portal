@@ -101,6 +101,8 @@ public class FriendlyURLServlet extends HttpServlet {
 					deleteFriendlyURLLocalizationEntry(
 						_getEntryId(httpServletRequest),
 						_getLanguageId(httpServletRequest));
+				_friendlyURLEntryLocalService.deleteFriendlyURLEntry(
+					_getEntryId(httpServletRequest));
 
 				_writeJSON(httpServletResponse, JSONUtil.put("success", true));
 			}
