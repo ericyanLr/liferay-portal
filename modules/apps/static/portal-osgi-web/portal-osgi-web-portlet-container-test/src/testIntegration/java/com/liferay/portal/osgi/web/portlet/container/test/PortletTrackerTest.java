@@ -20,6 +20,7 @@ import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.petra.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletCategory;
@@ -27,14 +28,18 @@ import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
+import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
+import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.ThreadUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.osgi.web.portlet.container.test.util.PortletContainerTestUtil;
 import com.liferay.portal.test.rule.Inject;
@@ -50,6 +55,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -66,6 +72,7 @@ import javax.portlet.RenderResponse;
 import javax.servlet.ServletContext;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,7 +83,11 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.runtime.ServiceComponentRuntime;
+import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
+import org.osgi.util.promise.Promise;
 
 /**
  * @author Daniel Sanz
@@ -88,6 +99,20 @@ public class PortletTrackerTest extends BasePortletContainerTestCase {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
+
+	@BeforeClass
+	public static void setUpClass() {
+		Bundle bundle = FrameworkUtil.getBundle(PortletTrackerTest.class);
+
+		BundleContext bundleContext = bundle.getBundleContext();
+
+		ServiceReference<?> serviceReference =
+			bundleContext.getServiceReference(_CLASS_NAME_PORTLET_TRACKER);
+
+		_portletTrackerComponentDescriptionDTO =
+			_serviceComponentRuntime.getComponentDescriptionDTO(
+				serviceReference.getBundle(), _CLASS_NAME_PORTLET_TRACKER);
+	}
 
 	@Test
 	public void testLoadGetPortletsByCompany() throws Exception {
@@ -213,6 +238,55 @@ public class PortletTrackerTest extends BasePortletContainerTestCase {
 		}
 		finally {
 			testBundle.uninstall();
+		}
+	}
+
+	@Test
+	public void testPortletTrackerPerformanceWithMultipleCompanies()
+		throws Exception {
+
+		try {
+			int size = 50;
+
+			try (LoggingTimer loggingTimer = new LoggingTimer(
+					"Add " + size + " companies")) {
+
+				for (int i = 0; i < size; i++) {
+					String webId = _generateCompanyWebId(i);
+
+					Company company = _companyLocalService.addCompany(
+						null, webId, webId, webId, false, 0, true);
+
+					_companies.add(company);
+
+					PortalInstances.initCompany(
+						ServletContextPool.get(StringPool.BLANK), webId);
+				}
+			}
+
+			_disablePortletTracker();
+		}
+		finally {
+			try (LoggingTimer loggingTimer = new LoggingTimer(
+					"PortletTracker: _serviceTracker.open()")) {
+
+				_enablePortletTracker();
+
+				String threadName =
+					_CLASS_NAME_PORTLET_TRACKER + "-ServiceTrackerOpener";
+
+				for (Thread thread : ThreadUtil.getThreads()) {
+					if (thread == null) {
+						continue;
+					}
+
+					if (Objects.equals(thread.getName(), threadName)) {
+						thread.join();
+
+						break;
+					}
+				}
+			}
 		}
 	}
 
@@ -357,6 +431,24 @@ public class PortletTrackerTest extends BasePortletContainerTestCase {
 		}
 	}
 
+	private void _disablePortletTracker() throws Exception {
+		Promise<Void> promise = _serviceComponentRuntime.disableComponent(
+			_portletTrackerComponentDescriptionDTO);
+
+		promise.getValue();
+	}
+
+	private void _enablePortletTracker() throws Exception {
+		Promise<Void> promise = _serviceComponentRuntime.enableComponent(
+			_portletTrackerComponentDescriptionDTO);
+
+		promise.getValue();
+	}
+
+	private String _generateCompanyWebId(int companyIndex) {
+		return "liferay" + companyIndex + ".com";
+	}
+
 	private void _testPortletIsAvailable(String expectedPortletId)
 		throws Exception {
 
@@ -458,6 +550,18 @@ public class PortletTrackerTest extends BasePortletContainerTestCase {
 
 		jarOutputStream.closeEntry();
 	}
+
+	private static final String _CLASS_NAME_PORTLET_TRACKER =
+		"com.liferay.portal.osgi.web.portlet.tracker.internal.PortletTracker";
+
+	private static ComponentDescriptionDTO
+		_portletTrackerComponentDescriptionDTO;
+
+	@Inject
+	private static ServiceComponentRuntime _serviceComponentRuntime;
+
+	@DeleteAfterTestRun
+	private List<Company> _companies = new ArrayList<>();
 
 	@Inject
 	private CompanyLocalService _companyLocalService;
