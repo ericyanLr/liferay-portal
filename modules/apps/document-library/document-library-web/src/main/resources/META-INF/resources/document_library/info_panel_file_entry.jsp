@@ -289,6 +289,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 					<c:if test="<%= portletDisplay.isWebDAVEnabled() && fileEntry.isSupportsSocial() && latestVersion %>">
 
 						<%
+						String webDavHelpMessage = LanguageUtil.format(request, "webdav-help", "https://help.liferay.com/hc/en-us/articles/360028720352-Desktop-Access-to-Documents-and-Media", false);
 						String webDavURLInputId = liferayPortletResponse.getNamespace() + "webDavURLInput";
 						%>
 
@@ -296,7 +297,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 							<label for="<%= webDavURLInputId %>">
 								<liferay-ui:message key='<%= TextFormatter.format("webDavURL", TextFormatter.K) %>' />
 
-								<liferay-ui:icon-help message='<%= LanguageUtil.get(request, "webdav-help") %>' />
+								<liferay-ui:icon-help message='<%= webDavHelpMessage %>' />
 							</label>
 
 							<div class="input-group input-group-sm">
