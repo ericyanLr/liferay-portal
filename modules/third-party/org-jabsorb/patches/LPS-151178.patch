@@ -1,0 +1,86 @@
+diff --git a/org/jabsorb/JSONSerializer.java b/org/jabsorb/JSONSerializer.java
+index d52f381919f3..d893dfd4d3b2 100644
+--- a/org/jabsorb/JSONSerializer.java
++++ b/org/jabsorb/JSONSerializer.java
+@@ -26,18 +26,6 @@
+ 
+ package org.jabsorb;
+ 
+-import java.io.IOException;
+-import java.io.ObjectInputStream;
+-import java.io.Serializable;
+-import java.util.ArrayList;
+-import java.util.HashMap;
+-import java.util.HashSet;
+-import java.util.Iterator;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.NoSuchElementException;
+-import java.util.Set;
+-
+ import org.jabsorb.serializer.MarshallException;
+ import org.jabsorb.serializer.ObjectMatch;
+ import org.jabsorb.serializer.ProcessedObject;
+@@ -64,6 +52,18 @@ import org.json.JSONTokener;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
++import java.io.IOException;
++import java.io.ObjectInputStream;
++import java.io.Serializable;
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.Iterator;
++import java.util.List;
++import java.util.Map;
++import java.util.NoSuchElementException;
++import java.util.Set;
++
+ /**
+  * This class is the public entry point to the serialization code and provides
+  * methods for marshalling Java objects into JSON objects and unmarshalling JSON
+@@ -748,6 +748,43 @@ public class JSONSerializer implements Serializable
+       Class compClazz;
+       try
+       {
++        int bitSize = 0;
++        compClazz = null;
++        // check if number type
++        if (!(arr.get(0) instanceof Number)) {
++          compClazz = getClassFromHint(arr.get(0));
++        }
++        for (int i = 0; i < arr.length(); i++) {
++          double val = (double) arr.get(i);
++          Class clazz = arr.get(i).getClass();
++          if (val - Math.floor(val) == 0){
++            if(clazz == Byte.class && bitSize < Byte.SIZE){
++              bitSize = Byte.SIZE;
++              compClazz = Byte.class;
++            }
++            else if(clazz == Short.class && bitSize < Short.SIZE) {
++              bitSize = Short.SIZE;
++              compClazz = Short.class;
++            }
++            else if(clazz == Integer.class && bitSize < Integer.SIZE) {
++              bitSize = Integer.SIZE;
++              compClazz = Integer.class;
++            }
++            else if(clazz == Long.class && bitSize < Long.SIZE) {
++              bitSize = Long.SIZE;
++              compClazz = Long.class;
++            }
++          }else {
++            if(clazz == Float.class && bitSize < Float.SIZE) {
++              bitSize = Float.SIZE;
++              compClazz = Float.class;
++            }
++            else {
++              bitSize = Double.SIZE;
++              compClazz = Double.class;
++            }
++          }
++        }
+         compClazz = getClassFromHint(arr.get(0));
+       }
+       catch (JSONException e)
