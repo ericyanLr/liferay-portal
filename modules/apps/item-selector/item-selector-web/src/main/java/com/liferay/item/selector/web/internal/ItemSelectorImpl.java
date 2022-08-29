@@ -28,6 +28,7 @@ import com.liferay.item.selector.web.internal.util.ItemSelectorKeyUtil;
 import com.liferay.osgi.service.tracker.collections.map.ServiceReferenceMapperFactory;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -338,29 +339,14 @@ public class ItemSelectorImpl implements ItemSelector {
 		ItemSelectorCriterion[] itemSelectorCriteriaArray,
 		ThemeDisplay themeDisplay) {
 
-		PortletURL portletURL = null;
-
-		if (Validator.isNotNull(selectedTab) && selectedTab.equals(title)) {
-			portletURL = getItemSelectorURL(
+		return PortletURLBuilder.create(
+			getItemSelectorURL(
 				requestBackedPortletURLFactory, themeDisplay.getScopeGroup(),
 				themeDisplay.getRefererGroupId(), itemSelectedEventName,
-				itemSelectorCriteriaArray);
-		}
-		else {
-			Group group = themeDisplay.getRefererGroup();
-
-			if (group == null) {
-				group = themeDisplay.getScopeGroup();
-			}
-
-			portletURL = getItemSelectorURL(
-				requestBackedPortletURLFactory, group, 0, itemSelectedEventName,
-				itemSelectorCriteriaArray);
-		}
-
-		portletURL.setParameter(PARAMETER_SELECTED_TAB, title);
-
-		return portletURL;
+				itemSelectorCriteriaArray)
+		).setParameter(
+			PARAMETER_SELECTED_TAB, title
+		).buildPortletURL();
 	}
 
 	protected String getValue(Map<String, String[]> parameters, String name) {
