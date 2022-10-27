@@ -29,6 +29,8 @@ package org.jabsorb;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -749,6 +751,35 @@ public class JSONSerializer implements Serializable
       try
       {
         compClazz = getClassFromHint(arr.get(0));
+
+        // If type is Number, attempt to retrieve the class that would best preserve the precision of the values in the array
+        if (Number.class.isAssignableFrom(compClazz)) {
+          int idx = 0;
+          double largestValue = 0;
+
+          for (int i=0; i < arr.length(); i++) {
+            Object obj = arr.get(i);
+
+            if ((obj != null) && (obj instanceof Number)) {
+              if ((obj instanceof BigDecimal) || (obj instanceof BigInteger)) {
+                compClazz = BigDecimal.class;
+                idx = 0;
+                break;
+              }
+
+              double value = ((Number) obj).doubleValue();
+
+              if (value > largestValue) {
+                idx = i;
+                largestValue = value;
+              }
+            }
+          }
+
+          if (idx > 0) {
+            compClazz = getClassFromHint(arr.get(idx));
+          }
+        }
       }
       catch (JSONException e)
       {
