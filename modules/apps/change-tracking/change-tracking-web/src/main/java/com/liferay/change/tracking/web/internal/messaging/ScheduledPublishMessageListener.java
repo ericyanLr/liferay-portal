@@ -18,12 +18,14 @@ import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
 import com.liferay.change.tracking.service.CTProcessLocalService;
 import com.liferay.change.tracking.web.internal.constants.CTDestinationNames;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.messaging.BaseMessageListener;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.DestinationConfiguration;
 import com.liferay.portal.kernel.messaging.DestinationFactory;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageListener;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -67,14 +69,24 @@ public class ScheduledPublishMessageListener extends BaseMessageListener {
 
 	@Override
 	protected void doReceive(Message message) throws Exception {
-		CTCollection ctCollection = _ctCollectionLocalService.fetchCTCollection(
-			message.getLong("ctCollectionId"));
+		CTCollection ctCollection = null;
 
-		if ((ctCollection != null) &&
-			(ctCollection.getStatus() == WorkflowConstants.STATUS_SCHEDULED)) {
+		long companyId = message.getLong("companyId");
 
-			_ctProcessLocalService.addCTProcess(
-				message.getLong("userId"), ctCollection.getCtCollectionId());
+		try (SafeCloseable safeCloseable =
+				CompanyThreadLocal.setWithSafeCloseable(companyId)) {
+
+			ctCollection = _ctCollectionLocalService.fetchCTCollection(
+				message.getLong("ctCollectionId"));
+
+			if ((ctCollection != null) &&
+				(ctCollection.getStatus() ==
+					WorkflowConstants.STATUS_SCHEDULED)) {
+
+				_ctProcessLocalService.addCTProcess(
+					message.getLong("userId"),
+					ctCollection.getCtCollectionId());
+			}
 		}
 	}
 
