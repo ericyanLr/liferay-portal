@@ -69,15 +69,14 @@ public class ScheduledPublishMessageListener extends BaseMessageListener {
 
 	@Override
 	protected void doReceive(Message message) throws Exception {
-		CTCollection ctCollection = null;
-
 		long companyId = message.getLong("companyId");
 
 		try (SafeCloseable safeCloseable =
 				CompanyThreadLocal.setWithSafeCloseable(companyId)) {
 
-			ctCollection = _ctCollectionLocalService.fetchCTCollection(
-				message.getLong("ctCollectionId"));
+			CTCollection ctCollection =
+				_ctCollectionLocalService.fetchCTCollection(
+					message.getLong("ctCollectionId"));
 
 			if ((ctCollection != null) &&
 				(ctCollection.getStatus() ==
