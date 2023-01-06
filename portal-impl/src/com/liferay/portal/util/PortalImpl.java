@@ -3165,9 +3165,17 @@ public class PortalImpl implements Portal {
 
 		Group group = GroupLocalServiceUtil.getGroup(layoutSet.getGroupId());
 
+		Layout layout = themeDisplay.getLayout();
+
+		String type = layout.getType();
+
+		boolean assetDisplay = type.equals(LayoutConstants.TYPE_ASSET_DISPLAY);
+
 		String friendlyURL = null;
 
-		if (layoutSet.isPrivateLayout()) {
+		if (layoutSet.isPrivateLayout() ||
+			(assetDisplay && !group.hasPublicLayouts())) {
+
 			if (group.isUser()) {
 				friendlyURL = _PRIVATE_USER_SERVLET_MAPPING;
 			}
