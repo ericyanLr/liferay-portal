@@ -288,11 +288,18 @@ public class BreadcrumbUtil {
 
 		int layoutsPageCount = 0;
 
-		if (layoutSet.isPrivateLayout()) {
-			layoutsPageCount = group.getPrivateLayoutsPageCount();
-		}
-		else {
+		Layout layout = themeDisplay.getLayout();
+
+		String type = layout.getType();
+
+		boolean assetDisplay = type.equals(LayoutConstants.TYPE_ASSET_DISPLAY);
+
+		if (!layoutSet.isPrivateLayout()) {
 			layoutsPageCount = group.getPublicLayoutsPageCount();
+		}
+
+		if ((layoutsPageCount == 0) && assetDisplay) {
+			layoutsPageCount = group.getPrivateLayoutsPageCount();
 		}
 
 		if ((layoutsPageCount > 0) && !_isGuestGroup(group)) {
