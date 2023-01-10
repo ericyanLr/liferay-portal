@@ -181,7 +181,7 @@ public class LayoutReferencesExportImportContentProcessor
 
 		if (Validator.isNotNull(companyVirtualHostname)) {
 			portalURL = _getPortalURL(
-				url,
+				company.getCompanyId(), url,
 				_portal.getPortalURL(
 					companyVirtualHostname, serverPort, secure));
 
@@ -1172,7 +1172,7 @@ public class LayoutReferencesExportImportContentProcessor
 		}
 	}
 
-	private String _getPortalURL(String url, String portalURL)
+	private String _getPortalURL(long companyId, String url, String portalURL)
 		throws PortalException {
 
 		try {
@@ -1187,7 +1187,10 @@ public class LayoutReferencesExportImportContentProcessor
 				}
 			}
 
-			if (uri != null) {
+			if ((uri != null) &&
+				(Validator.isIPAddress(uri.getHost()) ||
+				 _portal.isValidPortalDomain(companyId, uri.getHost()))) {
+
 				InetAddress inetAddress = InetAddressUtil.getInetAddressByName(
 					uri.getHost());
 
