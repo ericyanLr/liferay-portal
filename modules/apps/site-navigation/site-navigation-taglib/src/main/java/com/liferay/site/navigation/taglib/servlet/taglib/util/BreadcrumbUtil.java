@@ -286,20 +286,14 @@ public class BreadcrumbUtil {
 			}
 		}
 
+		Layout layout = themeDisplay.getLayout();
 		int layoutsPageCount = 0;
 
-		Layout layout = themeDisplay.getLayout();
-
-		String type = layout.getType();
-
-		boolean assetDisplay = type.equals(LayoutConstants.TYPE_ASSET_DISPLAY);
-
-		if (!layoutSet.isPrivateLayout()) {
-			layoutsPageCount = group.getPublicLayoutsPageCount();
-		}
-
-		if ((layoutsPageCount == 0) && assetDisplay) {
+		if (layoutSet.isPrivateLayout() || layout.isTypeAssetDisplay()) {
 			layoutsPageCount = group.getPrivateLayoutsPageCount();
+		}
+		else {
+			layoutsPageCount = group.getPublicLayoutsPageCount();
 		}
 
 		if ((layoutsPageCount > 0) && !_isGuestGroup(group)) {
