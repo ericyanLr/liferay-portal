@@ -345,12 +345,14 @@
 
 		<!-- Other fields -->
 
-		<column convert-null="true" name="name" type="String" />
+		<column convert-null="true" name="convertedValue" type="String" />
+		<column convert-null="false" name="nonconvertedValue" type="String" />
 
 		<!-- Finder methods -->
 
-		<finder name="Name" return-type="NullConvertibleEntry" unique="true">
-			<finder-column name="name" />
+		<finder name="C_N" return-type="NullConvertibleEntry" unique="true">
+			<finder-column name="convertedValue" />
+			<finder-column name="nonconvertedValue" />
 		</finder>
 	</entity>
 	<entity local-service="true" name="RedundantIndexEntry" remote-service="false">
