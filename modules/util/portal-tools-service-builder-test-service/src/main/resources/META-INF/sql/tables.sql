@@ -231,7 +231,8 @@ create table NestedSetsTreeEntry (
 
 create table NullConvertibleEntry (
 	nullConvertibleEntryId LONG not null primary key,
-	name VARCHAR(75) null
+	convertedValue VARCHAR(75) null,
+	nonconvertedValue VARCHAR(75) null
 );
 
 create table RedundantIndexEntry (

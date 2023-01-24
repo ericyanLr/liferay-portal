@@ -79,29 +79,35 @@ public class NullConvertibleEntryPersistenceImpl
 	private FinderPath _finderPathWithPaginationFindAll;
 	private FinderPath _finderPathWithoutPaginationFindAll;
 	private FinderPath _finderPathCountAll;
-	private FinderPath _finderPathFetchByName;
-	private FinderPath _finderPathCountByName;
+	private FinderPath _finderPathFetchByC_N;
+	private FinderPath _finderPathCountByC_N;
 
 	/**
-	 * Returns the null convertible entry where name = &#63; or throws a <code>NoSuchNullConvertibleEntryException</code> if it could not be found.
+	 * Returns the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; or throws a <code>NoSuchNullConvertibleEntryException</code> if it could not be found.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the matching null convertible entry
 	 * @throws NoSuchNullConvertibleEntryException if a matching null convertible entry could not be found
 	 */
 	@Override
-	public NullConvertibleEntry findByName(String name)
+	public NullConvertibleEntry findByC_N(
+			String convertedValue, String nonconvertedValue)
 		throws NoSuchNullConvertibleEntryException {
 
-		NullConvertibleEntry nullConvertibleEntry = fetchByName(name);
+		NullConvertibleEntry nullConvertibleEntry = fetchByC_N(
+			convertedValue, nonconvertedValue);
 
 		if (nullConvertibleEntry == null) {
-			StringBundler sb = new StringBundler(4);
+			StringBundler sb = new StringBundler(6);
 
 			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			sb.append("name=");
-			sb.append(name);
+			sb.append("convertedValue=");
+			sb.append(convertedValue);
+
+			sb.append(", nonconvertedValue=");
+			sb.append(nonconvertedValue);
 
 			sb.append("}");
 
@@ -116,65 +122,89 @@ public class NullConvertibleEntryPersistenceImpl
 	}
 
 	/**
-	 * Returns the null convertible entry where name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 * Returns the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the matching null convertible entry, or <code>null</code> if a matching null convertible entry could not be found
 	 */
 	@Override
-	public NullConvertibleEntry fetchByName(String name) {
-		return fetchByName(name, true);
+	public NullConvertibleEntry fetchByC_N(
+		String convertedValue, String nonconvertedValue) {
+
+		return fetchByC_N(convertedValue, nonconvertedValue, true);
 	}
 
 	/**
-	 * Returns the null convertible entry where name = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 * Returns the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching null convertible entry, or <code>null</code> if a matching null convertible entry could not be found
 	 */
 	@Override
-	public NullConvertibleEntry fetchByName(
-		String name, boolean useFinderCache) {
+	public NullConvertibleEntry fetchByC_N(
+		String convertedValue, String nonconvertedValue,
+		boolean useFinderCache) {
 
-		name = Objects.toString(name, "");
+		convertedValue = Objects.toString(convertedValue, "");
 
 		Object[] finderArgs = null;
 
 		if (useFinderCache) {
-			finderArgs = new Object[] {name};
+			finderArgs = new Object[] {convertedValue, nonconvertedValue};
 		}
 
 		Object result = null;
 
 		if (useFinderCache) {
 			result = dummyFinderCache.getResult(
-				_finderPathFetchByName, finderArgs, this);
+				_finderPathFetchByC_N, finderArgs, this);
 		}
 
 		if (result instanceof NullConvertibleEntry) {
 			NullConvertibleEntry nullConvertibleEntry =
 				(NullConvertibleEntry)result;
 
-			if (!Objects.equals(name, nullConvertibleEntry.getName())) {
+			if (!Objects.equals(
+					convertedValue, nullConvertibleEntry.getConvertedValue()) ||
+				!Objects.equals(
+					nonconvertedValue,
+					nullConvertibleEntry.getNonconvertedValue())) {
+
 				result = null;
 			}
 		}
 
 		if (result == null) {
-			StringBundler sb = new StringBundler(3);
+			StringBundler sb = new StringBundler(4);
 
 			sb.append(_SQL_SELECT_NULLCONVERTIBLEENTRY_WHERE);
 
-			boolean bindName = false;
+			boolean bindConvertedValue = false;
 
-			if (name.isEmpty()) {
-				sb.append(_FINDER_COLUMN_NAME_NAME_3);
+			if (convertedValue.isEmpty()) {
+				sb.append(_FINDER_COLUMN_C_N_CONVERTEDVALUE_3);
 			}
 			else {
-				bindName = true;
+				bindConvertedValue = true;
 
-				sb.append(_FINDER_COLUMN_NAME_NAME_2);
+				sb.append(_FINDER_COLUMN_C_N_CONVERTEDVALUE_2);
+			}
+
+			boolean bindNonconvertedValue = false;
+
+			if (nonconvertedValue == null) {
+				sb.append(_FINDER_COLUMN_C_N_NONCONVERTEDVALUE_1);
+			}
+			else if (nonconvertedValue.isEmpty()) {
+				sb.append(_FINDER_COLUMN_C_N_NONCONVERTEDVALUE_3);
+			}
+			else {
+				bindNonconvertedValue = true;
+
+				sb.append(_FINDER_COLUMN_C_N_NONCONVERTEDVALUE_2);
 			}
 
 			String sql = sb.toString();
@@ -188,8 +218,12 @@ public class NullConvertibleEntryPersistenceImpl
 
 				QueryPos queryPos = QueryPos.getInstance(query);
 
-				if (bindName) {
-					queryPos.add(name);
+				if (bindConvertedValue) {
+					queryPos.add(convertedValue);
+				}
+
+				if (bindNonconvertedValue) {
+					queryPos.add(nonconvertedValue);
 				}
 
 				List<NullConvertibleEntry> list = query.list();
@@ -197,7 +231,7 @@ public class NullConvertibleEntryPersistenceImpl
 				if (list.isEmpty()) {
 					if (useFinderCache) {
 						dummyFinderCache.putResult(
-							_finderPathFetchByName, finderArgs, list);
+							_finderPathFetchByC_N, finderArgs, list);
 					}
 				}
 				else {
@@ -225,51 +259,69 @@ public class NullConvertibleEntryPersistenceImpl
 	}
 
 	/**
-	 * Removes the null convertible entry where name = &#63; from the database.
+	 * Removes the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; from the database.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the null convertible entry that was removed
 	 */
 	@Override
-	public NullConvertibleEntry removeByName(String name)
+	public NullConvertibleEntry removeByC_N(
+			String convertedValue, String nonconvertedValue)
 		throws NoSuchNullConvertibleEntryException {
 
-		NullConvertibleEntry nullConvertibleEntry = findByName(name);
+		NullConvertibleEntry nullConvertibleEntry = findByC_N(
+			convertedValue, nonconvertedValue);
 
 		return remove(nullConvertibleEntry);
 	}
 
 	/**
-	 * Returns the number of null convertible entries where name = &#63;.
+	 * Returns the number of null convertible entries where convertedValue = &#63; and nonconvertedValue = &#63;.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the number of matching null convertible entries
 	 */
 	@Override
-	public int countByName(String name) {
-		name = Objects.toString(name, "");
+	public int countByC_N(String convertedValue, String nonconvertedValue) {
+		convertedValue = Objects.toString(convertedValue, "");
 
-		FinderPath finderPath = _finderPathCountByName;
+		FinderPath finderPath = _finderPathCountByC_N;
 
-		Object[] finderArgs = new Object[] {name};
+		Object[] finderArgs = new Object[] {convertedValue, nonconvertedValue};
 
 		Long count = (Long)dummyFinderCache.getResult(
 			finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler sb = new StringBundler(2);
+			StringBundler sb = new StringBundler(3);
 
 			sb.append(_SQL_COUNT_NULLCONVERTIBLEENTRY_WHERE);
 
-			boolean bindName = false;
+			boolean bindConvertedValue = false;
 
-			if (name.isEmpty()) {
-				sb.append(_FINDER_COLUMN_NAME_NAME_3);
+			if (convertedValue.isEmpty()) {
+				sb.append(_FINDER_COLUMN_C_N_CONVERTEDVALUE_3);
 			}
 			else {
-				bindName = true;
+				bindConvertedValue = true;
 
-				sb.append(_FINDER_COLUMN_NAME_NAME_2);
+				sb.append(_FINDER_COLUMN_C_N_CONVERTEDVALUE_2);
+			}
+
+			boolean bindNonconvertedValue = false;
+
+			if (nonconvertedValue == null) {
+				sb.append(_FINDER_COLUMN_C_N_NONCONVERTEDVALUE_1);
+			}
+			else if (nonconvertedValue.isEmpty()) {
+				sb.append(_FINDER_COLUMN_C_N_NONCONVERTEDVALUE_3);
+			}
+			else {
+				bindNonconvertedValue = true;
+
+				sb.append(_FINDER_COLUMN_C_N_NONCONVERTEDVALUE_2);
 			}
 
 			String sql = sb.toString();
@@ -283,8 +335,12 @@ public class NullConvertibleEntryPersistenceImpl
 
 				QueryPos queryPos = QueryPos.getInstance(query);
 
-				if (bindName) {
-					queryPos.add(name);
+				if (bindConvertedValue) {
+					queryPos.add(convertedValue);
+				}
+
+				if (bindNonconvertedValue) {
+					queryPos.add(nonconvertedValue);
 				}
 
 				count = (Long)query.uniqueResult();
@@ -302,11 +358,20 @@ public class NullConvertibleEntryPersistenceImpl
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_NAME_NAME_2 =
-		"nullConvertibleEntry.name = ?";
+	private static final String _FINDER_COLUMN_C_N_CONVERTEDVALUE_2 =
+		"nullConvertibleEntry.convertedValue = ? AND ";
 
-	private static final String _FINDER_COLUMN_NAME_NAME_3 =
-		"(nullConvertibleEntry.name IS NULL OR nullConvertibleEntry.name = '')";
+	private static final String _FINDER_COLUMN_C_N_CONVERTEDVALUE_3 =
+		"(nullConvertibleEntry.convertedValue IS NULL OR nullConvertibleEntry.convertedValue = '') AND ";
+
+	private static final String _FINDER_COLUMN_C_N_NONCONVERTEDVALUE_1 =
+		"nullConvertibleEntry.nonconvertedValue IS NULL";
+
+	private static final String _FINDER_COLUMN_C_N_NONCONVERTEDVALUE_2 =
+		"nullConvertibleEntry.nonconvertedValue = ?";
+
+	private static final String _FINDER_COLUMN_C_N_NONCONVERTEDVALUE_3 =
+		"(nullConvertibleEntry.nonconvertedValue IS NULL OR nullConvertibleEntry.nonconvertedValue = '')";
 
 	public NullConvertibleEntryPersistenceImpl() {
 		setModelClass(NullConvertibleEntry.class);
@@ -329,8 +394,11 @@ public class NullConvertibleEntryPersistenceImpl
 			nullConvertibleEntry.getPrimaryKey(), nullConvertibleEntry);
 
 		dummyFinderCache.putResult(
-			_finderPathFetchByName,
-			new Object[] {nullConvertibleEntry.getName()},
+			_finderPathFetchByC_N,
+			new Object[] {
+				nullConvertibleEntry.getConvertedValue(),
+				nullConvertibleEntry.getNonconvertedValue()
+			},
 			nullConvertibleEntry);
 	}
 
@@ -413,12 +481,15 @@ public class NullConvertibleEntryPersistenceImpl
 	protected void cacheUniqueFindersCache(
 		NullConvertibleEntryModelImpl nullConvertibleEntryModelImpl) {
 
-		Object[] args = new Object[] {nullConvertibleEntryModelImpl.getName()};
+		Object[] args = new Object[] {
+			nullConvertibleEntryModelImpl.getConvertedValue(),
+			nullConvertibleEntryModelImpl.getNonconvertedValue()
+		};
 
 		dummyFinderCache.putResult(
-			_finderPathCountByName, args, Long.valueOf(1));
+			_finderPathCountByC_N, args, Long.valueOf(1));
 		dummyFinderCache.putResult(
-			_finderPathFetchByName, args, nullConvertibleEntryModelImpl);
+			_finderPathFetchByC_N, args, nullConvertibleEntryModelImpl);
 	}
 
 	/**
@@ -860,14 +931,15 @@ public class NullConvertibleEntryPersistenceImpl
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0], new String[0], false);
 
-		_finderPathFetchByName = new FinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByName",
-			new String[] {String.class.getName()}, new String[] {"name"}, true);
+		_finderPathFetchByC_N = new FinderPath(
+			FINDER_CLASS_NAME_ENTITY, "fetchByC_N",
+			new String[] {String.class.getName(), String.class.getName()},
+			new String[] {"convertedValue", "nonconvertedValue"}, true);
 
-		_finderPathCountByName = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByName",
-			new String[] {String.class.getName()}, new String[] {"name"},
-			false);
+		_finderPathCountByC_N = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_N",
+			new String[] {String.class.getName(), String.class.getName()},
+			new String[] {"convertedValue", "nonconvertedValue"}, false);
 
 		_setNullConvertibleEntryUtilPersistence(this);
 	}

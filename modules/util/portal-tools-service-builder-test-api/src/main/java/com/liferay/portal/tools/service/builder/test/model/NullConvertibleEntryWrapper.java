@@ -44,7 +44,8 @@ public class NullConvertibleEntryWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("nullConvertibleEntryId", getNullConvertibleEntryId());
-		attributes.put("name", getName());
+		attributes.put("convertedValue", getConvertedValue());
+		attributes.put("nonconvertedValue", getNonconvertedValue());
 
 		return attributes;
 	}
@@ -58,10 +59,16 @@ public class NullConvertibleEntryWrapper
 			setNullConvertibleEntryId(nullConvertibleEntryId);
 		}
 
-		String name = (String)attributes.get("name");
+		String convertedValue = (String)attributes.get("convertedValue");
 
-		if (name != null) {
-			setName(name);
+		if (convertedValue != null) {
+			setConvertedValue(convertedValue);
+		}
+
+		String nonconvertedValue = (String)attributes.get("nonconvertedValue");
+
+		if (nonconvertedValue != null) {
+			setNonconvertedValue(nonconvertedValue);
 		}
 	}
 
@@ -71,13 +78,23 @@ public class NullConvertibleEntryWrapper
 	}
 
 	/**
-	 * Returns the name of this null convertible entry.
+	 * Returns the converted value of this null convertible entry.
 	 *
-	 * @return the name of this null convertible entry
+	 * @return the converted value of this null convertible entry
 	 */
 	@Override
-	public String getName() {
-		return model.getName();
+	public String getConvertedValue() {
+		return model.getConvertedValue();
+	}
+
+	/**
+	 * Returns the nonconverted value of this null convertible entry.
+	 *
+	 * @return the nonconverted value of this null convertible entry
+	 */
+	@Override
+	public String getNonconvertedValue() {
+		return model.getNonconvertedValue();
 	}
 
 	/**
@@ -106,13 +123,23 @@ public class NullConvertibleEntryWrapper
 	}
 
 	/**
-	 * Sets the name of this null convertible entry.
+	 * Sets the converted value of this null convertible entry.
 	 *
-	 * @param name the name of this null convertible entry
+	 * @param convertedValue the converted value of this null convertible entry
 	 */
 	@Override
-	public void setName(String name) {
-		model.setName(name);
+	public void setConvertedValue(String convertedValue) {
+		model.setConvertedValue(convertedValue);
+	}
+
+	/**
+	 * Sets the nonconverted value of this null convertible entry.
+	 *
+	 * @param nonconvertedValue the nonconverted value of this null convertible entry
+	 */
+	@Override
+	public void setNonconvertedValue(String nonconvertedValue) {
+		model.setNonconvertedValue(nonconvertedValue);
 	}
 
 	/**

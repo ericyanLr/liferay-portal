@@ -36,8 +36,13 @@ public class NullConvertibleEntryTable
 		nullConvertibleEntryId = createColumn(
 			"nullConvertibleEntryId", Long.class, Types.BIGINT,
 			Column.FLAG_PRIMARY);
-	public final Column<NullConvertibleEntryTable, String> name = createColumn(
-		"name", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
+	public final Column<NullConvertibleEntryTable, String> convertedValue =
+		createColumn(
+			"convertedValue", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
+	public final Column<NullConvertibleEntryTable, String> nonconvertedValue =
+		createColumn(
+			"nonconvertedValue", String.class, Types.VARCHAR,
+			Column.FLAG_DEFAULT);
 
 	private NullConvertibleEntryTable() {
 		super("NullConvertibleEntry", NullConvertibleEntryTable::new);

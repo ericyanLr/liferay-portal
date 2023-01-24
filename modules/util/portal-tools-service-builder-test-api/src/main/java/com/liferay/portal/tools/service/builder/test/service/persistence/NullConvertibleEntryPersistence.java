@@ -42,49 +42,58 @@ public interface NullConvertibleEntryPersistence
 	 */
 
 	/**
-	 * Returns the null convertible entry where name = &#63; or throws a <code>NoSuchNullConvertibleEntryException</code> if it could not be found.
+	 * Returns the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; or throws a <code>NoSuchNullConvertibleEntryException</code> if it could not be found.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the matching null convertible entry
 	 * @throws NoSuchNullConvertibleEntryException if a matching null convertible entry could not be found
 	 */
-	public NullConvertibleEntry findByName(String name)
+	public NullConvertibleEntry findByC_N(
+			String convertedValue, String nonconvertedValue)
 		throws NoSuchNullConvertibleEntryException;
 
 	/**
-	 * Returns the null convertible entry where name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 * Returns the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the matching null convertible entry, or <code>null</code> if a matching null convertible entry could not be found
 	 */
-	public NullConvertibleEntry fetchByName(String name);
+	public NullConvertibleEntry fetchByC_N(
+		String convertedValue, String nonconvertedValue);
 
 	/**
-	 * Returns the null convertible entry where name = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 * Returns the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching null convertible entry, or <code>null</code> if a matching null convertible entry could not be found
 	 */
-	public NullConvertibleEntry fetchByName(
-		String name, boolean useFinderCache);
+	public NullConvertibleEntry fetchByC_N(
+		String convertedValue, String nonconvertedValue,
+		boolean useFinderCache);
 
 	/**
-	 * Removes the null convertible entry where name = &#63; from the database.
+	 * Removes the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; from the database.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the null convertible entry that was removed
 	 */
-	public NullConvertibleEntry removeByName(String name)
+	public NullConvertibleEntry removeByC_N(
+			String convertedValue, String nonconvertedValue)
 		throws NoSuchNullConvertibleEntryException;
 
 	/**
-	 * Returns the number of null convertible entries where name = &#63;.
+	 * Returns the number of null convertible entries where convertedValue = &#63; and nonconvertedValue = &#63;.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the number of matching null convertible entries
 	 */
-	public int countByName(String name);
+	public int countByC_N(String convertedValue, String nonconvertedValue);
 
 	/**
 	 * Caches the null convertible entry in the entity cache if it is enabled.

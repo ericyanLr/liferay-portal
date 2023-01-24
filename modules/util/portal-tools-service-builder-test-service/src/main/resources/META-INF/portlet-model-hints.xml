@@ -197,7 +197,8 @@
 	</model>
 	<model name="com.liferay.portal.tools.service.builder.test.model.NullConvertibleEntry">
 		<field name="nullConvertibleEntryId" type="long" />
-		<field name="name" type="String" />
+		<field name="convertedValue" type="String" />
+		<field name="nonconvertedValue" type="String" />
 	</model>
 	<model name="com.liferay.portal.tools.service.builder.test.model.RedundantIndexEntry">
 		<field name="redundantIndexEntryId" type="long" />

@@ -127,7 +127,11 @@ public class NullConvertibleEntryPersistenceTest {
 
 		NullConvertibleEntry newNullConvertibleEntry = _persistence.create(pk);
 
-		newNullConvertibleEntry.setName(RandomTestUtil.randomString());
+		newNullConvertibleEntry.setConvertedValue(
+			RandomTestUtil.randomString());
+
+		newNullConvertibleEntry.setNonconvertedValue(
+			RandomTestUtil.randomString());
 
 		_nullConvertibleEntries.add(
 			_persistence.update(newNullConvertibleEntry));
@@ -140,17 +144,20 @@ public class NullConvertibleEntryPersistenceTest {
 			existingNullConvertibleEntry.getNullConvertibleEntryId(),
 			newNullConvertibleEntry.getNullConvertibleEntryId());
 		Assert.assertEquals(
-			existingNullConvertibleEntry.getName(),
-			newNullConvertibleEntry.getName());
+			existingNullConvertibleEntry.getConvertedValue(),
+			newNullConvertibleEntry.getConvertedValue());
+		Assert.assertEquals(
+			existingNullConvertibleEntry.getNonconvertedValue(),
+			newNullConvertibleEntry.getNonconvertedValue());
 	}
 
 	@Test
-	public void testCountByName() throws Exception {
-		_persistence.countByName("");
+	public void testCountByC_N() throws Exception {
+		_persistence.countByC_N("", "");
 
-		_persistence.countByName("null");
+		_persistence.countByC_N("null", "null");
 
-		_persistence.countByName((String)null);
+		_persistence.countByC_N((String)null, (String)null);
 	}
 
 	@Test
@@ -181,8 +188,8 @@ public class NullConvertibleEntryPersistenceTest {
 
 	protected OrderByComparator<NullConvertibleEntry> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"NullConvertibleEntry", "nullConvertibleEntryId", true, "name",
-			true);
+			"NullConvertibleEntry", "nullConvertibleEntryId", true,
+			"convertedValue", true, "nonconvertedValue", true);
 	}
 
 	@Test
@@ -479,10 +486,15 @@ public class NullConvertibleEntryPersistenceTest {
 		NullConvertibleEntry nullConvertibleEntry) {
 
 		Assert.assertEquals(
-			nullConvertibleEntry.getName(),
+			nullConvertibleEntry.getConvertedValue(),
 			ReflectionTestUtil.invoke(
 				nullConvertibleEntry, "getColumnOriginalValue",
-				new Class<?>[] {String.class}, "name"));
+				new Class<?>[] {String.class}, "convertedValue"));
+		Assert.assertEquals(
+			nullConvertibleEntry.getNonconvertedValue(),
+			ReflectionTestUtil.invoke(
+				nullConvertibleEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "nonconvertedValue"));
 	}
 
 	protected NullConvertibleEntry addNullConvertibleEntry() throws Exception {
@@ -490,7 +502,10 @@ public class NullConvertibleEntryPersistenceTest {
 
 		NullConvertibleEntry nullConvertibleEntry = _persistence.create(pk);
 
-		nullConvertibleEntry.setName(RandomTestUtil.randomString());
+		nullConvertibleEntry.setConvertedValue(RandomTestUtil.randomString());
+
+		nullConvertibleEntry.setNonconvertedValue(
+			RandomTestUtil.randomString());
 
 		_nullConvertibleEntries.add(_persistence.update(nullConvertibleEntry));
 

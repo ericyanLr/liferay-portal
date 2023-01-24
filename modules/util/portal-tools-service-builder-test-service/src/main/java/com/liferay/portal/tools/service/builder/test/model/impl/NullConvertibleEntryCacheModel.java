@@ -62,12 +62,14 @@ public class NullConvertibleEntryCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(5);
+		StringBundler sb = new StringBundler(7);
 
 		sb.append("{nullConvertibleEntryId=");
 		sb.append(nullConvertibleEntryId);
-		sb.append(", name=");
-		sb.append(name);
+		sb.append(", convertedValue=");
+		sb.append(convertedValue);
+		sb.append(", nonconvertedValue=");
+		sb.append(nonconvertedValue);
 		sb.append("}");
 
 		return sb.toString();
@@ -81,12 +83,14 @@ public class NullConvertibleEntryCacheModel
 		nullConvertibleEntryImpl.setNullConvertibleEntryId(
 			nullConvertibleEntryId);
 
-		if (name == null) {
-			nullConvertibleEntryImpl.setName("");
+		if (convertedValue == null) {
+			nullConvertibleEntryImpl.setConvertedValue("");
 		}
 		else {
-			nullConvertibleEntryImpl.setName(name);
+			nullConvertibleEntryImpl.setConvertedValue(convertedValue);
 		}
+
+		nullConvertibleEntryImpl.setNonconvertedValue(nonconvertedValue);
 
 		nullConvertibleEntryImpl.resetOriginalValues();
 
@@ -96,22 +100,31 @@ public class NullConvertibleEntryCacheModel
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		nullConvertibleEntryId = objectInput.readLong();
-		name = objectInput.readUTF();
+		convertedValue = objectInput.readUTF();
+		nonconvertedValue = objectInput.readUTF();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(nullConvertibleEntryId);
 
-		if (name == null) {
+		if (convertedValue == null) {
 			objectOutput.writeUTF("");
 		}
 		else {
-			objectOutput.writeUTF(name);
+			objectOutput.writeUTF(convertedValue);
+		}
+
+		if (nonconvertedValue == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(nonconvertedValue);
 		}
 	}
 
 	public long nullConvertibleEntryId;
-	public String name;
+	public String convertedValue;
+	public String nonconvertedValue;
 
 }

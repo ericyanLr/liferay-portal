@@ -123,63 +123,76 @@ public class NullConvertibleEntryUtil {
 	}
 
 	/**
-	 * Returns the null convertible entry where name = &#63; or throws a <code>NoSuchNullConvertibleEntryException</code> if it could not be found.
+	 * Returns the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; or throws a <code>NoSuchNullConvertibleEntryException</code> if it could not be found.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the matching null convertible entry
 	 * @throws NoSuchNullConvertibleEntryException if a matching null convertible entry could not be found
 	 */
-	public static NullConvertibleEntry findByName(String name)
+	public static NullConvertibleEntry findByC_N(
+			String convertedValue, String nonconvertedValue)
 		throws com.liferay.portal.tools.service.builder.test.exception.
 			NoSuchNullConvertibleEntryException {
 
-		return getPersistence().findByName(name);
+		return getPersistence().findByC_N(convertedValue, nonconvertedValue);
 	}
 
 	/**
-	 * Returns the null convertible entry where name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 * Returns the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the matching null convertible entry, or <code>null</code> if a matching null convertible entry could not be found
 	 */
-	public static NullConvertibleEntry fetchByName(String name) {
-		return getPersistence().fetchByName(name);
+	public static NullConvertibleEntry fetchByC_N(
+		String convertedValue, String nonconvertedValue) {
+
+		return getPersistence().fetchByC_N(convertedValue, nonconvertedValue);
 	}
 
 	/**
-	 * Returns the null convertible entry where name = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 * Returns the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching null convertible entry, or <code>null</code> if a matching null convertible entry could not be found
 	 */
-	public static NullConvertibleEntry fetchByName(
-		String name, boolean useFinderCache) {
+	public static NullConvertibleEntry fetchByC_N(
+		String convertedValue, String nonconvertedValue,
+		boolean useFinderCache) {
 
-		return getPersistence().fetchByName(name, useFinderCache);
+		return getPersistence().fetchByC_N(
+			convertedValue, nonconvertedValue, useFinderCache);
 	}
 
 	/**
-	 * Removes the null convertible entry where name = &#63; from the database.
+	 * Removes the null convertible entry where convertedValue = &#63; and nonconvertedValue = &#63; from the database.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the null convertible entry that was removed
 	 */
-	public static NullConvertibleEntry removeByName(String name)
+	public static NullConvertibleEntry removeByC_N(
+			String convertedValue, String nonconvertedValue)
 		throws com.liferay.portal.tools.service.builder.test.exception.
 			NoSuchNullConvertibleEntryException {
 
-		return getPersistence().removeByName(name);
+		return getPersistence().removeByC_N(convertedValue, nonconvertedValue);
 	}
 
 	/**
-	 * Returns the number of null convertible entries where name = &#63;.
+	 * Returns the number of null convertible entries where convertedValue = &#63; and nonconvertedValue = &#63;.
 	 *
-	 * @param name the name
+	 * @param convertedValue the converted value
+	 * @param nonconvertedValue the nonconverted value
 	 * @return the number of matching null convertible entries
 	 */
-	public static int countByName(String name) {
-		return getPersistence().countByName(name);
+	public static int countByC_N(
+		String convertedValue, String nonconvertedValue) {
+
+		return getPersistence().countByC_N(convertedValue, nonconvertedValue);
 	}
 
 	/**

@@ -67,7 +67,8 @@ public class NullConvertibleEntryModelImpl
 	public static final String TABLE_NAME = "NullConvertibleEntry";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"nullConvertibleEntryId", Types.BIGINT}, {"name", Types.VARCHAR}
+		{"nullConvertibleEntryId", Types.BIGINT},
+		{"convertedValue", Types.VARCHAR}, {"nonconvertedValue", Types.VARCHAR}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
@@ -75,11 +76,12 @@ public class NullConvertibleEntryModelImpl
 
 	static {
 		TABLE_COLUMNS_MAP.put("nullConvertibleEntryId", Types.BIGINT);
-		TABLE_COLUMNS_MAP.put("name", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("convertedValue", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("nonconvertedValue", Types.VARCHAR);
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table NullConvertibleEntry (nullConvertibleEntryId LONG not null primary key,name VARCHAR(75) null)";
+		"create table NullConvertibleEntry (nullConvertibleEntryId LONG not null primary key,convertedValue VARCHAR(75) null,nonconvertedValue VARCHAR(75) null)";
 
 	public static final String TABLE_SQL_DROP =
 		"drop table NullConvertibleEntry";
@@ -118,14 +120,20 @@ public class NullConvertibleEntryModelImpl
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long NAME_COLUMN_BITMASK = 1L;
+	public static final long CONVERTEDVALUE_COLUMN_BITMASK = 1L;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
+	 */
+	@Deprecated
+	public static final long NONCONVERTEDVALUE_COLUMN_BITMASK = 2L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
 	 *		#getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long NULLCONVERTIBLEENTRYID_COLUMN_BITMASK = 2L;
+	public static final long NULLCONVERTIBLEENTRYID_COLUMN_BITMASK = 4L;
 
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
 		com.liferay.portal.tools.service.builder.test.service.util.ServiceProps.
@@ -239,11 +247,18 @@ public class NullConvertibleEntryModelImpl
 			"nullConvertibleEntryId",
 			(BiConsumer<NullConvertibleEntry, Long>)
 				NullConvertibleEntry::setNullConvertibleEntryId);
-		attributeGetterFunctions.put("name", NullConvertibleEntry::getName);
+		attributeGetterFunctions.put(
+			"convertedValue", NullConvertibleEntry::getConvertedValue);
 		attributeSetterBiConsumers.put(
-			"name",
+			"convertedValue",
 			(BiConsumer<NullConvertibleEntry, String>)
-				NullConvertibleEntry::setName);
+				NullConvertibleEntry::setConvertedValue);
+		attributeGetterFunctions.put(
+			"nonconvertedValue", NullConvertibleEntry::getNonconvertedValue);
+		attributeSetterBiConsumers.put(
+			"nonconvertedValue",
+			(BiConsumer<NullConvertibleEntry, String>)
+				NullConvertibleEntry::setNonconvertedValue);
 
 		_attributeGetterFunctions = Collections.unmodifiableMap(
 			attributeGetterFunctions);
@@ -266,22 +281,22 @@ public class NullConvertibleEntryModelImpl
 	}
 
 	@Override
-	public String getName() {
-		if (_name == null) {
+	public String getConvertedValue() {
+		if (_convertedValue == null) {
 			return "";
 		}
 		else {
-			return _name;
+			return _convertedValue;
 		}
 	}
 
 	@Override
-	public void setName(String name) {
+	public void setConvertedValue(String convertedValue) {
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
 
-		_name = name;
+		_convertedValue = convertedValue;
 	}
 
 	/**
@@ -289,8 +304,31 @@ public class NullConvertibleEntryModelImpl
 	 *             #getColumnOriginalValue(String)}
 	 */
 	@Deprecated
-	public String getOriginalName() {
-		return getColumnOriginalValue("name");
+	public String getOriginalConvertedValue() {
+		return getColumnOriginalValue("convertedValue");
+	}
+
+	@Override
+	public String getNonconvertedValue() {
+		return _nonconvertedValue;
+	}
+
+	@Override
+	public void setNonconvertedValue(String nonconvertedValue) {
+		if (_columnOriginalValues == Collections.EMPTY_MAP) {
+			_setColumnOriginalValues();
+		}
+
+		_nonconvertedValue = nonconvertedValue;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getColumnOriginalValue(String)}
+	 */
+	@Deprecated
+	public String getOriginalNonconvertedValue() {
+		return getColumnOriginalValue("nonconvertedValue");
 	}
 
 	public long getColumnBitmask() {
@@ -352,7 +390,8 @@ public class NullConvertibleEntryModelImpl
 
 		nullConvertibleEntryImpl.setNullConvertibleEntryId(
 			getNullConvertibleEntryId());
-		nullConvertibleEntryImpl.setName(getName());
+		nullConvertibleEntryImpl.setConvertedValue(getConvertedValue());
+		nullConvertibleEntryImpl.setNonconvertedValue(getNonconvertedValue());
 
 		nullConvertibleEntryImpl.resetOriginalValues();
 
@@ -366,8 +405,10 @@ public class NullConvertibleEntryModelImpl
 
 		nullConvertibleEntryImpl.setNullConvertibleEntryId(
 			this.<Long>getColumnOriginalValue("nullConvertibleEntryId"));
-		nullConvertibleEntryImpl.setName(
-			this.<String>getColumnOriginalValue("name"));
+		nullConvertibleEntryImpl.setConvertedValue(
+			this.<String>getColumnOriginalValue("convertedValue"));
+		nullConvertibleEntryImpl.setNonconvertedValue(
+			this.<String>getColumnOriginalValue("nonconvertedValue"));
 
 		return nullConvertibleEntryImpl;
 	}
@@ -448,12 +489,22 @@ public class NullConvertibleEntryModelImpl
 		nullConvertibleEntryCacheModel.nullConvertibleEntryId =
 			getNullConvertibleEntryId();
 
-		nullConvertibleEntryCacheModel.name = getName();
+		nullConvertibleEntryCacheModel.convertedValue = getConvertedValue();
 
-		String name = nullConvertibleEntryCacheModel.name;
+		String convertedValue = nullConvertibleEntryCacheModel.convertedValue;
 
-		if ((name != null) && (name.length() == 0)) {
-			nullConvertibleEntryCacheModel.name = null;
+		if ((convertedValue != null) && (convertedValue.length() == 0)) {
+			nullConvertibleEntryCacheModel.convertedValue = null;
+		}
+
+		nullConvertibleEntryCacheModel.nonconvertedValue =
+			getNonconvertedValue();
+
+		String nonconvertedValue =
+			nullConvertibleEntryCacheModel.nonconvertedValue;
+
+		if ((nonconvertedValue != null) && (nonconvertedValue.length() == 0)) {
+			nullConvertibleEntryCacheModel.nonconvertedValue = null;
 		}
 
 		return nullConvertibleEntryCacheModel;
@@ -519,7 +570,8 @@ public class NullConvertibleEntryModelImpl
 	}
 
 	private long _nullConvertibleEntryId;
-	private String _name;
+	private String _convertedValue;
+	private String _nonconvertedValue;
 
 	public <T> T getColumnValue(String columnName) {
 		Function<NullConvertibleEntry, Object> function =
@@ -550,7 +602,8 @@ public class NullConvertibleEntryModelImpl
 
 		_columnOriginalValues.put(
 			"nullConvertibleEntryId", _nullConvertibleEntryId);
-		_columnOriginalValues.put("name", _name);
+		_columnOriginalValues.put("convertedValue", _convertedValue);
+		_columnOriginalValues.put("nonconvertedValue", _nonconvertedValue);
 	}
 
 	private transient Map<String, Object> _columnOriginalValues;
@@ -566,7 +619,9 @@ public class NullConvertibleEntryModelImpl
 
 		columnBitmasks.put("nullConvertibleEntryId", 1L);
 
-		columnBitmasks.put("name", 2L);
+		columnBitmasks.put("convertedValue", 2L);
+
+		columnBitmasks.put("nonconvertedValue", 4L);
 
 		_columnBitmasks = Collections.unmodifiableMap(columnBitmasks);
 	}

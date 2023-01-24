@@ -69,19 +69,34 @@ public interface NullConvertibleEntryModel
 	public void setNullConvertibleEntryId(long nullConvertibleEntryId);
 
 	/**
-	 * Returns the name of this null convertible entry.
+	 * Returns the converted value of this null convertible entry.
 	 *
-	 * @return the name of this null convertible entry
+	 * @return the converted value of this null convertible entry
 	 */
 	@AutoEscape
-	public String getName();
+	public String getConvertedValue();
 
 	/**
-	 * Sets the name of this null convertible entry.
+	 * Sets the converted value of this null convertible entry.
 	 *
-	 * @param name the name of this null convertible entry
+	 * @param convertedValue the converted value of this null convertible entry
 	 */
-	public void setName(String name);
+	public void setConvertedValue(String convertedValue);
+
+	/**
+	 * Returns the nonconverted value of this null convertible entry.
+	 *
+	 * @return the nonconverted value of this null convertible entry
+	 */
+	@AutoEscape
+	public String getNonconvertedValue();
+
+	/**
+	 * Sets the nonconverted value of this null convertible entry.
+	 *
+	 * @param nonconvertedValue the nonconverted value of this null convertible entry
+	 */
+	public void setNonconvertedValue(String nonconvertedValue);
 
 	@Override
 	public NullConvertibleEntry cloneWithOriginalValues();
