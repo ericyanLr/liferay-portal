@@ -23,26 +23,32 @@ import com.liferay.portal.tools.service.builder.test.service.base.NullConvertibl
 public class NullConvertibleEntryLocalServiceImpl
 	extends NullConvertibleEntryLocalServiceBaseImpl {
 
-	@Override
-	public NullConvertibleEntry addNullConvertibleEntry(String name) {
+	public NullConvertibleEntry addNullConvertibleEntry(
+		String convertedValue, String nonconvertedValue) {
+
 		long nullConvertibleEntryId = counterLocalService.increment();
 
 		NullConvertibleEntry nullConvertibleEntry =
 			nullConvertibleEntryPersistence.create(nullConvertibleEntryId);
 
-		nullConvertibleEntry.setName(name);
+		nullConvertibleEntry.setConvertedValue(convertedValue);
+		nullConvertibleEntry.setNonconvertedValue(nonconvertedValue);
 
 		return nullConvertibleEntryPersistence.update(nullConvertibleEntry);
 	}
 
-	@Override
-	public NullConvertibleEntry fetchNullConvertibleEntry(String name) {
-		return nullConvertibleEntryPersistence.fetchByName(name);
+	public NullConvertibleEntry fetchNullConvertibleEntry(
+		String convertedValue, String nonconvertedValue) {
+
+		return nullConvertibleEntryPersistence.fetchByC_N(
+			convertedValue, nonconvertedValue);
 	}
 
-	@Override
-	public int getNullConvertibleEntries(String name) {
-		return nullConvertibleEntryPersistence.countByName(name);
+	public int getNullConvertibleEntries(
+		String convertedValue, String nonconvertedValue) {
+
+		return nullConvertibleEntryPersistence.countByC_N(
+			convertedValue, nonconvertedValue);
 	}
 
 }

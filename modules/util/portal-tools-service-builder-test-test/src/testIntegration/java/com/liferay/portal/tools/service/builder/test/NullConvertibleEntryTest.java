@@ -42,32 +42,36 @@ public class NullConvertibleEntryTest {
 	public void testFetchNullConvertibleEntry() {
 		NullConvertibleEntry nullConvertibleEntry =
 			_nullConvertibleEntryLocalService.addNullConvertibleEntry(
-				(String)null);
+				null, null);
 
 		Assert.assertEquals(
 			nullConvertibleEntry,
-			_nullConvertibleEntryLocalService.fetchNullConvertibleEntry(null));
+			_nullConvertibleEntryLocalService.fetchNullConvertibleEntry(
+				null, null));
 	}
 
 	@Test
 	public void testGetNullConvertibleEntries() {
 		int initialCount =
-			_nullConvertibleEntryLocalService.getNullConvertibleEntries(null);
+			_nullConvertibleEntryLocalService.getNullConvertibleEntries(
+				null, null);
 
 		NullConvertibleEntry nullConvertibleEntry =
 			_nullConvertibleEntryLocalService.addNullConvertibleEntry(
-				(String)null);
+				null, null);
 
 		Assert.assertEquals(
 			initialCount + 1,
-			_nullConvertibleEntryLocalService.getNullConvertibleEntries(null));
+			_nullConvertibleEntryLocalService.getNullConvertibleEntries(
+				null, null));
 
 		_nullConvertibleEntryLocalService.deleteNullConvertibleEntry(
 			nullConvertibleEntry);
 
 		Assert.assertEquals(
 			initialCount,
-			_nullConvertibleEntryLocalService.getNullConvertibleEntries(null));
+			_nullConvertibleEntryLocalService.getNullConvertibleEntries(
+				null, null));
 	}
 
 	@Inject
