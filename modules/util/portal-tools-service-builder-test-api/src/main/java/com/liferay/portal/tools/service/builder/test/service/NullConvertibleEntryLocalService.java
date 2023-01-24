@@ -76,7 +76,8 @@ public interface NullConvertibleEntryLocalService
 	public NullConvertibleEntry addNullConvertibleEntry(
 		NullConvertibleEntry nullConvertibleEntry);
 
-	public NullConvertibleEntry addNullConvertibleEntry(String name);
+	public NullConvertibleEntry addNullConvertibleEntry(
+		String convertedValue, String nonconvertedValue);
 
 	/**
 	 * Creates a new null convertible entry with the primary key. Does not add the null convertible entry to the database.
@@ -208,7 +209,8 @@ public interface NullConvertibleEntryLocalService
 		long nullConvertibleEntryId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public NullConvertibleEntry fetchNullConvertibleEntry(String name);
+	public NullConvertibleEntry fetchNullConvertibleEntry(
+		String convertedValue, String nonconvertedValue);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ActionableDynamicQuery getActionableDynamicQuery();
@@ -232,7 +234,8 @@ public interface NullConvertibleEntryLocalService
 		int start, int end);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getNullConvertibleEntries(String name);
+	public int getNullConvertibleEntries(
+		String convertedValue, String nonconvertedValue);
 
 	/**
 	 * Returns the number of null convertible entries.

@@ -61,9 +61,11 @@ public class NullConvertibleEntryLocalServiceWrapper
 	@Override
 	public
 		com.liferay.portal.tools.service.builder.test.model.NullConvertibleEntry
-			addNullConvertibleEntry(String name) {
+			addNullConvertibleEntry(
+				String convertedValue, String nonconvertedValue) {
 
-		return _nullConvertibleEntryLocalService.addNullConvertibleEntry(name);
+		return _nullConvertibleEntryLocalService.addNullConvertibleEntry(
+			convertedValue, nonconvertedValue);
 	}
 
 	/**
@@ -263,10 +265,11 @@ public class NullConvertibleEntryLocalServiceWrapper
 	@Override
 	public
 		com.liferay.portal.tools.service.builder.test.model.NullConvertibleEntry
-			fetchNullConvertibleEntry(String name) {
+			fetchNullConvertibleEntry(
+				String convertedValue, String nonconvertedValue) {
 
 		return _nullConvertibleEntryLocalService.fetchNullConvertibleEntry(
-			name);
+			convertedValue, nonconvertedValue);
 	}
 
 	@Override
@@ -306,9 +309,11 @@ public class NullConvertibleEntryLocalServiceWrapper
 	}
 
 	@Override
-	public int getNullConvertibleEntries(String name) {
+	public int getNullConvertibleEntries(
+		String convertedValue, String nonconvertedValue) {
+
 		return _nullConvertibleEntryLocalService.getNullConvertibleEntries(
-			name);
+			convertedValue, nonconvertedValue);
 	}
 
 	/**

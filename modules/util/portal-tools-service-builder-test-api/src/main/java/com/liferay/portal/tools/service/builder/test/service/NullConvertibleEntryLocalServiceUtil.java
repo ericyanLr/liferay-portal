@@ -61,8 +61,11 @@ public class NullConvertibleEntryLocalServiceUtil {
 		return getService().addNullConvertibleEntry(nullConvertibleEntry);
 	}
 
-	public static NullConvertibleEntry addNullConvertibleEntry(String name) {
-		return getService().addNullConvertibleEntry(name);
+	public static NullConvertibleEntry addNullConvertibleEntry(
+		String convertedValue, String nonconvertedValue) {
+
+		return getService().addNullConvertibleEntry(
+			convertedValue, nonconvertedValue);
 	}
 
 	/**
@@ -222,8 +225,11 @@ public class NullConvertibleEntryLocalServiceUtil {
 		return getService().fetchNullConvertibleEntry(nullConvertibleEntryId);
 	}
 
-	public static NullConvertibleEntry fetchNullConvertibleEntry(String name) {
-		return getService().fetchNullConvertibleEntry(name);
+	public static NullConvertibleEntry fetchNullConvertibleEntry(
+		String convertedValue, String nonconvertedValue) {
+
+		return getService().fetchNullConvertibleEntry(
+			convertedValue, nonconvertedValue);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
@@ -256,8 +262,11 @@ public class NullConvertibleEntryLocalServiceUtil {
 		return getService().getNullConvertibleEntries(start, end);
 	}
 
-	public static int getNullConvertibleEntries(String name) {
-		return getService().getNullConvertibleEntries(name);
+	public static int getNullConvertibleEntries(
+		String convertedValue, String nonconvertedValue) {
+
+		return getService().getNullConvertibleEntries(
+			convertedValue, nonconvertedValue);
 	}
 
 	/**
