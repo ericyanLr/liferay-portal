@@ -15,12 +15,20 @@
 package com.liferay.portal.tools.service.builder.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.Conjunction;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.tools.service.builder.test.model.NullConvertibleEntry;
+import com.liferay.portal.tools.service.builder.test.model.NullConvertibleEntryTable;
 import com.liferay.portal.tools.service.builder.test.service.NullConvertibleEntryLocalService;
+
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -40,6 +48,92 @@ public class NullConvertibleEntryTest {
 		new LiferayIntegrationTestRule();
 
 	@Test
+	public void testDSLQuery() {
+		_nullConvertibleEntry =
+			_nullConvertibleEntryLocalService.addNullConvertibleEntry(
+				null, null);
+
+		long count = _nullConvertibleEntryLocalService.dslQuery(
+			DSLQueryFactoryUtil.count(
+			).from(
+				NullConvertibleEntryTable.INSTANCE
+			).where(
+				NullConvertibleEntryTable.INSTANCE.convertedValue.isNull(
+				).and(
+					NullConvertibleEntryTable.INSTANCE.nonconvertedValue.
+						isNull()
+				)
+			));
+
+		Assert.assertEquals(1, count);
+	}
+
+	@Test
+	public void testDSLQueryWithBlankString() {
+		_nullConvertibleEntry =
+			_nullConvertibleEntryLocalService.addNullConvertibleEntry(
+				StringPool.BLANK, StringPool.BLANK);
+
+		long count = _nullConvertibleEntryLocalService.dslQuery(
+			DSLQueryFactoryUtil.count(
+			).from(
+				NullConvertibleEntryTable.INSTANCE
+			).where(
+				NullConvertibleEntryTable.INSTANCE.convertedValue.isNull(
+				).and(
+					NullConvertibleEntryTable.INSTANCE.nonconvertedValue.
+						isNull()
+				)
+			));
+
+		Assert.assertEquals(1, count);
+	}
+
+	@Test
+	public void testDynamicQuery() {
+		_nullConvertibleEntry =
+			_nullConvertibleEntryLocalService.addNullConvertibleEntry(
+				null, null);
+
+		DynamicQuery dynamicQuery =
+			_nullConvertibleEntryLocalService.dynamicQuery();
+
+		Conjunction conjunction = RestrictionsFactoryUtil.conjunction();
+
+		conjunction.add(RestrictionsFactoryUtil.isNull("convertedValue"));
+		conjunction.add(RestrictionsFactoryUtil.isNull("nonconvertedValue"));
+
+		dynamicQuery.add(conjunction);
+
+		List<NullConvertibleEntry> entries =
+			_nullConvertibleEntryLocalService.dynamicQuery(dynamicQuery);
+
+		Assert.assertEquals(entries.toString(), 1, entries.size());
+	}
+
+	@Test
+	public void testDynamicQueryWithBlankString() {
+		_nullConvertibleEntry =
+			_nullConvertibleEntryLocalService.addNullConvertibleEntry(
+				StringPool.BLANK, StringPool.BLANK);
+
+		DynamicQuery dynamicQuery =
+			_nullConvertibleEntryLocalService.dynamicQuery();
+
+		Conjunction conjunction = RestrictionsFactoryUtil.conjunction();
+
+		conjunction.add(RestrictionsFactoryUtil.isNull("convertedValue"));
+		conjunction.add(RestrictionsFactoryUtil.isNull("nonconvertedValue"));
+
+		dynamicQuery.add(conjunction);
+
+		List<NullConvertibleEntry> entries =
+			_nullConvertibleEntryLocalService.dynamicQuery(dynamicQuery);
+
+		Assert.assertEquals(entries.toString(), 1, entries.size());
+	}
+
+	@Test
 	public void testFetchNullConvertibleEntry() {
 		_nullConvertibleEntry =
 			_nullConvertibleEntryLocalService.addNullConvertibleEntry(
@@ -49,6 +143,18 @@ public class NullConvertibleEntryTest {
 			_nullConvertibleEntry,
 			_nullConvertibleEntryLocalService.fetchNullConvertibleEntry(
 				null, null));
+	}
+
+	@Test
+	public void testFetchNullConvertibleEntryWithBlankString() {
+		_nullConvertibleEntry =
+			_nullConvertibleEntryLocalService.addNullConvertibleEntry(
+				StringPool.BLANK, StringPool.BLANK);
+
+		Assert.assertEquals(
+			_nullConvertibleEntry,
+			_nullConvertibleEntryLocalService.fetchNullConvertibleEntry(
+				StringPool.BLANK, StringPool.BLANK));
 	}
 
 	@Test
