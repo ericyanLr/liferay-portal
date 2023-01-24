@@ -16,6 +16,7 @@ package com.liferay.portal.tools.service.builder.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.tools.service.builder.test.model.NullConvertibleEntry;
@@ -40,12 +41,12 @@ public class NullConvertibleEntryTest {
 
 	@Test
 	public void testFetchNullConvertibleEntry() {
-		NullConvertibleEntry nullConvertibleEntry =
+		_nullConvertibleEntry =
 			_nullConvertibleEntryLocalService.addNullConvertibleEntry(
 				null, null);
 
 		Assert.assertEquals(
-			nullConvertibleEntry,
+			_nullConvertibleEntry,
 			_nullConvertibleEntryLocalService.fetchNullConvertibleEntry(
 				null, null));
 	}
@@ -56,7 +57,7 @@ public class NullConvertibleEntryTest {
 			_nullConvertibleEntryLocalService.getNullConvertibleEntries(
 				null, null);
 
-		NullConvertibleEntry nullConvertibleEntry =
+		_nullConvertibleEntry =
 			_nullConvertibleEntryLocalService.addNullConvertibleEntry(
 				null, null);
 
@@ -66,13 +67,16 @@ public class NullConvertibleEntryTest {
 				null, null));
 
 		_nullConvertibleEntryLocalService.deleteNullConvertibleEntry(
-			nullConvertibleEntry);
+			_nullConvertibleEntry);
 
 		Assert.assertEquals(
 			initialCount,
 			_nullConvertibleEntryLocalService.getNullConvertibleEntries(
 				null, null));
 	}
+
+	@DeleteAfterTestRun
+	private NullConvertibleEntry _nullConvertibleEntry;
 
 	@Inject
 	private NullConvertibleEntryLocalService _nullConvertibleEntryLocalService;
