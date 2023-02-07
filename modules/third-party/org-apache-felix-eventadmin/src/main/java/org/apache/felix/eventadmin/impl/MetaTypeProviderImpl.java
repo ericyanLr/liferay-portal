@@ -154,7 +154,28 @@ public class MetaTypeProviderImpl
                 @Override
                 public AttributeDefinition[] getAttributeDefinitions( int filter )
                 {
-                    return ( filter == OPTIONAL ) ? null : attrs;
+                    ArrayList<AttributeDefinition> attributeDefinitions =
+                        new ArrayList<>();
+
+                    for (AttributeDefinition attr : attrs) {
+                        String id = attr.getID();
+
+                        if (id.equals(Configuration.PROP_IGNORE_TIMEOUT) ||
+                            id.equals(Configuration.PROP_IGNORE_TOPIC)) {
+
+                            if (filter == REQUIRED) {
+                                continue;
+                            }
+                        }
+                        else if (filter == OPTIONAL) {
+                            continue;
+                        }
+
+                        attributeDefinitions.add(attr);
+                    }
+
+                    return attributeDefinitions.toArray(
+                        new AttributeDefinition[attributeDefinitions.size()]);
                 }
             };
         }

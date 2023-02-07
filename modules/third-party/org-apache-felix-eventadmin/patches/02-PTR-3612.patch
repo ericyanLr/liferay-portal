@@ -1,0 +1,34 @@
+diff --git a/org/apache/felix/eventadmin/impl/MetaTypeProviderImpl.java b/org/apache/felix/eventadmin/impl/MetaTypeProviderImpl.java
+index 846dfb89107d4..e8f74bab4b570 100644
+--- a/org/apache/felix/eventadmin/impl/MetaTypeProviderImpl.java
++++ b/org/apache/felix/eventadmin/impl/MetaTypeProviderImpl.java
+@@ -154,7 +154,28 @@ public class MetaTypeProviderImpl
+                 @Override
+                 public AttributeDefinition[] getAttributeDefinitions( int filter )
+                 {
+-                    return ( filter == OPTIONAL ) ? null : attrs;
++                    ArrayList<AttributeDefinition> attributeDefinitions =
++                        new ArrayList<>();
++
++                    for (AttributeDefinition attr : attrs) {
++                        String id = attr.getID();
++
++                        if (id.equals(Configuration.PROP_IGNORE_TIMEOUT) ||
++                            id.equals(Configuration.PROP_IGNORE_TOPIC)) {
++
++                            if (filter == REQUIRED) {
++                                continue;
++                            }
++                        }
++                        else if (filter == OPTIONAL) {
++                            continue;
++                        }
++
++                        attributeDefinitions.add(attr);
++                    }
++
++                    return attributeDefinitions.toArray(
++                        new AttributeDefinition[attributeDefinitions.size()]);
+                 }
+             };
+         }
