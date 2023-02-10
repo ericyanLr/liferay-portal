@@ -1,0 +1,59 @@
+diff --git a/org/apache/felix/eventadmin/impl/MetaTypeProviderImpl.java b/org/apache/felix/eventadmin/impl/MetaTypeProviderImpl.java
+index 846dfb89107d4..0b5c99610c38d 100644
+--- a/org/apache/felix/eventadmin/impl/MetaTypeProviderImpl.java
++++ b/org/apache/felix/eventadmin/impl/MetaTypeProviderImpl.java
+@@ -116,11 +116,38 @@ public class MetaTypeProviderImpl
+             adList.add( new AttributeDefinitionImpl( Configuration.PROP_IGNORE_TOPIC, "org-apache-felix-eventadmin-IgnoreTopic",
+                     "org-apache-felix-eventadmin-IgnoreTopic-help",
+                     AttributeDefinition.STRING, m_ignoreTopic, Integer.MAX_VALUE, null, null));
++
++            final ArrayList<AttributeDefinition> adOptionalList =
++                new ArrayList<AttributeDefinition>();
++            final ArrayList<AttributeDefinition> adRequiredList =
++                new ArrayList<AttributeDefinition>();
++
++            for (AttributeDefinition attributeDefinition : adList) {
++                String attributeDefinitionID = attributeDefinition.getID();
++
++                if (attributeDefinitionID.equals(
++                        Configuration.PROP_IGNORE_TIMEOUT) ||
++                    attributeDefinitionID.equals(
++                        Configuration.PROP_IGNORE_TOPIC)) {
++
++                    adOptionalList.add(attributeDefinition);
++                }
++                else {
++                    adRequiredList.add(attributeDefinition);
++                }
++            }
++
+             ocd = new ObjectClassDefinition()
+             {
+ 
+                 private final AttributeDefinition[] attrs = adList
+                     .toArray( new AttributeDefinition[adList.size()] );
++                private final AttributeDefinition[] attrsOptional =
++                    adOptionalList.toArray(
++                        new AttributeDefinition[adOptionalList.size()]);
++                private final AttributeDefinition[] attrsRequired =
++                    adRequiredList.toArray(
++                        new AttributeDefinition[adRequiredList.size()]);
+ 
+ 
+                 @Override
+@@ -154,7 +181,14 @@ public class MetaTypeProviderImpl
+                 @Override
+                 public AttributeDefinition[] getAttributeDefinitions( int filter )
+                 {
+-                    return ( filter == OPTIONAL ) ? null : attrs;
++                    if (filter == OPTIONAL) {
++                        return attrsOptional;
++                    }
++                    else if (filter == REQUIRED) {
++                        return attrsRequired;
++                    }
++
++                    return attrs;
+                 }
+             };
+         }
