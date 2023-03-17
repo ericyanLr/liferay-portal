@@ -451,9 +451,22 @@ public class SettingsLocatorHelperImpl implements SettingsLocatorHelper {
 	protected void setConfigurationPidMapping(
 		ConfigurationPidMapping configurationPidMapping) {
 
-		_configurationBeanClasses.put(
-			configurationPidMapping.getConfigurationPid(),
-			configurationPidMapping.getConfigurationBeanClass());
+		Class<?> configurationBeanClass =
+			configurationPidMapping.getConfigurationBeanClass();
+		String configurationPid = configurationPidMapping.getConfigurationPid();
+
+		_configurationBeanClasses.put(configurationPid, configurationBeanClass);
+
+		String configurationBeanClassName = configurationBeanClass.getName();
+
+		if (_scopedConfigurationManagedServiceFactories.containsKey(
+				configurationBeanClassName)) {
+
+			_scopedConfigurationManagedServiceFactories.put(
+				configurationPid,
+				_scopedConfigurationManagedServiceFactories.get(
+					configurationBeanClassName));
+		}
 	}
 
 	@Reference(unbind = "-")
@@ -505,6 +518,8 @@ public class SettingsLocatorHelperImpl implements SettingsLocatorHelper {
 		ConfigurationPidMapping configurationPidMapping) {
 
 		_configurationBeanClasses.remove(
+			configurationPidMapping.getConfigurationPid());
+		_scopedConfigurationManagedServiceFactories.remove(
 			configurationPidMapping.getConfigurationPid());
 	}
 
