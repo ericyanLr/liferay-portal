@@ -223,7 +223,12 @@
 					<timer-action>
 						<name>My Act1</name>
 						<description>Check</description>
-						<script> <![CDATA[print("Timer 1")]]> </script>
+						<script>
+							<![CDATA[
+							print("Timer 1");
+							workflowContext.put("taskComments", "Timer 1");
+							]]>
+						</script>
 						<script-language>groovy</script-language>
 						<priority>1</priority>
 					</timer-action>
@@ -245,7 +250,12 @@
 					<timer-action>
 						<name>Anishq</name>
 						<description/>
-						<script> <![CDATA[print("Timer 2")]]> </script>
+						<script>
+							<![CDATA[
+							print("Timer 2");
+							workflowContext.put("taskComments", "Timer 2");
+							]]>
+						</script>
 						<script-language>groovy</script-language>
 						<priority>1</priority>
 					</timer-action>
