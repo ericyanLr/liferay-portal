@@ -55,7 +55,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class WorkflowEngineConcurrentTest extends BaseWorkflowManagerTestCase {
 
-	@Ignore
 	@Test
 	public void testConcurrentExecuteTimerWorkflowInstance() throws Exception {
 		WorkflowDefinition workflowDefinition =
