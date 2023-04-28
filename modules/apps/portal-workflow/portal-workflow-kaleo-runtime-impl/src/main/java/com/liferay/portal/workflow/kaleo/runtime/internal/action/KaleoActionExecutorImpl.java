@@ -28,7 +28,11 @@ import com.liferay.portal.workflow.kaleo.service.KaleoActionLocalService;
 import com.liferay.portal.workflow.kaleo.service.KaleoInstanceLocalService;
 import com.liferay.portal.workflow.kaleo.service.KaleoLogLocalService;
 
+import java.io.Serializable;
+
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -58,15 +62,23 @@ public class KaleoActionExecutorImpl implements KaleoActionExecutor {
 			String comment = _COMMENT_ACTION_SUCCESS;
 
 			try {
+				Map<String, Serializable> originalWorkflowContext =
+					executionContext.getWorkflowContext();
+
 				actionExecutorManager.executeKaleoAction(
 					kaleoAction, executionContext);
 
-				KaleoInstanceToken kaleoInstanceToken =
-					executionContext.getKaleoInstanceToken();
+				if (!Objects.equals(
+						originalWorkflowContext,
+						executionContext.getWorkflowContext())) {
 
-				_kaleoInstanceLocalService.updateKaleoInstance(
-					kaleoInstanceToken.getKaleoInstanceId(),
-					executionContext.getWorkflowContext(), serviceContext);
+					KaleoInstanceToken kaleoInstanceToken =
+						executionContext.getKaleoInstanceToken();
+
+					_kaleoInstanceLocalService.updateKaleoInstance(
+						kaleoInstanceToken.getKaleoInstanceId(),
+						executionContext.getWorkflowContext(), serviceContext);
+				}
 			}
 			catch (Exception exception) {
 				_log.error(exception);
