@@ -25,6 +25,9 @@ import com.liferay.change.tracking.model.CTEntry;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
 import com.liferay.change.tracking.service.CTEntryLocalService;
 import com.liferay.change.tracking.service.CTProcessLocalService;
+import com.liferay.expando.kernel.model.ExpandoBridge;
+import com.liferay.expando.kernel.model.ExpandoColumnConstants;
+import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
@@ -32,12 +35,17 @@ import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -1003,6 +1011,66 @@ public class LayoutCTTest {
 					resultSet.getLong("ctCollectionId"));
 
 				Assert.assertFalse(resultSet.next());
+			}
+		}
+	}
+
+	@Test
+	public void testUpdateLayoutWithTwoExpandoBridgeAttributes()
+		throws Exception {
+
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setProductionModeWithSafeCloseable()) {
+
+			PermissionThreadLocal.setPermissionChecker(
+				PermissionCheckerFactoryUtil.create(
+					UserLocalServiceUtil.getUser(TestPropsValues.getUserId())));
+
+			ExpandoBridge expandoBridge =
+				ExpandoBridgeFactoryUtil.getExpandoBridge(
+					_group.getCompanyId(), Layout.class.getName());
+
+			expandoBridge.addAttribute(
+				"CustomField1", ExpandoColumnConstants.BOOLEAN);
+			expandoBridge.addAttribute(
+				"CustomField2", ExpandoColumnConstants.BOOLEAN);
+
+			Layout layout1 = LayoutTestUtil.addTypePortletLayout(_group);
+
+			Layout layout2 = LayoutTestUtil.addTypePortletLayout(_group);
+
+			try (SafeCloseable safeCloseable1 =
+					CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+						_ctCollection.getCtCollectionId())) {
+
+				ServiceContext serviceContext =
+					ServiceContextTestUtil.getServiceContext(
+						_group.getGroupId(), TestPropsValues.getUserId());
+
+				serviceContext.setExpandoBridgeAttributes(
+					expandoBridge.getAttributes());
+
+				_layoutLocalService.updateLayout(
+					layout1.getGroupId(), layout1.isPrivateLayout(),
+					layout1.getLayoutId(), layout1.getParentLayoutId(),
+					layout1.getNameMap(), layout1.getTitleMap(),
+					layout1.getDescriptionMap(), layout1.getKeywordsMap(),
+					layout1.getRobotsMap(), layout1.getType(),
+					layout1.isHidden(), layout1.getFriendlyURLMap(), false,
+					null, layout1.getStyleBookEntryId(),
+					layout1.getFaviconFileEntryId(),
+					layout1.getMasterLayoutPlid(), serviceContext);
+
+				_layoutLocalService.updateLayout(
+					layout2.getGroupId(), layout2.isPrivateLayout(),
+					layout2.getLayoutId(), layout2.getParentLayoutId(),
+					layout2.getNameMap(), layout2.getTitleMap(),
+					layout2.getDescriptionMap(), layout2.getKeywordsMap(),
+					layout2.getRobotsMap(), layout2.getType(),
+					layout2.isHidden(), layout2.getFriendlyURLMap(), false,
+					null, layout2.getStyleBookEntryId(),
+					layout2.getFaviconFileEntryId(),
+					layout2.getMasterLayoutPlid(), serviceContext);
 			}
 		}
 	}
