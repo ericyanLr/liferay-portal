@@ -558,9 +558,9 @@ public class EmailNotificationType extends BaseNotificationType {
 						new InternetAddress(
 							String.valueOf(
 								notificationRecipientSettingsMap.get("to")),
-							String.valueOf(
+							Objects.toString(
 								notificationRecipientSettingsMap.get(
-									"toName"))),
+									"toName"), null)),
 						notificationQueueEntry.getSubject(),
 						notificationQueueEntry.getBody(), true);
 
