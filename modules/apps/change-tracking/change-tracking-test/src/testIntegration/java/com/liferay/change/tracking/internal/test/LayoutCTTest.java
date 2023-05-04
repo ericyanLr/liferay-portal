@@ -31,6 +31,7 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.model.Group;
@@ -1019,8 +1020,14 @@ public class LayoutCTTest {
 	public void testUpdateLayoutWithTwoExpandoBridgeAttributes()
 		throws Exception {
 
+		boolean active = CacheRegistryUtil.isActive();
+
 		try (SafeCloseable safeCloseable =
 				CTCollectionThreadLocal.setProductionModeWithSafeCloseable()) {
+
+			CacheRegistryUtil.setActive(false);
+
+			_classNameLocalService.checkClassNames();
 
 			PermissionThreadLocal.setPermissionChecker(
 				PermissionCheckerFactoryUtil.create(
@@ -1036,8 +1043,6 @@ public class LayoutCTTest {
 				"CustomField2", ExpandoColumnConstants.BOOLEAN);
 
 			Layout layout1 = LayoutTestUtil.addTypePortletLayout(_group);
-
-			Layout layout2 = LayoutTestUtil.addTypePortletLayout(_group);
 
 			try (SafeCloseable safeCloseable1 =
 					CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
@@ -1060,18 +1065,10 @@ public class LayoutCTTest {
 					null, layout1.getStyleBookEntryId(),
 					layout1.getFaviconFileEntryId(),
 					layout1.getMasterLayoutPlid(), serviceContext);
-
-				_layoutLocalService.updateLayout(
-					layout2.getGroupId(), layout2.isPrivateLayout(),
-					layout2.getLayoutId(), layout2.getParentLayoutId(),
-					layout2.getNameMap(), layout2.getTitleMap(),
-					layout2.getDescriptionMap(), layout2.getKeywordsMap(),
-					layout2.getRobotsMap(), layout2.getType(),
-					layout2.isHidden(), layout2.getFriendlyURLMap(), false,
-					null, layout2.getStyleBookEntryId(),
-					layout2.getFaviconFileEntryId(),
-					layout2.getMasterLayoutPlid(), serviceContext);
 			}
+		}
+		finally {
+			CacheRegistryUtil.setActive(active);
 		}
 	}
 
