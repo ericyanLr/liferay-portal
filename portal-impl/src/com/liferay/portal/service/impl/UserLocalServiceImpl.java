@@ -5309,9 +5309,12 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		user.setMiddleName(middleName);
 		user.setLastName(lastName);
 		user.setJobTitle(jobTitle);
-		user.setExpandoBridgeAttributes(serviceContext);
 
 		user = userPersistence.update(user, serviceContext);
+
+		// Expando
+
+		user.setExpandoBridgeAttributes(serviceContext);
 
 		// Contact
 
