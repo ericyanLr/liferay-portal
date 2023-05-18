@@ -28,6 +28,9 @@ import com.liferay.portal.test.log.LogEntry;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,6 +134,93 @@ public class JSONFactoryTest {
 					"Unable to deserialize " +
 						JSONFactoryTest.class.getName()));
 		}
+	}
+
+	@Test
+	public void testDeserializeNumberArrayWithBigDecimal() {
+		String json = JSONFactoryUtil.serialize(
+			HashMapBuilder.<String, BigDecimal[]>put(
+				"key",
+				new BigDecimal[] {
+					BigDecimal.valueOf(9223372036854775808.999),
+					BigDecimal.valueOf(9223372036854775808.000)
+				}
+			).build());
+
+		Object object = JSONFactoryUtil.deserialize(json);
+
+		Assert.assertTrue(object instanceof Map);
+
+		Map<String, BigDecimal[]> deserializedMap =
+			(Map<String, BigDecimal[]>)object;
+
+		Object values = deserializedMap.get("key");
+
+		Assert.assertTrue(values instanceof BigDecimal[]);
+	}
+
+	@Test
+	public void testDeserializeNumberArrayWithBigInt() {
+		String json = JSONFactoryUtil.serialize(
+			HashMapBuilder.<String, BigInteger[]>put(
+				"key",
+				new BigInteger[] {
+					new BigInteger("1234567890123456789123"),
+					new BigInteger("9223372036854775808")
+				}
+			).build());
+
+		Object object = JSONFactoryUtil.deserialize(json);
+
+		Assert.assertTrue(object instanceof Map);
+
+		Map<String, BigDecimal[]> deserializedMap =
+			(Map<String, BigDecimal[]>)object;
+
+		Object values = deserializedMap.get("key");
+
+		Assert.assertTrue(values instanceof BigDecimal[]);
+	}
+
+	@Test
+	public void testDeserializeNumberArrayWithDifferentClasses() {
+		String json = JSONFactoryUtil.serialize(
+			HashMapBuilder.put(
+				"key",
+				new String[] {
+					"0", "${Long.MAX_VALUE}", "2.2", "12345678901234567890",
+					"12341234121234341234.123412341122341234"
+				}
+			).build());
+
+		Object object = JSONFactoryUtil.deserialize(json);
+
+		Assert.assertTrue(object instanceof Map);
+
+		Map<String, BigDecimal[]> deserializedMap =
+			(Map<String, BigDecimal[]>)object;
+
+		Object values = deserializedMap.get("key");
+
+		Assert.assertTrue(values instanceof BigDecimal[]);
+	}
+
+	@Test
+	public void testDeserializeNumberArrayWithDouble() {
+		String json = JSONFactoryUtil.serialize(
+			HashMapBuilder.<String, double[]>put(
+				"key", new double[] {1.1, 2.2, 3.3}
+			).build());
+
+		Object object = JSONFactoryUtil.deserialize(json);
+
+		Assert.assertTrue(object instanceof Map);
+
+		Map<String, double[]> deserializedMap = (Map<String, double[]>)object;
+
+		Object values = deserializedMap.get("key");
+
+		Assert.assertTrue(values instanceof double[]);
 	}
 
 	@Test
