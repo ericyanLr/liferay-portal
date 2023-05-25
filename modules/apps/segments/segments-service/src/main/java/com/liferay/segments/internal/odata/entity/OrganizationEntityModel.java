@@ -67,9 +67,11 @@ public class OrganizationEntityModel extends BaseExpandoEntityModel {
 				locale -> Field.NAME + ".keyword"),
 			new StringEntityField(
 				"nameTreePath",
-				locale -> Field.getSortableFieldName("nameTreePath_String")),
+				locale -> Field.getSortableFieldName("nameTreePath_String"),
+				locale -> "nameTreePath.keyword"),
 			new StringEntityField(
-				"region", locale -> Field.getSortableFieldName("region")),
+				"region", locale -> Field.getSortableFieldName("region"),
+				locale -> "region.keyword"),
 			new StringEntityField("type", locale -> Field.TYPE)
 		};
 	}
