@@ -43,7 +43,8 @@ public class OrganizationEntityModel implements EntityModel {
 				"parentOrganizationId", locale -> "parentOrganizationId",
 				String::valueOf),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName(Field.NAME)));
+				"name", locale -> Field.getSortableFieldName(Field.NAME),
+				locale -> Field.NAME + ".keyword"));
 	}
 
 	@Override

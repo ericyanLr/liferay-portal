@@ -33,7 +33,8 @@ public class UserGroupEntityModel implements EntityModel {
 				"companyId", locale -> Field.COMPANY_ID, String::valueOf),
 			new StringEntityField("description", locale -> Field.DESCRIPTION),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName(Field.NAME)),
+				"name", locale -> Field.getSortableFieldName(Field.NAME),
+				locale -> Field.NAME + ".keyword"),
 			new IdEntityField(
 				"userGroupId", locale -> Field.USER_GROUP_ID, String::valueOf));
 	}
