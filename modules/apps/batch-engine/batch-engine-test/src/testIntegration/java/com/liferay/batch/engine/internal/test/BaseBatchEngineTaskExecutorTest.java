@@ -147,7 +147,8 @@ public class BaseBatchEngineTaskExecutorTest {
 				new IntegerEntityField("creatorId", locale -> Field.USER_ID),
 				new StringEntityField(
 					"headline",
-					locale -> Field.getSortableFieldName(Field.TITLE)));
+					locale -> Field.getSortableFieldName(Field.TITLE),
+					locale -> Field.TITLE + ".keyword"));
 		}
 
 		@Override
