@@ -42,7 +42,8 @@ public class KeywordEntityModel implements EntityModel {
 				locale -> Field.MODIFIED_DATE),
 			new StringEntityField(
 				Field.NAME,
-				locale -> Field.getSortableFieldName(Field.NAME + "_String")));
+				locale -> Field.getSortableFieldName(Field.NAME + "_String"),
+				locale -> Field.NAME + ".keyword"));
 	}
 
 	@Override
