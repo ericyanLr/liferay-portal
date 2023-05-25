@@ -640,6 +640,12 @@
 			"template_ar": {
 				"mapping": {
 					"analyzer": "arabic",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -653,6 +659,12 @@
 			"template_bg": {
 				"mapping": {
 					"analyzer": "bulgarian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -666,6 +678,12 @@
 			"template_ca": {
 				"mapping": {
 					"analyzer": "catalan",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -679,6 +697,12 @@
 			"template_cs": {
 				"mapping": {
 					"analyzer": "czech",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -692,6 +716,12 @@
 			"template_da": {
 				"mapping": {
 					"analyzer": "danish",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -705,6 +735,12 @@
 			"template_de": {
 				"mapping": {
 					"analyzer": "german",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -718,6 +754,12 @@
 			"template_el": {
 				"mapping": {
 					"analyzer": "greek",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -731,6 +773,12 @@
 			"template_en": {
 				"mapping": {
 					"analyzer": "english",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"search_analyzer": "liferay_analyzer_en",
 					"store": true,
 					"term_vector": "with_positions_offsets",
@@ -745,6 +793,12 @@
 			"template_es": {
 				"mapping": {
 					"analyzer": "spanish",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"search_analyzer": "liferay_analyzer_es",
 					"store": true,
 					"term_vector": "with_positions_offsets",
@@ -759,6 +813,12 @@
 			"template_et": {
 				"mapping": {
 					"analyzer": "estonian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -772,6 +832,12 @@
 			"template_eu": {
 				"mapping": {
 					"analyzer": "basque",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -785,6 +851,12 @@
 			"template_fa": {
 				"mapping": {
 					"analyzer": "persian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -798,6 +870,12 @@
 			"template_fi": {
 				"mapping": {
 					"analyzer": "finnish",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -811,6 +889,12 @@
 			"template_fr": {
 				"mapping": {
 					"analyzer": "french",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -824,6 +908,12 @@
 			"template_gl": {
 				"mapping": {
 					"analyzer": "galician",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -837,6 +927,12 @@
 			"template_hi": {
 				"mapping": {
 					"analyzer": "hindi",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -850,6 +946,12 @@
 			"template_hu": {
 				"mapping": {
 					"analyzer": "hungarian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -863,6 +965,12 @@
 			"template_hy": {
 				"mapping": {
 					"analyzer": "armenian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -876,6 +984,12 @@
 			"template_in": {
 				"mapping": {
 					"analyzer": "indonesian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -889,6 +1003,12 @@
 			"template_it": {
 				"mapping": {
 					"analyzer": "italian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -902,6 +1022,12 @@
 			"template_ja": {
 				"mapping": {
 					"analyzer": "kuromoji",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -915,6 +1041,12 @@
 			"template_ko": {
 				"mapping": {
 					"analyzer": "cjk",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -928,6 +1060,12 @@
 			"template_lt": {
 				"mapping": {
 					"analyzer": "lithuanian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -941,6 +1079,12 @@
 			"template_nl": {
 				"mapping": {
 					"analyzer": "dutch",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -954,6 +1098,12 @@
 			"template_no": {
 				"mapping": {
 					"analyzer": "norwegian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -967,6 +1117,12 @@
 			"template_pl": {
 				"mapping": {
 					"analyzer": "polish",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -980,6 +1136,12 @@
 			"template_pt": {
 				"mapping": {
 					"analyzer": "portuguese",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -993,6 +1155,12 @@
 			"template_pt_br": {
 				"mapping": {
 					"analyzer": "brazilian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -1005,6 +1173,12 @@
 			"template_ro": {
 				"mapping": {
 					"analyzer": "romanian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -1018,6 +1192,12 @@
 			"template_ru": {
 				"mapping": {
 					"analyzer": "russian",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -1031,6 +1211,12 @@
 			"template_sv": {
 				"mapping": {
 					"analyzer": "swedish",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -1044,6 +1230,12 @@
 			"template_th": {
 				"mapping": {
 					"analyzer": "thai",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -1057,6 +1249,12 @@
 			"template_tr": {
 				"mapping": {
 					"analyzer": "turkish",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
@@ -1070,6 +1268,12 @@
 			"template_zh": {
 				"mapping": {
 					"analyzer": "smartcn",
+					"fields": {
+						"keyword": {
+							"store": true,
+							"type": "keyword"
+						}
+					},
 					"store": true,
 					"term_vector": "with_positions_offsets",
 					"type": "text"
