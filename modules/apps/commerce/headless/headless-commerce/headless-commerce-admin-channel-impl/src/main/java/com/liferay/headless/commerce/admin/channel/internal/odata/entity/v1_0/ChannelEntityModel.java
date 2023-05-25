@@ -32,7 +32,8 @@ public class ChannelEntityModel implements EntityModel {
 			new IdEntityField(
 				"siteGroupId", locale -> Field.SCOPE_GROUP_ID, String::valueOf),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName("name")));
+				"name", locale -> Field.getSortableFieldName("name"),
+				locale -> "name.keyword"));
 	}
 
 	@Override
