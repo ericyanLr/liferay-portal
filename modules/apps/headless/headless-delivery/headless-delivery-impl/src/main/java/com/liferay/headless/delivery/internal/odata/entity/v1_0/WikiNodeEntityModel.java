@@ -41,7 +41,8 @@ public class WikiNodeEntityModel implements EntityModel {
 				locale -> Field.MODIFIED_DATE),
 			new IntegerEntityField("creatorId", locale -> Field.USER_ID),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName(Field.TITLE)));
+				"name", locale -> Field.getSortableFieldName(Field.TITLE),
+				locale -> Field.TITLE + ".keyword"));
 	}
 
 	@Override
