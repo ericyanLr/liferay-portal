@@ -1714,6 +1714,16 @@
 				"store": true,
 				"type": "text"
 			},
+			"nameTreePath": {
+				"fields": {
+					"keyword": {
+						"store": true,
+						"type": "keyword"
+					}
+				},
+				"store": true,
+				"type": "text"
+			},
 			"nestedFieldArray": {
 				"properties": {
 					"fieldName": {
@@ -1802,6 +1812,16 @@
 			"recordSetId": {
 				"store": true,
 				"type": "keyword"
+			},
+			"region": {
+				"fields": {
+					"keyword": {
+						"store": true,
+						"type": "keyword"
+					}
+				},
+				"store": true,
+				"type": "text"
 			},
 			"removedByUser": {
 				"type": "keyword"
