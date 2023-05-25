@@ -1731,6 +1731,12 @@
 				"type": "text"
 			},
 			"assetType": {
+				"fields": {
+					"keyword": {
+						"store": true,
+						"type": "keyword"
+					}
+				},
 				"store": true,
 				"term_vector": "with_positions_offsets",
 				"type": "text"
