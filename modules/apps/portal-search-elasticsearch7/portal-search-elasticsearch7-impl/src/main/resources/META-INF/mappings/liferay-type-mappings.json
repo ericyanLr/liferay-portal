@@ -1900,6 +1900,16 @@
 			"store": true,
 			"type": "keyword"
 		},
+		"urlSubject": {
+			"fields": {
+				"keyword": {
+					"store": true,
+					"type": "keyword"
+				}
+			},
+			"store": true,
+			"type": "text"
+		},
 		"urlTitle": {
 			"fields": {
 				"keyword": {
