@@ -29,7 +29,8 @@ public class AccountGroupEntityModel implements EntityModel {
 	public AccountGroupEntityModel() {
 		_entityFieldsMap = EntityModel.toEntityFieldsMap(
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName(Field.NAME)));
+				"name", locale -> Field.getSortableFieldName(Field.NAME),
+				locale -> Field.NAME + ".keyword"));
 	}
 
 	@Override
