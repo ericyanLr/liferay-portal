@@ -31,7 +31,8 @@ public class OptionEntityModel implements EntityModel {
 		_entityFieldsMap = EntityModel.toEntityFieldsMap(
 			new StringEntityField("key", locale -> "key"),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName(Field.NAME)),
+				"name", locale -> Field.getSortableFieldName(Field.NAME),
+				locale -> Field.NAME + ".keyword"),
 			new StringEntityField(
 				"fieldType", locale -> CPField.DDM_FORM_FIELD_TYPE_NAME));
 	}
