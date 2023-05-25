@@ -1605,6 +1605,16 @@
 				"store": true,
 				"type": "text"
 			},
+			"firstName": {
+				"fields": {
+					"keyword": {
+						"store": true,
+						"type": "keyword"
+					}
+				},
+				"store": true,
+				"type": "text"
+			},
 			"folderId": {
 				"store": true,
 				"type": "keyword"
@@ -1643,6 +1653,16 @@
 				"store": true,
 				"type": "keyword"
 			},
+			"jobTitle": {
+				"fields": {
+					"keyword": {
+						"store": true,
+						"type": "keyword"
+					}
+				},
+				"store": true,
+				"type": "text"
+			},
 			"languageId": {
 				"store": true,
 				"type": "keyword"
@@ -1651,6 +1671,16 @@
 				"format": "yyyyMMddHHmmss",
 				"store": true,
 				"type": "date"
+			},
+			"lastName": {
+				"fields": {
+					"keyword": {
+						"store": true,
+						"type": "keyword"
+					}
+				},
+				"store": true,
+				"type": "text"
 			},
 			"lastPostDate": {
 				"format": "yyyyMMddHHmmss",
