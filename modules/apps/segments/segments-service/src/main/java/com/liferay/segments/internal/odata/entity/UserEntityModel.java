@@ -85,11 +85,14 @@ public class UserEntityModel extends BaseExpandoEntityModel {
 				"userId", locale -> Field.USER_ID, String::valueOf),
 			new StringEntityField("emailAddress", locale -> "emailAddress"),
 			new StringEntityField(
-				"firstName", locale -> Field.getSortableFieldName("firstName")),
+				"firstName", locale -> Field.getSortableFieldName("firstName"),
+				locale -> "firstName.keyword"),
 			new StringEntityField(
-				"jobTitle", locale -> Field.getSortableFieldName("jobTitle")),
+				"jobTitle", locale -> Field.getSortableFieldName("jobTitle"),
+				locale -> "jobTitle.keyword"),
 			new StringEntityField(
-				"lastName", locale -> Field.getSortableFieldName("lastName")),
+				"lastName", locale -> Field.getSortableFieldName("lastName"),
+				locale -> "lastName.keyword"),
 			new StringEntityField(
 				"screenName",
 				locale -> Field.getSortableFieldName("screenName")),
