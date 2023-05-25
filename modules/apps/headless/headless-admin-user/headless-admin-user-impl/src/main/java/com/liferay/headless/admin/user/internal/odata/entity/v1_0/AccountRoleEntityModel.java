@@ -29,7 +29,8 @@ public class AccountRoleEntityModel implements EntityModel {
 	public AccountRoleEntityModel() {
 		_entityFieldsMap = EntityModel.toEntityFieldsMap(
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName(Field.NAME)));
+				"name", locale -> Field.getSortableFieldName(Field.NAME),
+				locale -> Field.NAME + ".keyword"));
 	}
 
 	@Override

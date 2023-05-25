@@ -30,7 +30,8 @@ public class AccountEntityModel implements EntityModel {
 	public AccountEntityModel() {
 		_entityFieldsMap = EntityModel.toEntityFieldsMap(
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName(Field.NAME)),
+				"name", locale -> Field.getSortableFieldName(Field.NAME),
+				locale -> Field.NAME + ".keyword"),
 			new IdEntityField(
 				"organizationIds", locale -> "organizationIds",
 				String::valueOf));
