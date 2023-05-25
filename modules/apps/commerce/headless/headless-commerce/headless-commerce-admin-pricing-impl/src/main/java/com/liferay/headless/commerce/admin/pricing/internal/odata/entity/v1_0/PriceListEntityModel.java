@@ -29,7 +29,8 @@ public class PriceListEntityModel implements EntityModel {
 	public PriceListEntityModel() {
 		_entityFieldsMap = EntityModel.toEntityFieldsMap(
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName("name")));
+				"name", locale -> Field.getSortableFieldName("name"),
+				locale -> "name.keyword"));
 	}
 
 	@Override

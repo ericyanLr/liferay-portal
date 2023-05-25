@@ -47,7 +47,8 @@ public class PriceListEntityModel implements EntityModel {
 				new IntegerEntityField(
 					"orderTypeId", locale -> "commerceOrderTypeId")),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName("name")),
+				"name", locale -> Field.getSortableFieldName("name"),
+				locale -> "name.keyword"),
 			new BooleanEntityField(
 				"catalogBasePriceList", locale -> "catalogBasePriceList"),
 			new StringEntityField("type", locale -> "type"),
