@@ -40,7 +40,8 @@ public class ObjectDefinitionEntityModel implements EntityModel {
 				locale -> Field.MODIFIED_DATE),
 			new IntegerEntityField("userId", locale -> Field.USER_ID),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName("name")));
+				"name", locale -> Field.getSortableFieldName("name"),
+				locale -> "name.keyword"));
 	}
 
 	@Override
