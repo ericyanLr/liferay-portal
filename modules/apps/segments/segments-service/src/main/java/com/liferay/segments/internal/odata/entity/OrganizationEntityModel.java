@@ -63,7 +63,8 @@ public class OrganizationEntityModel extends BaseExpandoEntityModel {
 				String::valueOf),
 			new StringEntityField("country", locale -> "country"),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName(Field.NAME)),
+				"name", locale -> Field.getSortableFieldName(Field.NAME),
+				locale -> Field.NAME + ".keyword"),
 			new StringEntityField(
 				"nameTreePath",
 				locale -> Field.getSortableFieldName("nameTreePath_String")),
