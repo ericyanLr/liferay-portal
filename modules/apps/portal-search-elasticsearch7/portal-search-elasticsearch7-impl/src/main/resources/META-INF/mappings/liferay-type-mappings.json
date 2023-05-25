@@ -1871,6 +1871,16 @@
 				"store": true,
 				"type": "keyword"
 			},
+			"urlTitle": {
+				"fields": {
+					"keyword": {
+						"store": true,
+						"type": "keyword"
+					}
+				},
+				"store": true,
+				"type": "text"
+			},
 			"userGroupId": {
 				"store": true,
 				"type": "keyword"
