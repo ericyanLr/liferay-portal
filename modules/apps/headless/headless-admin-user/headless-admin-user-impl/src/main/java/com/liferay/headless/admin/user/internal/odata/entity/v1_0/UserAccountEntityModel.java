@@ -56,7 +56,8 @@ public class UserAccountEntityModel implements EntityModel {
 				"userGroupIds", locale -> "userGroupIds", String::valueOf),
 			new StringEntityField(
 				"alternateName",
-				locale -> Field.getSortableFieldName("screenName")),
+				locale -> Field.getSortableFieldName("screenName"),
+				locale -> "screenName"),
 			new StringEntityField("emailAddress", locale -> "emailAddress"),
 			new StringEntityField(
 				"familyName", locale -> Field.getSortableFieldName("lastName"),
