@@ -14,6 +14,7 @@
 
 package com.liferay.headless.delivery.internal.odata.entity.v1_0;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.odata.entity.ComplexEntityField;
@@ -44,8 +45,10 @@ public class WikiPageEntityModel implements EntityModel {
 			new StringEntityField(
 				"headline",
 				locale -> Field.getSortableFieldName(
-					"localized_title_".concat(
-						LocaleUtil.toLanguageId(locale)))));
+					"localized_title_".concat(LocaleUtil.toLanguageId(locale))),
+				locale -> StringBundler.concat(
+					"localized_title_", LocaleUtil.toLanguageId(locale),
+					".keyword")));
 	}
 
 	@Override
