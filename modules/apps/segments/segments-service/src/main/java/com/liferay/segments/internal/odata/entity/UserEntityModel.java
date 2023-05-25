@@ -95,7 +95,8 @@ public class UserEntityModel extends BaseExpandoEntityModel {
 				locale -> "lastName.keyword"),
 			new StringEntityField(
 				"screenName",
-				locale -> Field.getSortableFieldName("screenName")),
+				locale -> Field.getSortableFieldName("screenName"),
+				locale -> "screenName"),
 			new StringEntityField("userName", locale -> Field.USER_NAME)
 		};
 	}
