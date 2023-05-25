@@ -29,7 +29,8 @@ public class CatalogEntityModel implements EntityModel {
 	public CatalogEntityModel() {
 		_entityFieldsMap = EntityModel.toEntityFieldsMap(
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName("name")));
+				"name", locale -> Field.getSortableFieldName("name"),
+				locale -> "name.keyword"));
 	}
 
 	@Override

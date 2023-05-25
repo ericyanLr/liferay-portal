@@ -62,7 +62,8 @@ public class ProductEntityModel implements EntityModel {
 				locale -> Field.MODIFIED_DATE),
 			new IntegerEntityField("catalogId", locale -> "commerceCatalogId"),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName("name")),
+				"name", locale -> Field.getSortableFieldName("name"),
+				locale -> "name.keyword"),
 			new StringEntityField("productType", locale -> "productTypeName"));
 	}
 
