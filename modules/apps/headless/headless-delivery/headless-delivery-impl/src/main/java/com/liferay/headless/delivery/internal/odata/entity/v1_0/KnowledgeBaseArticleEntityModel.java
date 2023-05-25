@@ -53,7 +53,8 @@ public class KnowledgeBaseArticleEntityModel implements EntityModel {
 				locale -> Field.MODIFIED_DATE),
 			new StringEntityField(
 				"friendlyUrlPath",
-				locale -> Field.getSortableFieldName("urlTitle_String")),
+				locale -> Field.getSortableFieldName("urlTitle_String"),
+				locale -> "urlTitle.keyword"),
 			new StringEntityField(
 				"title",
 				locale -> Field.getSortableFieldName(
