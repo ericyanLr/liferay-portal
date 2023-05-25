@@ -59,11 +59,14 @@ public class UserAccountEntityModel implements EntityModel {
 				locale -> Field.getSortableFieldName("screenName")),
 			new StringEntityField("emailAddress", locale -> "emailAddress"),
 			new StringEntityField(
-				"familyName", locale -> Field.getSortableFieldName("lastName")),
+				"familyName", locale -> Field.getSortableFieldName("lastName"),
+				locale -> "lastName.keyword"),
 			new StringEntityField(
-				"givenName", locale -> Field.getSortableFieldName("firstName")),
+				"givenName", locale -> Field.getSortableFieldName("firstName"),
+				locale -> "firstName.keyword"),
 			new StringEntityField(
-				"jobTitle", locale -> Field.getSortableFieldName("jobTitle")),
+				"jobTitle", locale -> Field.getSortableFieldName("jobTitle"),
+				locale -> "jobTitle.keyword"),
 			new StringEntityField("name", locale -> Field.USER_NAME));
 	}
 
