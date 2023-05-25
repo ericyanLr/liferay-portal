@@ -54,7 +54,8 @@ public class BlogPostingEntityModel implements EntityModel {
 				"friendlyUrlPath",
 				locale -> Field.getSortableFieldName("urlTitle_String")),
 			new StringEntityField(
-				"headline", locale -> Field.getSortableFieldName(Field.TITLE)));
+				"headline", locale -> Field.getSortableFieldName(Field.TITLE),
+				locale -> Field.TITLE + ".keyword"));
 	}
 
 	@Override
