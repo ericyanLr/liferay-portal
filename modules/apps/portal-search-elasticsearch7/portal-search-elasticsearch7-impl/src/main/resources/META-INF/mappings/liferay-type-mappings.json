@@ -1673,6 +1673,16 @@
 			"store": true,
 			"type": "date"
 		},
+		"name": {
+			"fields": {
+				"keyword": {
+					"store": true,
+					"type": "keyword"
+				}
+			},
+			"store": true,
+			"type": "text"
+		},
 		"nestedFieldArray": {
 			"properties": {
 				"fieldName": {
