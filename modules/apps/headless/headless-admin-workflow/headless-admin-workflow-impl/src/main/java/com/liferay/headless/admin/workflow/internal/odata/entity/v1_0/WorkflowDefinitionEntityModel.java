@@ -34,7 +34,8 @@ public class WorkflowDefinitionEntityModel implements EntityModel {
 				locale -> Field.getSortableFieldName(Field.MODIFIED_DATE),
 				locale -> Field.MODIFIED_DATE),
 			new StringEntityField(
-				"name", locale -> Field.getSortableFieldName(Field.NAME)));
+				"name", locale -> Field.getSortableFieldName(Field.NAME),
+				locale -> Field.NAME + ".keyword"));
 	}
 
 	@Override
