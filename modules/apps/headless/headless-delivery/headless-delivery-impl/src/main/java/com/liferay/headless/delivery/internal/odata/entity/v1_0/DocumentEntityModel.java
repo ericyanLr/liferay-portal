@@ -68,7 +68,8 @@ public class DocumentEntityModel implements EntityModel {
 				"sizeInBytes", locale -> Field.getSortableFieldName("size")),
 			new StringEntityField(
 				"fileExtension",
-				locale -> Field.getSortableFieldName("extension_String")),
+				locale -> Field.getSortableFieldName("extension_String"),
+				locale -> "extension"),
 			new StringEntityField(
 				"title",
 				locale -> Field.getSortableFieldName(
