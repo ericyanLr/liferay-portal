@@ -83,7 +83,8 @@ public class MessageBoardMessageEntityModel implements EntityModel {
 				"viewCount", locale -> Field.getSortableFieldName("viewCount")),
 			new StringEntityField(
 				"friendlyUrlPath",
-				locale -> Field.getSortableFieldName("urlSubject_String")),
+				locale -> Field.getSortableFieldName("urlSubject_String"),
+				locale -> "urlSubject.keyword"),
 			new StringEntityField(
 				"headline",
 				locale -> Field.getSortableFieldName(
