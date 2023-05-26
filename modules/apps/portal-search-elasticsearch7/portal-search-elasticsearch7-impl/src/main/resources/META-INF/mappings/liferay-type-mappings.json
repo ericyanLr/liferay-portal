@@ -642,6 +642,7 @@
 					"analyzer": "arabic",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -661,6 +662,7 @@
 					"analyzer": "bulgarian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -680,6 +682,7 @@
 					"analyzer": "catalan",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -699,6 +702,7 @@
 					"analyzer": "czech",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -718,6 +722,7 @@
 					"analyzer": "danish",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -737,6 +742,7 @@
 					"analyzer": "german",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -756,6 +762,7 @@
 					"analyzer": "greek",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -775,6 +782,7 @@
 					"analyzer": "english",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -795,6 +803,7 @@
 					"analyzer": "spanish",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -815,6 +824,7 @@
 					"analyzer": "estonian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -834,6 +844,7 @@
 					"analyzer": "basque",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -853,6 +864,7 @@
 					"analyzer": "persian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -872,6 +884,7 @@
 					"analyzer": "finnish",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -891,6 +904,7 @@
 					"analyzer": "french",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -910,6 +924,7 @@
 					"analyzer": "galician",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -929,6 +944,7 @@
 					"analyzer": "hindi",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -948,6 +964,7 @@
 					"analyzer": "hungarian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -967,6 +984,7 @@
 					"analyzer": "armenian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -986,6 +1004,7 @@
 					"analyzer": "indonesian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1005,6 +1024,7 @@
 					"analyzer": "italian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1024,6 +1044,7 @@
 					"analyzer": "kuromoji",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1043,6 +1064,7 @@
 					"analyzer": "cjk",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1062,6 +1084,7 @@
 					"analyzer": "lithuanian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1081,6 +1104,7 @@
 					"analyzer": "dutch",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1100,6 +1124,7 @@
 					"analyzer": "norwegian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1119,6 +1144,7 @@
 					"analyzer": "polish",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1138,6 +1164,7 @@
 					"analyzer": "portuguese",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1157,6 +1184,7 @@
 					"analyzer": "brazilian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1175,6 +1203,7 @@
 					"analyzer": "romanian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1194,6 +1223,7 @@
 					"analyzer": "russian",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1213,6 +1243,7 @@
 					"analyzer": "swedish",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1232,6 +1263,7 @@
 					"analyzer": "thai",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1251,6 +1283,7 @@
 					"analyzer": "turkish",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1270,6 +1303,7 @@
 					"analyzer": "smartcn",
 					"fields": {
 						"keyword": {
+							"normalizer": "lowercase",
 							"store": true,
 							"type": "keyword"
 						}
@@ -1607,6 +1641,7 @@
 		"firstName": {
 			"fields": {
 				"keyword": {
+					"normalizer": "lowercase",
 					"store": true,
 					"type": "keyword"
 				}
@@ -1655,6 +1690,7 @@
 		"jobTitle": {
 			"fields": {
 				"keyword": {
+					"normalizer": "lowercase",
 					"store": true,
 					"type": "keyword"
 				}
@@ -1674,6 +1710,7 @@
 		"lastName": {
 			"fields": {
 				"keyword": {
+					"normalizer": "lowercase",
 					"store": true,
 					"type": "keyword"
 				}
@@ -1706,6 +1743,7 @@
 		"name": {
 			"fields": {
 				"keyword": {
+					"normalizer": "lowercase",
 					"store": true,
 					"type": "keyword"
 				}
@@ -1716,6 +1754,7 @@
 		"nameTreePath": {
 			"fields": {
 				"keyword": {
+					"normalizer": "lowercase",
 					"store": true,
 					"type": "keyword"
 				}
@@ -1815,6 +1854,7 @@
 		"region": {
 			"fields": {
 				"keyword": {
+					"normalizer": "lowercase",
 					"store": true,
 					"type": "keyword"
 				}
@@ -1900,6 +1940,7 @@
 		"title": {
 			"fields": {
 				"keyword": {
+					"normalizer": "lowercase",
 					"store": true,
 					"type": "keyword"
 				}
@@ -1923,6 +1964,7 @@
 		"urlSubject": {
 			"fields": {
 				"keyword": {
+					"normalizer": "lowercase",
 					"store": true,
 					"type": "keyword"
 				}
@@ -1933,6 +1975,7 @@
 		"urlTitle": {
 			"fields": {
 				"keyword": {
+					"normalizer": "lowercase",
 					"store": true,
 					"type": "keyword"
 				}

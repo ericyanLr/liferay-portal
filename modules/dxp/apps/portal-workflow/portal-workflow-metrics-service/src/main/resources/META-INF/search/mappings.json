@@ -1733,6 +1733,7 @@
 			"assetType": {
 				"fields": {
 					"keyword": {
+						"normalizer": "lowercase",
 						"store": true,
 						"type": "keyword"
 					}
