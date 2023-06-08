@@ -484,6 +484,8 @@
 		<copyField dest="jobTitle.keyword" source="jobTitle" />
 		<copyField dest="lastName.keyword" source="lastName" />
 		<copyField dest="name.keyword" source="name" />
+		<copyField dest="nameTreePath.keyword" source="nameTreePath" />
+		<copyField dest="region.keyword" source="region" />
 		<copyField dest="title.keyword" source="title" />
 		<copyField dest="urlTitle.keyword" source="urlTitle" />
 		<copyField dest="urlSubject.keyword" source="urlSubject" />
@@ -641,6 +643,8 @@
 		<field docValues="true" indexed="true" name="modified_sortable" stored="true" type="long" />
 		<field indexed="true" name="name" stored="true" termPositions="true" termVectors="true" type="text" />
 		<field indexed="true" name="name.keyword" stored="false" type="string_keyword_lowercase" />
+		<field indexed="true" name="nameTreePath" stored="true" type="text" />
+		<field indexed="true" name="nameTreePath.keyword" stored="false" type="string_keyword_lowercase" />
 		<field indexed="true" name="nodeId" stored="true" type="string" />
 		<field docValues="true" indexed="true" name="organizationId" stored="true" type="string" />
 		<field indexed="true" multiValued="true" name="organizationIds" stored="true" type="string" />
@@ -652,6 +656,8 @@
 		<field docValues="true" indexed="true" name="publishDate" stored="true" type="string" />
 		<field indexed="true" name="readCount" stored="true" type="string" />
 		<field indexed="true" name="recordSetId" stored="true" type="string" />
+		<field indexed="true" name="region" stored="true" type="text" />
+		<field indexed="true" name="region.keyword" stored="false" type="string_keyword_lowercase" />
 		<field docValues="true" indexed="true" name="removedByUser" stored="true" type="string" />
 		<field docValues="true" indexed="true" name="removedDate" stored="true" type="string" />
 		<field indexed="true" name="requestCount" stored="true" type="long" />
