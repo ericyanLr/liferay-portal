@@ -480,6 +480,9 @@
 		<copyField dest="all" source="type" />
 		<copyField dest="all" source="userName" />
 		<copyField dest="assetTagNames.raw" source="assetTagNames" />
+		<copyField dest="firstName.keyword" source="firstName" />
+		<copyField dest="jobTitle.keyword" source="jobTitle" />
+		<copyField dest="lastName.keyword" source="lastName" />
 		<copyField dest="name.keyword" source="name" />
 		<copyField dest="title.keyword" source="title" />
 		<copyField dest="urlTitle.keyword" source="urlTitle" />
@@ -614,6 +617,7 @@
 		<field indexed="true" name="extension" stored="true" type="string" />
 		<field indexed="true" name="fileEntryTypeId" stored="true" type="string" />
 		<field indexed="true" name="firstName" stored="true" type="text_lowercase" />
+		<field indexed="true" name="firstName.keyword" stored="false" type="string_keyword_lowercase" />
 		<field docValues="true" indexed="true" name="folderId" stored="true" type="string" />
 		<field indexed="true" name="fullName" stored="true" termPositions="true" termVectors="true" type="text" />
 		<field indexed="true" name="geoLocation" stored="true" type="location" />
@@ -623,9 +627,12 @@
 		<field indexed="true" name="hidden" stored="true" type="string" />
 		<field indexed="true" name="id" stored="true" type="string" />
 		<field indexed="true" name="ignored" stored="true" type="boolean" />
+		<field indexed="true" name="jobTitle" stored="true" type="text" />
+		<field indexed="true" name="jobTitle.keyword" stored="false" type="string_keyword_lowercase" />
 		<field indexed="true" name="keywordSearch" omitNorms="true" omitTermFreqAndPositions="true" stored="true" type="textAuto" />
 		<field docValues="true" indexed="true" name="languageId" stored="true" type="string" />
 		<field indexed="true" name="lastName" stored="true" type="text_lowercase" />
+		<field indexed="true" name="lastName.keyword" stored="false" type="string_keyword_lowercase" />
 		<field indexed="true" name="leftOrganizationId" stored="true" type="tlong" />
 		<field indexed="true" name="middleName" stored="true" type="text_lowercase" />
 		<field indexed="true" name="mimeType" stored="true" type="string" />
