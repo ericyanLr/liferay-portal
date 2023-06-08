@@ -481,6 +481,7 @@
 		<copyField dest="all" source="userName" />
 		<copyField dest="assetTagNames.raw" source="assetTagNames" />
 		<copyField dest="name.keyword" source="name" />
+		<copyField dest="title.keyword" source="title" />
 		<copyField dest="userName.text" source="userName" />
 		<copyField dest="*_ar.keyword" source="*_ar" />
 		<copyField dest="*_ar_BH.keyword" source="*_ar_BH" />
@@ -665,6 +666,7 @@
 		<field indexed="true" multiValued="true" name="teamIds" stored="true" type="string" />
 		<field indexed="true" name="threadId" stored="true" type="string" />
 		<field indexed="true" name="title" stored="true" termPositions="true" termVectors="true" type="text" />
+		<field indexed="true" name="title.keyword" stored="false" type="string_keyword_lowercase" />
 		<field indexed="true" multiValued="true" name="treePath" stored="true" type="string" />
 		<field docValues="true" indexed="true" name="type" stored="true" type="string" />
 		<field indexed="true" name="uid" stored="true" type="string" />
