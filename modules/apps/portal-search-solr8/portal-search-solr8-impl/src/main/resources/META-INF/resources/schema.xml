@@ -486,6 +486,7 @@
 		<copyField dest="name.keyword" source="name" />
 		<copyField dest="title.keyword" source="title" />
 		<copyField dest="urlTitle.keyword" source="urlTitle" />
+		<copyField dest="urlSubject.keyword" source="urlSubject" />
 		<copyField dest="userName.text" source="userName" />
 		<copyField dest="*_ar.keyword" source="*_ar" />
 		<copyField dest="*_ar_BH.keyword" source="*_ar_BH" />
@@ -679,6 +680,8 @@
 		<field docValues="true" indexed="true" name="type" stored="true" type="string" />
 		<field indexed="true" name="uid" stored="true" type="string" />
 		<field indexed="true" name="urlParts" stored="true" type="text" />
+		<field indexed="true" name="urlSubject" stored="true" type="text" />
+		<field indexed="true" name="urlSubject.keyword" stored="false" type="string_keyword_lowercase" />
 		<field indexed="true" name="urlTitle" stored="true" type="text" />
 		<field indexed="true" name="urlTitle.keyword" stored="false" type="string_keyword_lowercase" />
 		<field docValues="true" indexed="true" name="userGroupId" stored="true" type="string" />
