@@ -47,12 +47,15 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.workflow.kaleo.definition.RoleAssignment;
 import com.liferay.portal.workflow.kaleo.internal.search.KaleoTaskInstanceTokenField;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
+import com.liferay.portal.workflow.kaleo.model.KaleoTask;
 import com.liferay.portal.workflow.kaleo.model.KaleoTaskAssignment;
 import com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken;
 import com.liferay.portal.workflow.kaleo.runtime.util.WorkflowContextUtil;
 import com.liferay.portal.workflow.kaleo.service.KaleoTaskAssignmentInstanceLocalService;
+import com.liferay.portal.workflow.kaleo.service.KaleoTaskAssignmentLocalService;
 import com.liferay.portal.workflow.kaleo.service.KaleoTaskFormInstanceLocalService;
 import com.liferay.portal.workflow.kaleo.service.KaleoTimerInstanceTokenLocalService;
 import com.liferay.portal.workflow.kaleo.service.base.KaleoTaskInstanceTokenLocalServiceBaseImpl;
@@ -200,6 +203,35 @@ public class KaleoTaskInstanceTokenLocalServiceImpl
 
 		kaleoTaskInstanceToken = kaleoTaskInstanceTokenPersistence.update(
 			kaleoTaskInstanceToken);
+
+		if (Objects.equals(assigneeClassName, Role.class.getName())) {
+			List<KaleoTaskAssignment> kaleoTaskAssignments =
+				_kaleoTaskAssignmentLocalService.getKaleoTaskAssignments(
+					kaleoTaskInstanceToken.getKaleoTaskId(), assigneeClassName);
+
+			boolean foundRoleAssignment = false;
+
+			for (KaleoTaskAssignment kaleoTaskAssignment :
+					kaleoTaskAssignments) {
+
+				if (assigneeClassPK ==
+						kaleoTaskAssignment.getAssigneeClassPK()) {
+
+					foundRoleAssignment = true;
+
+					break;
+				}
+			}
+
+			if (!foundRoleAssignment) {
+				_kaleoTaskAssignmentLocalService.addKaleoTaskAssignment(
+					KaleoTask.class.getName(),
+					kaleoTaskInstanceToken.getKaleoTaskId(),
+					kaleoTaskInstanceToken.getKaleoDefinitionId(),
+					kaleoTaskInstanceToken.getKaleoDefinitionVersionId(),
+					new RoleAssignment(assigneeClassPK), serviceContext);
+			}
+		}
 
 		_kaleoTaskAssignmentInstanceLocalService.
 			assignKaleoTaskAssignmentInstance(
@@ -1089,6 +1121,9 @@ public class KaleoTaskInstanceTokenLocalServiceImpl
 	@Reference
 	private KaleoTaskAssignmentInstanceLocalService
 		_kaleoTaskAssignmentInstanceLocalService;
+
+	@Reference
+	private KaleoTaskAssignmentLocalService _kaleoTaskAssignmentLocalService;
 
 	@Reference
 	private KaleoTaskFormInstanceLocalService
