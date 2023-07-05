@@ -232,6 +232,47 @@ public class LanguageResources {
 	private static class LanguageResourcesBundle extends ResourceBundle {
 
 		@Override
+		public boolean containsKey(String key) {
+			if (key == null) {
+				throw new NullPointerException();
+			}
+
+			for (LanguageResourcesBundle languageResourcesBundle = this;
+				 languageResourcesBundle != null;
+				 languageResourcesBundle =
+					 languageResourcesBundle._parentLanguageResourcesBundle) {
+
+				Locale locale = languageResourcesBundle.getLocale();
+
+				MapHolder mapHolder = _getMapHolder(locale);
+
+				Map<String, String> languageMap = mapHolder.getMap();
+
+				Set<String> keySet = languageMap.keySet();
+
+				if (keySet.contains(key)) {
+					return true;
+				}
+
+				LanguageOverrideProvider languageOverrideProvider =
+					_languageOverrideProvider;
+
+				if (languageOverrideProvider == null) {
+					return false;
+				}
+
+				Set<String> overrideKeySet = languageOverrideProvider.keySet(
+					locale);
+
+				if (overrideKeySet.contains(key)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		@Override
 		public Enumeration<String> getKeys() {
 			MapHolder mapHolder = _getMapHolder(_locale);
 
@@ -285,11 +326,18 @@ public class LanguageResources {
 			Locale superLocale = getSuperLocale(locale);
 
 			if (superLocale != null) {
-				setParent(new LanguageResourcesBundle(superLocale));
+				_parentLanguageResourcesBundle = new LanguageResourcesBundle(
+					superLocale);
+
+				setParent(_parentLanguageResourcesBundle);
+			}
+			else {
+				_parentLanguageResourcesBundle = null;
 			}
 		}
 
 		private final Locale _locale;
+		private final LanguageResourcesBundle _parentLanguageResourcesBundle;
 
 	}
 
