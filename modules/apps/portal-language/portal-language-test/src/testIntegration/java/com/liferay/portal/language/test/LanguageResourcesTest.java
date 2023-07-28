@@ -72,6 +72,41 @@ public class LanguageResourcesTest {
 	}
 
 	@Test
+	public void testLanguageResource() {
+		String key = "year";
+
+		String defaultValue = _language.get(new Locale("", ""), key);
+		String frenchValue = _language.get(LocaleUtil.FRANCE, key);
+
+		Locale defaultLocale = LocaleUtil.FRANCE;
+
+		LocaleUtil.setDefault(
+			defaultLocale.getLanguage(), defaultLocale.getCountry(),
+			defaultLocale.getVariant());
+
+		Assert.assertEquals(
+			frenchValue, _language.get(LocaleUtil.getDefault(), key, null));
+
+		Locale locale = new Locale("ps", "AF");
+
+		_serviceRegistration1 = _bundleContext.registerService(
+			ResourceBundle.class, new TestResourceBundle(_VALUE_1),
+			HashMapDictionaryBuilder.<String, Object>put(
+				Constants.SERVICE_RANKING, 0
+			).put(
+				"language.id", _language.getLanguageId(locale)
+			).build());
+
+		Assert.assertEquals(
+			_VALUE_1,
+			_language.get(locale, TestResourceBundle.class.getName(), null));
+		Assert.assertEquals(defaultValue, _language.get(locale, key, null));
+
+		LocaleUtil.setDefault(
+			_locale.getLanguage(), _locale.getCountry(), _locale.getVariant());
+	}
+
+	@Test
 	public void testLanguageResourceServiceTrackerCustomizer() {
 		_assertValue(null);
 
