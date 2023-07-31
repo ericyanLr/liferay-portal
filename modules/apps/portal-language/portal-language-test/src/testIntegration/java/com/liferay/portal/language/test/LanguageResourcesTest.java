@@ -78,7 +78,12 @@ public class LanguageResourcesTest {
 		Assert.assertEquals(
 			frenchValue, _language.get(LocaleUtil.getDefault(), key, null));
 
+		LocaleUtil.setDefault(
+			_locale.getLanguage(), _locale.getCountry(), _locale.getVariant());
+
 		Locale locale = new Locale("ps", "AF");
+
+		Assert.assertEquals(defaultValue, _language.get(locale, key, null));
 
 		_serviceRegistration1 = _bundleContext.registerService(
 			ResourceBundle.class, new TestResourceBundle(_VALUE_1),
@@ -91,10 +96,6 @@ public class LanguageResourcesTest {
 		Assert.assertEquals(
 			_VALUE_1,
 			_language.get(locale, TestResourceBundle.class.getName(), null));
-		Assert.assertEquals(defaultValue, _language.get(locale, key, null));
-
-		LocaleUtil.setDefault(
-			_locale.getLanguage(), _locale.getCountry(), _locale.getVariant());
 	}
 
 	@Test
