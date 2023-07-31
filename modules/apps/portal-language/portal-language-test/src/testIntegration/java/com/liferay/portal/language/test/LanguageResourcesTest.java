@@ -66,7 +66,7 @@ public class LanguageResourcesTest {
 	public void testLanguageResource() {
 		String key = "year";
 
-		String expectedTranslation = _language.get(new Locale("", ""), key);
+		String expectedTranslation = "Year";
 
 		Assert.assertEquals(
 			expectedTranslation, _language.get(_locale, key, null));
@@ -134,7 +134,7 @@ public class LanguageResourcesTest {
 	public void testLanguageResourceUsingSupportedLocale() {
 		String key = "year";
 
-		String expectedTranslation = _language.get(LocaleUtil.FRANCE, key);
+		String expectedTranslation = "Année";
 
 		Locale locale = LocaleUtil.FRANCE;
 
@@ -146,8 +146,7 @@ public class LanguageResourcesTest {
 	public void testLanguageResourceUsingUnsupportedLocale() {
 		String key = "year";
 
-		String expectedBaseLanguagePropertiesTranslation = _language.get(
-			new Locale("", ""), key);
+		String expectedBaseLanguagePropertiesTranslation = "Year";
 
 		Locale locale = new Locale("ps", "AF");
 
