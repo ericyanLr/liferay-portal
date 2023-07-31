@@ -70,6 +70,10 @@ public class LanguageResourcesTest {
 
 		Assert.assertEquals(
 			expectedTranslation, _language.get(_locale, key, null));
+
+		_serviceRegistration1 = _register(_VALUE_1, 0, _languageId);
+
+		_assertValue(_VALUE_1, _locale);
 	}
 
 	@Test
@@ -140,6 +144,11 @@ public class LanguageResourcesTest {
 
 		Assert.assertEquals(
 			expectedTranslation, _language.get(locale, key, null));
+
+		_serviceRegistration1 = _register(
+			_VALUE_1, 0, _language.getLanguageId(locale));
+
+		_assertValue(_VALUE_1, locale);
 	}
 
 	@Test
