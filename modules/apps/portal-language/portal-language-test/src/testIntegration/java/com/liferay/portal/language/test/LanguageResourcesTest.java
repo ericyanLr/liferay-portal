@@ -66,9 +66,10 @@ public class LanguageResourcesTest {
 	public void testLanguageResource() {
 		String key = "year";
 
-		String defaultValue = _language.get(new Locale("", ""), key);
+		String expectedTranslation = _language.get(new Locale("", ""), key);
 
-		Assert.assertEquals(defaultValue, _language.get(_locale, key, null));
+		Assert.assertEquals(
+			expectedTranslation, _language.get(_locale, key, null));
 	}
 
 	@Test
@@ -133,22 +134,26 @@ public class LanguageResourcesTest {
 	public void testLanguageResourceUsingSupportedLocale() {
 		String key = "year";
 
-		String frenchValue = _language.get(LocaleUtil.FRANCE, key);
+		String expectedTranslation = _language.get(LocaleUtil.FRANCE, key);
 
 		Locale locale = LocaleUtil.FRANCE;
 
-		Assert.assertEquals(frenchValue, _language.get(locale, key, null));
+		Assert.assertEquals(
+			expectedTranslation, _language.get(locale, key, null));
 	}
 
 	@Test
 	public void testLanguageResourceUsingUnsupportedLocale() {
 		String key = "year";
 
-		String defaultValue = _language.get(new Locale("", ""), key);
+		String expectedBaseLanguagePropertiesTranslation = _language.get(
+			new Locale("", ""), key);
 
 		Locale locale = new Locale("ps", "AF");
 
-		Assert.assertEquals(defaultValue, _language.get(locale, key, null));
+		Assert.assertEquals(
+			expectedBaseLanguagePropertiesTranslation,
+			_language.get(locale, key, null));
 
 		_serviceRegistration1 = _bundleContext.registerService(
 			ResourceBundle.class, new TestResourceBundle(_VALUE_1),
