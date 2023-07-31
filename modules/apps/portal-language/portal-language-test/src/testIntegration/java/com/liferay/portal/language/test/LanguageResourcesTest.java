@@ -67,35 +67,8 @@ public class LanguageResourcesTest {
 		String key = "year";
 
 		String defaultValue = _language.get(new Locale("", ""), key);
-		String frenchValue = _language.get(LocaleUtil.FRANCE, key);
 
-		Locale defaultLocale = LocaleUtil.FRANCE;
-
-		LocaleUtil.setDefault(
-			defaultLocale.getLanguage(), defaultLocale.getCountry(),
-			defaultLocale.getVariant());
-
-		Assert.assertEquals(
-			frenchValue, _language.get(LocaleUtil.getDefault(), key, null));
-
-		LocaleUtil.setDefault(
-			_locale.getLanguage(), _locale.getCountry(), _locale.getVariant());
-
-		Locale locale = new Locale("ps", "AF");
-
-		Assert.assertEquals(defaultValue, _language.get(locale, key, null));
-
-		_serviceRegistration1 = _bundleContext.registerService(
-			ResourceBundle.class, new TestResourceBundle(_VALUE_1),
-			HashMapDictionaryBuilder.<String, Object>put(
-				Constants.SERVICE_RANKING, 0
-			).put(
-				"language.id", _language.getLanguageId(locale)
-			).build());
-
-		Assert.assertEquals(
-			_VALUE_1,
-			_language.get(locale, TestResourceBundle.class.getName(), null));
+		Assert.assertEquals(defaultValue, _language.get(_locale, key, null));
 	}
 
 	@Test
@@ -154,6 +127,40 @@ public class LanguageResourcesTest {
 		_serviceRegistration1 = _unregister(_serviceRegistration1);
 
 		_assertValue(null);
+	}
+
+	@Test
+	public void testLanguageResourceUsingSupportedLocale() {
+		String key = "year";
+
+		String frenchValue = _language.get(LocaleUtil.FRANCE, key);
+
+		Locale locale = LocaleUtil.FRANCE;
+
+		Assert.assertEquals(frenchValue, _language.get(locale, key, null));
+	}
+
+	@Test
+	public void testLanguageResourceUsingUnsupportedLocale() {
+		String key = "year";
+
+		String defaultValue = _language.get(new Locale("", ""), key);
+
+		Locale locale = new Locale("ps", "AF");
+
+		Assert.assertEquals(defaultValue, _language.get(locale, key, null));
+
+		_serviceRegistration1 = _bundleContext.registerService(
+			ResourceBundle.class, new TestResourceBundle(_VALUE_1),
+			HashMapDictionaryBuilder.<String, Object>put(
+				Constants.SERVICE_RANKING, 0
+			).put(
+				"language.id", _language.getLanguageId(locale)
+			).build());
+
+		Assert.assertEquals(
+			_VALUE_1,
+			_language.get(locale, TestResourceBundle.class.getName(), null));
 	}
 
 	private void _assertValue(String expectedValue) {
