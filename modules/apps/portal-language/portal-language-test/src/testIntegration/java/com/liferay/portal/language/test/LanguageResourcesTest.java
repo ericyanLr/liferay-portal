@@ -154,32 +154,35 @@ public class LanguageResourcesTest {
 			expectedBaseLanguagePropertiesTranslation,
 			_language.get(locale, key, null));
 
-		_serviceRegistration1 = _bundleContext.registerService(
-			ResourceBundle.class, new TestResourceBundle(_VALUE_1),
-			HashMapDictionaryBuilder.<String, Object>put(
-				Constants.SERVICE_RANKING, 0
-			).put(
-				"language.id", _language.getLanguageId(locale)
-			).build());
+		_serviceRegistration1 = _register(
+			_VALUE_1, 0, _language.getLanguageId(locale));
 
-		Assert.assertEquals(
-			_VALUE_1,
-			_language.get(locale, TestResourceBundle.class.getName(), null));
+		_assertValue(_VALUE_1, locale);
 	}
 
 	private void _assertValue(String expectedValue) {
+		_assertValue(expectedValue, _locale);
+	}
+
+	private void _assertValue(String expectedValue, Locale locale) {
 		Assert.assertEquals(
 			expectedValue,
-			_language.get(_locale, TestResourceBundle.class.getName(), null));
+			_language.get(locale, TestResourceBundle.class.getName(), null));
 	}
 
 	private ServiceRegistration<?> _register(String value, int serviceRanking) {
+		return _register(value, serviceRanking, _languageId);
+	}
+
+	private ServiceRegistration<?> _register(
+		String value, int serviceRanking, String languageId) {
+
 		return _bundleContext.registerService(
 			ResourceBundle.class, new TestResourceBundle(value),
 			HashMapDictionaryBuilder.<String, Object>put(
 				Constants.SERVICE_RANKING, serviceRanking
 			).put(
-				"language.id", _languageId
+				"language.id", languageId
 			).build());
 	}
 
