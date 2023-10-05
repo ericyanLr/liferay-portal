@@ -90,7 +90,6 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
-import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PrefsProps;
@@ -225,7 +224,8 @@ public class EditServerMVCActionCommand
 			_cleanUpOrphanedPortletPreferences();
 		}
 		else if (cmd.startsWith("convertProcess.")) {
-			redirect = _convertProcess(actionRequest, actionResponse, cmd);
+			redirect = _convertProcess(
+				actionRequest, actionResponse, cmd, regularParameterMap);
 		}
 		else if (cmd.equals("dlDeletePreviews")) {
 			DLPreviewableProcessor.deleteFiles();
@@ -267,19 +267,19 @@ public class EditServerMVCActionCommand
 			_runScript(actionRequest, actionResponse, regularParameterMap);
 		}
 		else if (cmd.equals("shutdown")) {
-			_shutdown(actionRequest);
+			_shutdown(actionRequest, regularParameterMap);
 		}
 		else if (cmd.equals("threadDump")) {
 			_threadDump();
 		}
 		else if (cmd.equals("updateExternalServices")) {
-			_updateExternalServices(actionRequest, portletPreferences);
+			_updateExternalServices(portletPreferences, regularParameterMap);
 		}
 		else if (cmd.equals("updateLogLevels")) {
 			_updateLogLevels(_getLogLevels(regularParameterMap));
 		}
 		else if (cmd.equals("updateMail")) {
-			_updateMail(actionRequest, portletPreferences);
+			_updateMail(portletPreferences, regularParameterMap);
 		}
 		else if (cmd.equals("updatePortalProperties")) {
 			_updatePortalProperties(_getPortalProperties(regularParameterMap));
@@ -528,7 +528,7 @@ public class EditServerMVCActionCommand
 
 	private String _convertProcess(
 			ActionRequest actionRequest, ActionResponse actionResponse,
-			String cmd)
+			String cmd, Map<String, List<String>> regularParameterMap)
 		throws Exception {
 
 		String className = StringUtil.replaceFirst(
@@ -554,7 +554,8 @@ public class EditServerMVCActionCommand
 						className + StringPool.PERIOD + parameterPair[0];
 				}
 
-				values[i] = ParamUtil.getString(actionRequest, parameter);
+				values[i] = GetterUtil.getString(
+					_getParameter(regularParameterMap, parameter));
 			}
 
 			convertProcess.setParameterValues(values);
@@ -702,19 +703,25 @@ public class EditServerMVCActionCommand
 		}
 	}
 
-	private void _shutdown(ActionRequest actionRequest) throws Exception {
+	private void _shutdown(
+			ActionRequest actionRequest,
+			Map<String, List<String>> regularParameterMap)
+		throws Exception {
+
 		if (ShutdownUtil.isInProcess()) {
 			ShutdownUtil.cancel();
 		}
 		else {
-			long minutes =
-				ParamUtil.getInteger(actionRequest, "minutes") * Time.MINUTE;
+			String minutesValue = _getParameter(regularParameterMap, "minutes");
+
+			long minutes = GetterUtil.getInteger(minutesValue) * Time.MINUTE;
 
 			if (minutes <= 0) {
 				SessionErrors.add(actionRequest, "shutdownMinutes");
 			}
 			else {
-				String message = ParamUtil.getString(actionRequest, "message");
+				String message = GetterUtil.getString(
+					_getParameter(regularParameterMap, "message"));
 
 				ShutdownUtil.shutdown(minutes, message);
 			}
@@ -737,13 +744,14 @@ public class EditServerMVCActionCommand
 	}
 
 	private void _updateExternalServices(
-			ActionRequest actionRequest, PortletPreferences portletPreferences)
+			PortletPreferences portletPreferences,
+			Map<String, List<String>> regularParameterMap)
 		throws Exception {
 
-		boolean imageMagickEnabled = ParamUtil.getBoolean(
-			actionRequest, "imageMagickEnabled");
-		String imageMagickPath = ParamUtil.getString(
-			actionRequest, "imageMagickPath");
+		boolean imageMagickEnabled = GetterUtil.getBoolean(
+			_getParameter(regularParameterMap, "imageMagickEnabled"));
+		String imageMagickPath = GetterUtil.getString(
+			_getParameter(regularParameterMap, "imageMagickPath"));
 
 		portletPreferences.setValue(
 			PropsKeys.IMAGEMAGICK_ENABLED, String.valueOf(imageMagickEnabled));
@@ -754,7 +762,9 @@ public class EditServerMVCActionCommand
 			String propertyName = PropsKeys.IMAGEMAGICK_RESOURCE_LIMIT + name;
 
 			portletPreferences.setValue(
-				propertyName, ParamUtil.getString(actionRequest, propertyName));
+				propertyName,
+				GetterUtil.getString(
+					_getParameter(regularParameterMap, propertyName)));
 		}
 
 		portletPreferences.store();
@@ -794,27 +804,37 @@ public class EditServerMVCActionCommand
 	}
 
 	private void _updateMail(
-			ActionRequest actionRequest, PortletPreferences portletPreferences)
+			PortletPreferences portletPreferences,
+			Map<String, List<String>> regularParameterMap)
 		throws Exception {
 
-		String advancedProperties = ParamUtil.getString(
-			actionRequest, "advancedProperties");
-		String pop3Host = ParamUtil.getString(actionRequest, "pop3Host");
-		String pop3Password = ParamUtil.getString(
-			actionRequest, "pop3Password");
-		int pop3Port = ParamUtil.getInteger(actionRequest, "pop3Port");
-		boolean pop3Secure = ParamUtil.getBoolean(actionRequest, "pop3Secure");
-		String pop3User = ParamUtil.getString(actionRequest, "pop3User");
-		boolean popServerNotificationsEnabled = ParamUtil.getBoolean(
-			actionRequest, "popServerNotificationsEnabled");
-		String smtpHost = ParamUtil.getString(actionRequest, "smtpHost");
-		String smtpPassword = ParamUtil.getString(
-			actionRequest, "smtpPassword");
-		int smtpPort = ParamUtil.getInteger(actionRequest, "smtpPort");
-		boolean smtpSecure = ParamUtil.getBoolean(actionRequest, "smtpSecure");
-		boolean smtpStartTLSEnable = ParamUtil.getBoolean(
-			actionRequest, "smtpStartTLSEnable");
-		String smtpUser = ParamUtil.getString(actionRequest, "smtpUser");
+		String advancedProperties = GetterUtil.getString(
+			_getParameter(regularParameterMap, "advancedProperties"));
+		String pop3Host = GetterUtil.getString(
+			_getParameter(regularParameterMap, "pop3Host"));
+		String pop3Password = GetterUtil.getString(
+			_getParameter(regularParameterMap, "pop3Password"));
+		int pop3Port = GetterUtil.getInteger(
+			_getParameter(regularParameterMap, "pop3Port"));
+		boolean pop3Secure = GetterUtil.getBoolean(
+			_getParameter(regularParameterMap, "pop3Secure"));
+		String pop3User = GetterUtil.getString(
+			_getParameter(regularParameterMap, "pop3User"));
+		boolean popServerNotificationsEnabled = GetterUtil.getBoolean(
+			_getParameter(
+				regularParameterMap, "popServerNotificationsEnabled"));
+		String smtpHost = GetterUtil.getString(
+			_getParameter(regularParameterMap, "smtpHost"));
+		String smtpPassword = GetterUtil.getString(
+			_getParameter(regularParameterMap, "smtpPassword"));
+		int smtpPort = GetterUtil.getInteger(
+			_getParameter(regularParameterMap, "smtpPort"));
+		boolean smtpSecure = GetterUtil.getBoolean(
+			_getParameter(regularParameterMap, "smtpSecure"));
+		boolean smtpStartTLSEnable = GetterUtil.getBoolean(
+			_getParameter(regularParameterMap, "smtpStartTLSEnable"));
+		String smtpUser = GetterUtil.getString(
+			_getParameter(regularParameterMap, "smtpUser"));
 
 		String storeProtocol = Account.PROTOCOL_POP;
 
