@@ -263,7 +263,7 @@ public class EditServerMVCActionCommand
 			_gc();
 		}
 		else if (cmd.equals("runScript")) {
-			_runScript(actionRequest, actionResponse);
+			_runScript(actionRequest, actionResponse, regularParameterMap);
 		}
 		else if (cmd.equals("shutdown")) {
 			_shutdown(actionRequest);
@@ -616,12 +616,16 @@ public class EditServerMVCActionCommand
 	}
 
 	private void _runScript(
-			ActionRequest actionRequest, ActionResponse actionResponse)
+			ActionRequest actionRequest, ActionResponse actionResponse,
+			Map<String, List<String>> regularParameterMap)
 		throws Exception {
 
-		String language = ParamUtil.getString(actionRequest, "language");
-		String output = ParamUtil.getString(actionRequest, "output");
-		String script = ParamUtil.getString(actionRequest, "script");
+		String language = GetterUtil.getString(
+			_getParameter(regularParameterMap, "language"));
+		String output = GetterUtil.getString(
+			_getParameter(regularParameterMap, "output"));
+		String script = GetterUtil.getString(
+			_getParameter(regularParameterMap, "script"));
 
 		PortletConfig portletConfig = getPortletConfig(actionRequest);
 
