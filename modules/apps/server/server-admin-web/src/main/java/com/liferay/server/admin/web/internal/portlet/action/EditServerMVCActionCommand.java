@@ -113,7 +113,6 @@ import com.liferay.server.admin.web.internal.scripting.ServerScripting;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -283,7 +282,7 @@ public class EditServerMVCActionCommand
 			_updateMail(actionRequest, portletPreferences);
 		}
 		else if (cmd.equals("updatePortalProperties")) {
-			_updatePortalProperties(actionRequest);
+			_updatePortalProperties(_getPortalProperties(regularParameterMap));
 		}
 		else if (cmd.equals("verifyMembershipPolicies")) {
 			_verifyMembershipPolicies();
@@ -635,6 +634,23 @@ public class EditServerMVCActionCommand
 		return values.get(0);
 	}
 
+	private Map<String, String> _getPortalProperties(
+		Map<String, List<String>> regularParameterMap) {
+
+		Map<String, String> portalProperties = new HashMap<>();
+
+		for (String name : regularParameterMap.keySet()) {
+			if (name.startsWith("portalProperty")) {
+				portalProperties.put(
+					name.substring(14),
+					GetterUtil.getString(
+						_getParameter(regularParameterMap, name), "false"));
+			}
+		}
+
+		return portalProperties;
+	}
+
 	private void _runScript(
 			ActionRequest actionRequest, ActionResponse actionResponse,
 			Map<String, List<String>> regularParameterMap)
@@ -874,24 +890,6 @@ public class EditServerMVCActionCommand
 		portletPreferences.store();
 
 		_mailService.clearSession();
-	}
-
-	private void _updatePortalProperties(ActionRequest actionRequest) {
-		Enumeration<String> enumeration = actionRequest.getParameterNames();
-
-		Map<String, String> portalProperties = new HashMap<>();
-
-		while (enumeration.hasMoreElements()) {
-			String name = enumeration.nextElement();
-
-			if (name.startsWith("portalProperty")) {
-				portalProperties.put(
-					name.substring(14),
-					ParamUtil.getString(actionRequest, name, "false"));
-			}
-		}
-
-		_updatePortalProperties(portalProperties);
 	}
 
 	private void _updatePortalProperties(Map<String, String> portalProperties) {
