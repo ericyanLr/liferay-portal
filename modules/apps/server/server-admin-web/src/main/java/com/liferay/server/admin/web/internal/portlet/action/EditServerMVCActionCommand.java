@@ -199,8 +199,10 @@ public class EditServerMVCActionCommand
 		if (cmd.equals("addLogLevel")) {
 			_updateLogLevels(
 				Collections.singletonMap(
-					ParamUtil.getString(actionRequest, "loggerName"),
-					ParamUtil.getString(actionRequest, "priority")));
+					GetterUtil.getString(
+						_getParameter(regularParameterMap, "loggerName")),
+					GetterUtil.getString(
+						_getParameter(regularParameterMap, "priority"))));
 		}
 		else if (cmd.equals("cacheDb")) {
 			_cacheDb();
@@ -275,7 +277,7 @@ public class EditServerMVCActionCommand
 			_updateExternalServices(actionRequest, portletPreferences);
 		}
 		else if (cmd.equals("updateLogLevels")) {
-			_updateLogLevels(actionRequest);
+			_updateLogLevels(_getLogLevels(regularParameterMap));
 		}
 		else if (cmd.equals("updateMail")) {
 			_updateMail(actionRequest, portletPreferences);
@@ -603,6 +605,24 @@ public class EditServerMVCActionCommand
 		runtime.gc();
 	}
 
+	private Map<String, String> _getLogLevels(
+		Map<String, List<String>> regularParameterMap) {
+
+		Map<String, String> logLevels = new HashMap<>();
+
+		for (String name : regularParameterMap.keySet()) {
+			if (name.startsWith("logLevel")) {
+				logLevels.put(
+					name.substring(8),
+					GetterUtil.getString(
+						_getParameter(regularParameterMap, name),
+						Level.INFO.toString()));
+			}
+		}
+
+		return logLevels;
+	}
+
 	private String _getParameter(
 		Map<String, List<String>> regularParameterMap, String param) {
 
@@ -725,25 +745,6 @@ public class EditServerMVCActionCommand
 
 		_ghostscript.reset();
 		_imageMagick.reset();
-	}
-
-	private void _updateLogLevels(ActionRequest actionRequest) {
-		Enumeration<String> enumeration = actionRequest.getParameterNames();
-
-		Map<String, String> logLevels = new HashMap<>();
-
-		while (enumeration.hasMoreElements()) {
-			String name = enumeration.nextElement();
-
-			if (name.startsWith("logLevel")) {
-				logLevels.put(
-					name.substring(8),
-					ParamUtil.getString(
-						actionRequest, name, Level.INFO.toString()));
-			}
-		}
-
-		_updateLogLevels(logLevels);
 	}
 
 	private void _updateLogLevels(Map<String, String> logLevels) {
