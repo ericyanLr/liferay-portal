@@ -11,7 +11,7 @@
 
 <portlet:renderURL var="redirectURL" />
 
-<aui:form action="<%= actionURL %>" cssClass="sheet-lg" method="post" name="fm">
+<aui:form action="<%= actionURL %>" cssClass="sheet-lg" enctype="multipart/form-data" method="post" name="fm">
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="updateMail" />
 	<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 

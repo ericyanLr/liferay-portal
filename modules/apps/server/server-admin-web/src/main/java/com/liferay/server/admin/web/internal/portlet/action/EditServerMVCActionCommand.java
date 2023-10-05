@@ -56,6 +56,7 @@ import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServiceUtil;
 import com.liferay.portal.kernel.portlet.LiferayActionResponse;
+import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
@@ -82,7 +83,9 @@ import com.liferay.portal.kernel.servlet.DirectServletRegistryUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.MethodHandler;
@@ -150,10 +153,25 @@ public class EditServerMVCActionCommand
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
+		Map<String, List<String>> regularParameterMap = new HashMap<>();
+
+		LiferayPortletRequest liferayPortletRequest =
+			_portal.getLiferayPortletRequest(actionRequest);
+
+		if (_portal.isMultipartRequest(
+				liferayPortletRequest.getHttpServletRequest())) {
+
+			UploadPortletRequest uploadPortletRequest =
+				_portal.getUploadPortletRequest(liferayPortletRequest);
+
+			regularParameterMap = uploadPortletRequest.getRegularParameterMap();
+		}
+
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
+		String cmd = GetterUtil.getString(
+			_getParameter(regularParameterMap, Constants.CMD));
 
 		PermissionChecker permissionChecker =
 			themeDisplay.getPermissionChecker();
@@ -172,9 +190,11 @@ public class EditServerMVCActionCommand
 		}
 
 		PortletPreferences portletPreferences = _prefsProps.getPreferences(
-			ParamUtil.getLong(actionRequest, "preferencesCompanyId"));
+			GetterUtil.getLong(
+				_getParameter(regularParameterMap, "preferencesCompanyId")));
 
-		String redirect = ParamUtil.getString(actionRequest, "redirect");
+		String redirect = GetterUtil.getString(
+			_getParameter(regularParameterMap, "redirect"));
 
 		if (cmd.equals("addLogLevel")) {
 			_updateLogLevels(
@@ -581,6 +601,18 @@ public class EditServerMVCActionCommand
 		Runtime runtime = Runtime.getRuntime();
 
 		runtime.gc();
+	}
+
+	private String _getParameter(
+		Map<String, List<String>> regularParameterMap, String param) {
+
+		List<String> values = regularParameterMap.get(param);
+
+		if (ListUtil.isEmpty(values)) {
+			return StringPool.BLANK;
+		}
+
+		return values.get(0);
 	}
 
 	private void _runScript(
