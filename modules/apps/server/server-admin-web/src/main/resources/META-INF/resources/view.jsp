@@ -32,6 +32,7 @@ int delta = ParamUtil.getInteger(request, SearchContainer.DEFAULT_DELTA_PARAM);
 			tabs2
 		).buildString()
 	%>'
+	enctype="multipart/form-data"
 	method="post"
 	name="fm"
 >
