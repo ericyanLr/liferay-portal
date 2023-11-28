@@ -417,6 +417,9 @@ public class HttpImpl implements Http {
 
 			requestConfigBuilder =
 				requestConfigBuilder.setConnectionRequestTimeout(timeout);
+
+			requestConfigBuilder =
+				requestConfigBuilder.setSocketTimeout(timeout);
 		}
 
 		return requestConfigBuilder;
@@ -1029,6 +1032,8 @@ public class HttpImpl implements Http {
 		requestConfigBuilder = requestConfigBuilder.setConnectTimeout(_TIMEOUT);
 		requestConfigBuilder = requestConfigBuilder.setConnectionRequestTimeout(
 			_TIMEOUT);
+		requestConfigBuilder = requestConfigBuilder.setSocketTimeout(
+			_TIMEOUT);
 
 		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
 
@@ -1056,6 +1061,8 @@ public class HttpImpl implements Http {
 
 		requestConfigBuilder = requestConfigBuilder.setConnectTimeout(_TIMEOUT);
 		requestConfigBuilder = requestConfigBuilder.setConnectionRequestTimeout(
+			_TIMEOUT);
+		requestConfigBuilder = requestConfigBuilder.setSocketTimeout(
 			_TIMEOUT);
 
 		requestConfigBuilder.setProxy(new HttpHost(_PROXY_HOST, _PROXY_PORT));
