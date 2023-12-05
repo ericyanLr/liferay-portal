@@ -312,7 +312,11 @@ public final class CachedIntrospectionResults {
 					propertyDescriptors.put(propertyName, propertyDescriptor);
 				}
 				else {
-					propertyDescriptor.setWriteMethod(method);
+					try {
+						propertyDescriptor.setWriteMethod(method);
+					}
+					catch (IntrospectionException introspectionException) {
+					}
 				}
 			}
 		}
