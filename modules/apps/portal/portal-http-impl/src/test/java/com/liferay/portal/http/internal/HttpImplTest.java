@@ -79,6 +79,32 @@ public class HttpImplTest {
 	}
 
 	@Test
+	public void testHttpKeepAliveWithDefaultTimeout() throws Exception {
+		int keepAliveDefaultTimeout = ReflectionTestUtil.getFieldValue(
+			_httpImpl, "_KEEPALIVE_DEFAULT_TIMEOUT");
+
+		try {
+			_setHttpImplKeepAliveDefaultTimeout(-1);
+			_testHttpKeepAlive(true, Long.MAX_VALUE, -1);
+			_testHttpKeepAlive(true, Long.MAX_VALUE, 0);
+			_testHttpKeepAlive(true, 300000, 300);
+
+			_setHttpImplKeepAliveDefaultTimeout(0);
+			_testHttpKeepAlive(true, Long.MAX_VALUE, -1);
+			_testHttpKeepAlive(true, Long.MAX_VALUE, 0);
+			_testHttpKeepAlive(true, 300000, 300);
+
+			_setHttpImplKeepAliveDefaultTimeout(600);
+			_testHttpKeepAlive(true, 600000, -1);
+			_testHttpKeepAlive(true, 600000, 0);
+			_testHttpKeepAlive(true, 300000, 300);
+		}
+		finally {
+			_setHttpImplKeepAliveDefaultTimeout(keepAliveDefaultTimeout);
+		}
+	}
+
+	@Test
 	public void testHttpKeepAliveWithRequestClose() throws Exception {
 		HttpRequest httpRequest = new BasicHttpRequest("GET", "/");
 
@@ -193,6 +219,13 @@ public class HttpImplTest {
 
 		ReflectionTestUtil.setFieldValue(
 			poolingHttpClientConnectionManagerDCLSingleton, "_singleton", null);
+	}
+
+	private void _setHttpImplKeepAliveDefaultTimeout(
+		int keepAliveDefaultTimeout) {
+
+		ReflectionTestUtil.setFieldValue(
+			_httpImpl, "_KEEPALIVE_DEFAULT_TIMEOUT", keepAliveDefaultTimeout);
 	}
 
 	private void _testHttpKeepAlive(
