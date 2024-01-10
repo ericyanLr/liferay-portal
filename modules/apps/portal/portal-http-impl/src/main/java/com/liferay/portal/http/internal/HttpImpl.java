@@ -72,6 +72,7 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -372,6 +373,21 @@ public class HttpImpl implements Http {
 		}
 		else {
 			_proxyCredentials = null;
+		}
+
+		PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
+			_poolingHttpClientConnectionManagerDCLSingleton.getSingleton(
+				HttpImpl::_createPoolingHttpClientConnectionManager);
+
+		if (httpConfiguration.tcpKeepAliveEnabled()) {
+			poolingHttpClientConnectionManager.setDefaultSocketConfig(
+				SocketConfig.custom(
+				).setSoKeepAlive(
+					true
+				).build());
+		}
+		else {
+			poolingHttpClientConnectionManager.setDefaultSocketConfig(null);
 		}
 
 		_closeableHttpClientDCLSingleton.destroy(null);
