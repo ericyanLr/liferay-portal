@@ -31,6 +31,9 @@ public interface CaptchaConfiguration {
 	)
 	public boolean createAccountCaptchaEnabled();
 
+	@Meta.AD(deflt = "true", name = "script-captcha-enabled", required = false)
+	public boolean scriptCaptchaEnabled();
+
 	@Meta.AD(
 		deflt = "true", name = "send-password-captcha-enabled", required = false
 	)

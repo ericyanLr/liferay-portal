@@ -5,6 +5,8 @@
 
 package com.liferay.server.admin.web.internal.portlet.action;
 
+import com.liferay.captcha.configuration.CaptchaConfiguration;
+import com.liferay.captcha.util.CaptchaUtil;
 import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
 import com.liferay.document.library.kernel.document.conversion.DocumentConversion;
 import com.liferay.document.library.kernel.model.DLProcessorConstants;
@@ -20,12 +22,14 @@ import com.liferay.mail.kernel.model.Account;
 import com.liferay.mail.kernel.service.MailService;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.convert.ConvertException;
 import com.liferay.portal.convert.ConvertProcess;
 import com.liferay.portal.convert.ConvertProcessUtil;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.cache.SingleVMPool;
+import com.liferay.portal.kernel.captcha.CaptchaConfigurationException;
 import com.liferay.portal.kernel.cluster.ClusterExecutor;
 import com.liferay.portal.kernel.cluster.ClusterMasterExecutor;
 import com.liferay.portal.kernel.cluster.ClusterRequest;
@@ -253,6 +257,13 @@ public class EditServerMVCActionCommand
 			_gc();
 		}
 		else if (cmd.equals("runScript")) {
+			CaptchaConfiguration captchaConfiguration =
+				getCaptchaConfiguration();
+
+			if (captchaConfiguration.scriptCaptchaEnabled()) {
+				CaptchaUtil.check(actionRequest);
+			}
+
 			_runScript(actionRequest, actionResponse);
 		}
 		else if (cmd.equals("shutdown")) {
@@ -283,6 +294,18 @@ public class EditServerMVCActionCommand
 	@Override
 	public String getOSGiServiceIdentifier() {
 		return EditServerMVCActionCommand.class.getName();
+	}
+
+	protected CaptchaConfiguration getCaptchaConfiguration()
+		throws CaptchaConfigurationException {
+
+		try {
+			return _configurationProvider.getSystemConfiguration(
+				CaptchaConfiguration.class);
+		}
+		catch (Exception exception) {
+			throw new CaptchaConfigurationException(exception);
+		}
 	}
 
 	private static void _resetLogLevels(
@@ -944,6 +967,9 @@ public class EditServerMVCActionCommand
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference(target = "(type=" + DLProcessorConstants.PDF_PROCESSOR + ")")
 	private DLProcessor _dlProcessor;
