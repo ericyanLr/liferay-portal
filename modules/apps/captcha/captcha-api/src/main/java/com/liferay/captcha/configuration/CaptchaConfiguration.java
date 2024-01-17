@@ -26,6 +26,13 @@ public interface CaptchaConfiguration {
 	public int maxChallenges();
 
 	@Meta.AD(
+		deflt = "",
+		description = "max-challenges-blacklisted-portlet-names-help",
+		name = "max-challenges-blacklisted-portlet-names", required = false
+	)
+	public String[] maxChallengesBlacklistedPortletNames();
+
+	@Meta.AD(
 		deflt = "true", name = "create-account-captcha-enabled",
 		required = false
 	)
