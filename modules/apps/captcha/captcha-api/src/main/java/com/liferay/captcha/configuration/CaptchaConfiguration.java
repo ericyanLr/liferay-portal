@@ -55,8 +55,16 @@ public interface CaptchaConfiguration {
 	)
 	public boolean messageBoardsEditMessageCaptchaEnabled();
 
+	@Meta.AD(deflt = "true", name = "mail-captcha-enabled", required = false)
+	public boolean mailCaptchaEnabled();
+
 	@Meta.AD(deflt = "true", name = "script-captcha-enabled", required = false)
 	public boolean scriptCaptchaEnabled();
+
+	@Meta.AD(
+		deflt = "true", name = "shutdown-captcha-enabled", required = false
+	)
+	public boolean shutdownCaptchaEnabled();
 
 	@Meta.AD(
 		deflt = "com.liferay.captcha.simplecaptcha.SimpleCaptchaImpl",

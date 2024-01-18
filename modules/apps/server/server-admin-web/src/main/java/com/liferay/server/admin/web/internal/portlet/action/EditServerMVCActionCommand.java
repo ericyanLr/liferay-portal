@@ -263,6 +263,13 @@ public class EditServerMVCActionCommand extends BaseMVCActionCommand {
 			_runScript(actionRequest, actionResponse);
 		}
 		else if (cmd.equals("shutdown")) {
+			CaptchaConfiguration captchaConfiguration =
+				_getCaptchaConfiguration();
+
+			if (captchaConfiguration.shutdownCaptchaEnabled()) {
+				CaptchaUtil.check(actionRequest);
+			}
+
 			_shutdown(actionRequest);
 		}
 		else if (cmd.equals("threadDump")) {
@@ -275,6 +282,13 @@ public class EditServerMVCActionCommand extends BaseMVCActionCommand {
 			_updateLogLevels(actionRequest);
 		}
 		else if (cmd.equals("updateMail")) {
+			CaptchaConfiguration captchaConfiguration =
+				_getCaptchaConfiguration();
+
+			if (captchaConfiguration.mailCaptchaEnabled()) {
+				CaptchaUtil.check(actionRequest);
+			}
+
 			_updateMail(actionRequest, portletPreferences);
 		}
 		else if (cmd.equals("updatePortalProperties")) {

@@ -7,10 +7,17 @@
 
 <%@ include file="/init.jsp" %>
 
+<liferay-ui:error exception="<%= CaptchaConfigurationException.class %>" message="a-captcha-error-occurred-please-contact-an-administrator" />
+<liferay-ui:error exception="<%= CaptchaException.class %>" message="captcha-verification-failed" />
+<liferay-ui:error exception="<%= CaptchaTextException.class %>" message="text-verification-failed" />
 <liferay-ui:error key="shutdownMinutes" message="please-enter-the-number-of-minutes" />
 
 <c:choose>
 	<c:when test="<%= ShutdownUtil.isInProcess() %>">
+		<c:if test="<%= captchaConfiguration.shutdownCaptchaEnabled() %>">
+			<liferay-captcha:captcha />
+		</c:if>
+
 		<aui:button cssClass="save-server-button" data-cmd="shutdown" value="cancel-shutdown" />
 	</c:when>
 	<c:otherwise>
@@ -22,6 +29,10 @@
 				</aui:input>
 
 				<aui:input cssClass="lfr-textarea-container" label="custom-message" name="message" type="textarea" />
+
+				<c:if test="<%= captchaConfiguration.shutdownCaptchaEnabled() %>">
+					<liferay-captcha:captcha />
+				</c:if>
 
 				<aui:button cssClass="save-server-button" data-cmd="shutdown" primary="<%= true %>" value="shutdown" />
 			</div>
