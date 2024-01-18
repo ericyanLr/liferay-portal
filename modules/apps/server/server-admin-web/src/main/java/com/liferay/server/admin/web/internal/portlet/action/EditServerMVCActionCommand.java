@@ -5,6 +5,8 @@
 
 package com.liferay.server.admin.web.internal.portlet.action;
 
+import com.liferay.captcha.configuration.CaptchaConfiguration;
+import com.liferay.captcha.util.CaptchaUtil;
 import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
 import com.liferay.document.library.kernel.document.conversion.DocumentConversion;
 import com.liferay.document.library.kernel.model.DLProcessorConstants;
@@ -20,6 +22,7 @@ import com.liferay.mail.kernel.model.Account;
 import com.liferay.mail.kernel.service.MailService;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.convert.ConvertException;
 import com.liferay.portal.convert.ConvertProcess;
 import com.liferay.portal.convert.ConvertProcessUtil;
@@ -250,6 +253,13 @@ public class EditServerMVCActionCommand extends BaseMVCActionCommand {
 			_gc();
 		}
 		else if (cmd.equals("runScript")) {
+			CaptchaConfiguration captchaConfiguration =
+				_getCaptchaConfiguration();
+
+			if (captchaConfiguration.scriptCaptchaEnabled()) {
+				CaptchaUtil.check(actionRequest);
+			}
+
 			_runScript(actionRequest, actionResponse);
 		}
 		else if (cmd.equals("shutdown")) {
@@ -625,6 +635,11 @@ public class EditServerMVCActionCommand extends BaseMVCActionCommand {
 		runtime.gc();
 	}
 
+	private CaptchaConfiguration _getCaptchaConfiguration() throws Exception {
+		return _configurationProvider.getSystemConfiguration(
+			CaptchaConfiguration.class);
+	}
+
 	private void _runScript(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
@@ -912,6 +927,9 @@ public class EditServerMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference(target = "(type=" + DLProcessorConstants.PDF_PROCESSOR + ")")
 	private DLProcessor _dlProcessor;

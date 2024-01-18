@@ -26,7 +26,7 @@ public interface CaptchaConfiguration {
 	public int maxChallenges();
 
 	@Meta.AD(
-		deflt = "",
+		deflt = "com_liferay_server_admin_web_portlet_ServerAdminPortlet",
 		description = "max-challenges-blacklisted-portlet-names-help",
 		name = "max-challenges-blacklisted-portlet-names", required = false
 	)
@@ -54,6 +54,9 @@ public interface CaptchaConfiguration {
 		required = false
 	)
 	public boolean messageBoardsEditMessageCaptchaEnabled();
+
+	@Meta.AD(deflt = "true", name = "script-captcha-enabled", required = false)
+	public boolean scriptCaptchaEnabled();
 
 	@Meta.AD(
 		deflt = "com.liferay.captcha.simplecaptcha.SimpleCaptchaImpl",
