@@ -107,17 +107,15 @@ public class SimpleCaptchaImpl implements Captcha {
 					return true;
 				}
 			}
+
+			if (isExceededMaxChallenges(httpServletRequest) ||
+				(_captchaConfiguration.maxChallenges() < 0)) {
+
+				return false;
+			}
 		}
 
-		if (isExceededMaxChallenges(httpServletRequest)) {
-			return false;
-		}
-
-		if (_captchaConfiguration.maxChallenges() >= 0) {
-			return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	@Override
