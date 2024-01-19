@@ -4236,16 +4236,13 @@ public class PortalImpl implements Portal {
 		throws PortalException {
 
 		Layout layout = (Layout)httpServletRequest.getAttribute(WebKeys.LAYOUT);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		long scopeGroupId = 0;
 
 		if (layout != null) {
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)httpServletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
-
-			scopeGroupId = _getScopeGroupId(themeDisplay, layout, portletId);
-
 			Group group = layout.getGroup();
 
 			long doAsGroupId = ParamUtil.getLong(
@@ -4310,6 +4307,9 @@ public class PortalImpl implements Portal {
 				if (liveGroup.isStaged() &&
 					!liveGroup.isStagedPortlet(portletId)) {
 
+					scopeGroupId = _getScopeGroupId(
+						themeDisplay, layout, portletId);
+
 					Group scopeGroup = GroupLocalServiceUtil.fetchGroup(
 						scopeGroupId);
 
@@ -4332,6 +4332,10 @@ public class PortalImpl implements Portal {
 					}
 				}
 			}
+		}
+
+		if (scopeGroupId <= 0) {
+			scopeGroupId = _getScopeGroupId(themeDisplay, layout, portletId);
 		}
 
 		return scopeGroupId;
