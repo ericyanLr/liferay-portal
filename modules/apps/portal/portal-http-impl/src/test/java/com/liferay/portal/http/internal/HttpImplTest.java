@@ -5,6 +5,7 @@
 
 package com.liferay.portal.http.internal;
 
+import com.liferay.petra.concurrent.DCLSingleton;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -15,6 +16,8 @@ import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portal.util.PortalImpl;
 
 import java.net.URI;
+
+import java.security.Principal;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +30,14 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.NTCredentials;
+import org.apache.http.auth.NTUserPrincipal;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.routing.HttpRoute;
@@ -49,6 +60,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 /**
  * @author Miguel Pastor
@@ -178,6 +192,31 @@ public class HttpImplTest {
 	}
 
 	@Test
+	public void testProxyAuthentication() throws Exception {
+		_setProxy("dummy-proxy-host", 3128);
+		_testProxyAuthentication(false, null, null, null, null, null);
+
+		_setProxyAuthentication("username-password", null, null, null, null);
+		_testProxyAuthentication(false, null, null, null, null, null);
+
+		_setProxyAuthentication(
+			"username-password", null, null, "liferay", "test");
+		_testProxyAuthentication(
+			true, UsernamePasswordCredentials.class.getName(), "liferay",
+			"test", null, null);
+
+		_setProxyAuthentication("ntlm", null, null, "liferay", "test");
+		_testProxyAuthentication(
+			true, NTCredentials.class.getName(), "liferay", "test", null, null);
+
+		_setProxyAuthentication(
+			"ntlm", "dummy-ntlm-domain", "dummy-ntlm-host", "liferay", "test");
+		_testProxyAuthentication(
+			true, NTCredentials.class.getName(), "liferay", "test",
+			"DUMMY-NTLM-DOMAIN", "DUMMY-NTLM-HOST");
+	}
+
+	@Test
 	public void testTCPKeepAlive() {
 		_setTCPKeepAliveEnabled(false);
 		_testTCPKeepAlive(false);
@@ -225,9 +264,69 @@ public class HttpImplTest {
 			"maxTotalConnections", maxTotalConnections);
 	}
 
+	private void _setProxy(String proxyHost, int proxyPort) {
+		ReflectionTestUtil.setFieldValue(_httpImpl, "_PROXY_HOST", proxyHost);
+		ReflectionTestUtil.setFieldValue(_httpImpl, "_PROXY_PORT", proxyPort);
+	}
+
+	private void _setProxyAuthentication(
+		String proxyAuthenticationType, String proxyNtlmDomain,
+		String proxyNtlmHost, String proxyUserName, String proxyPassword) {
+
+		_httpConfigurationProperties.put(
+			"proxyAuthenticationType", proxyAuthenticationType);
+		_httpConfigurationProperties.put("proxyNtlmDomain", proxyNtlmDomain);
+		_httpConfigurationProperties.put("proxyNtlmHost", proxyNtlmHost);
+		_httpConfigurationProperties.put("proxyPassword", proxyPassword);
+		_httpConfigurationProperties.put("proxyUsername", proxyUserName);
+	}
+
 	private void _setTCPKeepAliveEnabled(boolean tcpKeepAliveEnabled) {
 		_httpConfigurationProperties.put(
 			"tcpKeepAliveEnabled", tcpKeepAliveEnabled);
+	}
+
+	private void _setUpAndUseMockCloseableHttpClient() throws Exception {
+		if (_mockCloseableHttpClient == null) {
+			_mockCloseableHttpClient = Mockito.mock(CloseableHttpClient.class);
+
+			CloseableHttpResponse closeableHttpResponse = Mockito.mock(
+				CloseableHttpResponse.class);
+
+			Mockito.when(
+				closeableHttpResponse.getStatusLine()
+			).thenReturn(
+				_httpResponse.getStatusLine()
+			);
+
+			Mockito.when(
+				closeableHttpResponse.getAllHeaders()
+			).thenReturn(
+				new Header[0]
+			);
+
+			Mockito.when(
+				_mockCloseableHttpClient.execute(
+					Mockito.any(HttpHost.class), Mockito.any(HttpRequest.class),
+					Mockito.any(HttpClientContext.class))
+			).thenReturn(
+				closeableHttpResponse
+			);
+		}
+
+		DCLSingleton<CloseableHttpClient> closeableHttpClientDCLSingleton =
+			ReflectionTestUtil.getFieldValue(
+				_httpImpl, "_closeableHttpClientDCLSingleton");
+
+		closeableHttpClientDCLSingleton.getSingleton(
+			() -> _mockCloseableHttpClient);
+
+		DCLSingleton<CloseableHttpClient> proxyCloseableHttpClientDCLSingleton =
+			ReflectionTestUtil.getFieldValue(
+				_httpImpl, "_proxyCloseableHttpClientDCLSingleton");
+
+		proxyCloseableHttpClientDCLSingleton.getSingleton(
+			() -> _mockCloseableHttpClient);
 	}
 
 	private void _testHttpKeepAlive(
@@ -330,6 +429,95 @@ public class HttpImplTest {
 			poolingHttpClientConnectionManager.getMaxTotal());
 	}
 
+	private void _testProxyAuthentication(
+			boolean expectedCredentialsProvider,
+			String expectedCredentialsClassName,
+			String expectedCredentialsUserName,
+			String expectedCredentialsPassword, String expectedProxyNtlmDomain,
+			String expectedProxyNtlmHost)
+		throws Exception {
+
+		_httpImpl.activate(_httpConfigurationProperties);
+		_setUpAndUseMockCloseableHttpClient();
+
+		_httpImpl.URLtoString(_httpHost.toURI());
+
+		ArgumentCaptor<HttpClientContext> argumentCaptor =
+			ArgumentCaptor.forClass(HttpClientContext.class);
+
+		Mockito.verify(
+			_mockCloseableHttpClient
+		).execute(
+			Mockito.any(HttpHost.class), Mockito.any(HttpRequest.class),
+			argumentCaptor.capture()
+		);
+
+		Mockito.clearInvocations(_mockCloseableHttpClient);
+
+		HttpClientContext httpClientContext = argumentCaptor.getValue();
+
+		CredentialsProvider credentialsProvider =
+			httpClientContext.getCredentialsProvider();
+
+		if (credentialsProvider == null) {
+			Assert.assertFalse(expectedCredentialsProvider);
+			Assert.assertNull(expectedCredentialsClassName);
+			Assert.assertNull(expectedCredentialsUserName);
+			Assert.assertNull(expectedCredentialsPassword);
+
+			return;
+		}
+
+		Credentials credentials = credentialsProvider.getCredentials(
+			new AuthScope(
+				ReflectionTestUtil.getFieldValue(_httpImpl, "_PROXY_HOST"),
+				ReflectionTestUtil.getFieldValue(_httpImpl, "_PROXY_PORT")));
+
+		if (credentials != null) {
+			Class<?> credentialsClass = credentials.getClass();
+
+			String actualCredentialsClassName = credentialsClass.getName();
+
+			Assert.assertEquals(
+				expectedCredentialsClassName, actualCredentialsClassName);
+
+			Assert.assertEquals(
+				expectedCredentialsPassword, credentials.getPassword());
+
+			Assert.assertTrue(
+				"Failed to assert credentials class: " +
+					actualCredentialsClassName,
+				credentials instanceof NTCredentials ||
+				credentials instanceof UsernamePasswordCredentials);
+
+			if (credentials instanceof NTCredentials) {
+				NTCredentials ntCredentials = (NTCredentials)credentials;
+
+				Assert.assertEquals(
+					expectedProxyNtlmDomain, ntCredentials.getDomain());
+				Assert.assertEquals(
+					expectedProxyNtlmHost, ntCredentials.getWorkstation());
+
+				NTUserPrincipal principal =
+					(NTUserPrincipal)ntCredentials.getUserPrincipal();
+
+				Assert.assertEquals(
+					expectedCredentialsUserName, principal.getUsername());
+			}
+			else if (credentials instanceof UsernamePasswordCredentials) {
+				Principal principal = credentials.getUserPrincipal();
+
+				Assert.assertEquals(
+					expectedCredentialsUserName, principal.getName());
+			}
+		}
+		else {
+			Assert.assertNull(expectedCredentialsClassName);
+			Assert.assertNull(expectedCredentialsUserName);
+			Assert.assertNull(expectedCredentialsPassword);
+		}
+	}
+
 	private void _testTCPKeepAlive(boolean expectedEnabledTCPKeepAlive) {
 		_httpImpl.activate(_httpConfigurationProperties);
 
@@ -354,5 +542,6 @@ public class HttpImplTest {
 	private final HttpImpl _httpImpl = new HttpImpl();
 	private final HttpResponse _httpResponse = new BasicHttpResponse(
 		new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, "OK"));
+	private CloseableHttpClient _mockCloseableHttpClient;
 
 }
