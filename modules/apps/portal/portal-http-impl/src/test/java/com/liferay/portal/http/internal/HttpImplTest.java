@@ -170,6 +170,14 @@ public class HttpImplTest {
 	}
 
 	@Test
+	public void testMaxTotalConnections() {
+		_testMaxTotalConnections(20);
+
+		_setMaxTotalConnections(1);
+		_testMaxTotalConnections(1);
+	}
+
+	@Test
 	public void testTCPKeepAlive() {
 		_setTCPKeepAliveEnabled(false);
 		_testTCPKeepAlive(false);
@@ -210,6 +218,11 @@ public class HttpImplTest {
 			"defaultMaxConnectionsPerHost", defaultMaxConnectionsPerHost);
 		_httpConfigurationProperties.put(
 			"maxConnectionsPerHost", maxConnectionsPerHost);
+	}
+
+	private void _setMaxTotalConnections(int maxTotalConnections) {
+		_httpConfigurationProperties.put(
+			"maxTotalConnections", maxTotalConnections);
 	}
 
 	private void _setTCPKeepAliveEnabled(boolean tcpKeepAliveEnabled) {
@@ -300,6 +313,21 @@ public class HttpImplTest {
 			expectedMaxConnections,
 			poolingHttpClientConnectionManager.getMaxPerRoute(
 				new HttpRoute(new HttpHost(uri.getHost(), uri.getPort()))));
+	}
+
+	private void _testMaxTotalConnections(int expectedMaxTotalConnections) {
+		_httpImpl.activate(_httpConfigurationProperties);
+
+		PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
+			ReflectionTestUtil.getFieldValue(
+				(CloseableHttpClient)ReflectionTestUtil.invoke(
+					_httpImpl, "getCloseableHttpClient",
+					new Class<?>[] {HttpHost.class}, new Object[] {null}),
+				"connManager");
+
+		Assert.assertEquals(
+			expectedMaxTotalConnections,
+			poolingHttpClientConnectionManager.getMaxTotal());
 	}
 
 	private void _testTCPKeepAlive(boolean expectedEnabledTCPKeepAlive) {
