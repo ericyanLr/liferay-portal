@@ -49,6 +49,18 @@ public interface HttpConfiguration {
 	public String proxyAuthenticationType();
 
 	@Meta.AD(
+		description = "proxy-ntlm-domain-help", name = "proxy-ntlm-domain",
+		required = false
+	)
+	public String proxyNtlmDomain();
+
+	@Meta.AD(
+		description = "proxy-ntlm-host-help", name = "proxy-ntlm-host",
+		required = false
+	)
+	public String proxyNtlmHost();
+
+	@Meta.AD(
 		description = "proxy-username-help", name = "proxy-username",
 		required = false
 	)

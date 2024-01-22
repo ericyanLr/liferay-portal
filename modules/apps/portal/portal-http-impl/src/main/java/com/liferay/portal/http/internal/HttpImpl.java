@@ -426,8 +426,9 @@ public class HttpImpl implements Http {
 				 !Validator.isBlank(_proxyUserName)) {
 
 			_proxyCredentials = new NTCredentials(
-				_proxyUserName, proxyPassword, _PROXY_NTLM_HOST,
-				_PROXY_NTLM_DOMAIN);
+				_proxyUserName, proxyPassword,
+				httpConfiguration.proxyNtlmHost(),
+				httpConfiguration.proxyNtlmDomain());
 
 			_proxyAuthPrefs.add(0, AuthSchemes.NTLM);
 		}
@@ -1197,12 +1198,6 @@ public class HttpImpl implements Http {
 
 	private static final String _PROXY_HOST = GetterUtil.getString(
 		SystemProperties.get("http.proxyHost"));
-
-	private static final String _PROXY_NTLM_DOMAIN = GetterUtil.getString(
-		PropsUtil.get(Http.class.getName() + ".proxy.ntlm.domain"));
-
-	private static final String _PROXY_NTLM_HOST = GetterUtil.getString(
-		PropsUtil.get(Http.class.getName() + ".proxy.ntlm.host"));
 
 	private static final int _PROXY_PORT = GetterUtil.getInteger(
 		SystemProperties.get("http.proxyPort"));
