@@ -38,6 +38,17 @@ public interface HttpConfiguration {
 	public int maxTotalConnections();
 
 	@Meta.AD(
+		description = "proxy-authentication-type-help",
+		name = "proxy-authentication-type",
+		optionLabels = {
+			"proxy-authentication-type-username-password",
+			"proxy-authentication-type-ntlm"
+		},
+		optionValues = {"username-password", "ntlm"}, required = false
+	)
+	public String proxyAuthenticationType();
+
+	@Meta.AD(
 		deflt = "0", description = "keep-alive-timeout-help",
 		name = "keep-alive-timeout", required = false
 	)

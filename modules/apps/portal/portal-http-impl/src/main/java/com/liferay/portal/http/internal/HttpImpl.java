@@ -408,13 +408,16 @@ public class HttpImpl implements Http {
 		_proxyAuthPrefs.add(AuthSchemes.BASIC);
 		_proxyAuthPrefs.add(AuthSchemes.DIGEST);
 
-		if (_PROXY_AUTH_TYPE.equals("username-password")) {
+		String proxyAuthenticationType = GetterUtil.getString(
+			httpConfiguration.proxyAuthenticationType());
+
+		if (proxyAuthenticationType.equals("username-password")) {
 			_proxyCredentials = new UsernamePasswordCredentials(
 				_PROXY_USERNAME, _PROXY_PASSWORD);
 
 			_proxyAuthPrefs.add(AuthSchemes.NTLM);
 		}
-		else if (_PROXY_AUTH_TYPE.equals("ntlm")) {
+		else if (proxyAuthenticationType.equals("ntlm")) {
 			_proxyCredentials = new NTCredentials(
 				_PROXY_USERNAME, _PROXY_PASSWORD, _PROXY_NTLM_HOST,
 				_PROXY_NTLM_DOMAIN);
@@ -1184,9 +1187,6 @@ public class HttpImpl implements Http {
 
 	private static final String[] _NON_PROXY_HOSTS = StringUtil.split(
 		SystemProperties.get("http.nonProxyHosts"), StringPool.PIPE);
-
-	private static final String _PROXY_AUTH_TYPE = GetterUtil.getString(
-		PropsUtil.get(Http.class.getName() + ".proxy.auth.type"));
 
 	private static final String _PROXY_HOST = GetterUtil.getString(
 		SystemProperties.get("http.proxyHost"));
