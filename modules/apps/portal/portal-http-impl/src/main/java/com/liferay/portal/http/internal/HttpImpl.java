@@ -447,6 +447,8 @@ public class HttpImpl implements Http {
 			poolingHttpClientConnectionManager.setDefaultSocketConfig(null);
 		}
 
+		_timeout = httpConfiguration.timeout();
+
 		_closeableHttpClientDCLSingleton.destroy(null);
 		_proxyCloseableHttpClientDCLSingleton.destroy(null);
 	}
@@ -1142,9 +1144,9 @@ public class HttpImpl implements Http {
 
 		RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
 
-		requestConfigBuilder = requestConfigBuilder.setConnectTimeout(_TIMEOUT);
+		requestConfigBuilder = requestConfigBuilder.setConnectTimeout(_timeout);
 		requestConfigBuilder = requestConfigBuilder.setConnectionRequestTimeout(
-			_TIMEOUT);
+			_timeout);
 
 		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
 
@@ -1172,9 +1174,9 @@ public class HttpImpl implements Http {
 
 		RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
 
-		requestConfigBuilder = requestConfigBuilder.setConnectTimeout(_TIMEOUT);
+		requestConfigBuilder = requestConfigBuilder.setConnectTimeout(_timeout);
 		requestConfigBuilder = requestConfigBuilder.setConnectionRequestTimeout(
-			_TIMEOUT);
+			_timeout);
 
 		requestConfigBuilder.setProxy(new HttpHost(_PROXY_HOST, _PROXY_PORT));
 		requestConfigBuilder.setProxyPreferredAuthSchemes(_proxyAuthPrefs);
@@ -1202,9 +1204,6 @@ public class HttpImpl implements Http {
 	private static final int _PROXY_PORT = GetterUtil.getInteger(
 		SystemProperties.get("http.proxyPort"));
 
-	private static final int _TIMEOUT = GetterUtil.getInteger(
-		PropsUtil.get(Http.class.getName() + ".timeout"), 5000);
-
 	private static final Log _log = LogFactoryUtil.getLog(HttpImpl.class);
 
 	private static final ThreadLocal<Cookie[]> _cookies = new ThreadLocal<>();
@@ -1224,5 +1223,6 @@ public class HttpImpl implements Http {
 		_proxyCloseableHttpClientDCLSingleton = new DCLSingleton<>();
 	private volatile Credentials _proxyCredentials;
 	private volatile String _proxyUserName;
+	private volatile int _timeout;
 
 }

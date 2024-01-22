@@ -84,4 +84,10 @@ public interface HttpConfiguration {
 	)
 	public boolean tcpKeepAliveEnabled();
 
+	@Meta.AD(
+		deflt = "10000", description = "timeout-help", name = "timeout",
+		required = false
+	)
+	public int timeout();
+
 }
