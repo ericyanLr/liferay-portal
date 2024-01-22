@@ -408,18 +408,25 @@ public class HttpImpl implements Http {
 		_proxyAuthPrefs.add(AuthSchemes.BASIC);
 		_proxyAuthPrefs.add(AuthSchemes.DIGEST);
 
+		_proxyUserName = httpConfiguration.proxyUsername();
+		String proxyPassword = httpConfiguration.proxyPassword();
+
 		String proxyAuthenticationType = GetterUtil.getString(
 			httpConfiguration.proxyAuthenticationType());
 
-		if (proxyAuthenticationType.equals("username-password")) {
+		if (proxyAuthenticationType.equals("username-password") &&
+			!Validator.isBlank(_proxyUserName)) {
+
 			_proxyCredentials = new UsernamePasswordCredentials(
-				_PROXY_USERNAME, _PROXY_PASSWORD);
+				_proxyUserName, proxyPassword);
 
 			_proxyAuthPrefs.add(AuthSchemes.NTLM);
 		}
-		else if (proxyAuthenticationType.equals("ntlm")) {
+		else if (proxyAuthenticationType.equals("ntlm") &&
+				 !Validator.isBlank(_proxyUserName)) {
+
 			_proxyCredentials = new NTCredentials(
-				_PROXY_USERNAME, _PROXY_PASSWORD, _PROXY_NTLM_HOST,
+				_proxyUserName, proxyPassword, _PROXY_NTLM_HOST,
 				_PROXY_NTLM_DOMAIN);
 
 			_proxyAuthPrefs.add(0, AuthSchemes.NTLM);
@@ -1149,7 +1156,7 @@ public class HttpImpl implements Http {
 	}
 
 	private CloseableHttpClient _createProxyCloseableHttpClient() {
-		if (!hasProxyConfig() || Validator.isNull(_PROXY_USERNAME)) {
+		if (!hasProxyConfig() || Validator.isNull(_proxyUserName)) {
 			return _closeableHttpClientDCLSingleton.getSingleton(
 				this::_createCloseableHttpClient);
 		}
@@ -1197,14 +1204,8 @@ public class HttpImpl implements Http {
 	private static final String _PROXY_NTLM_HOST = GetterUtil.getString(
 		PropsUtil.get(Http.class.getName() + ".proxy.ntlm.host"));
 
-	private static final String _PROXY_PASSWORD = GetterUtil.getString(
-		PropsUtil.get(Http.class.getName() + ".proxy.password"));
-
 	private static final int _PROXY_PORT = GetterUtil.getInteger(
 		SystemProperties.get("http.proxyPort"));
-
-	private static final String _PROXY_USERNAME = GetterUtil.getString(
-		PropsUtil.get(Http.class.getName() + ".proxy.username"));
 
 	private static final int _TIMEOUT = GetterUtil.getInteger(
 		PropsUtil.get(Http.class.getName() + ".timeout"), 5000);
@@ -1227,5 +1228,6 @@ public class HttpImpl implements Http {
 	private final DCLSingleton<CloseableHttpClient>
 		_proxyCloseableHttpClientDCLSingleton = new DCLSingleton<>();
 	private volatile Credentials _proxyCredentials;
+	private volatile String _proxyUserName;
 
 }

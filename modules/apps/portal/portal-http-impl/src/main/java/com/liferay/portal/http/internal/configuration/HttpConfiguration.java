@@ -49,6 +49,18 @@ public interface HttpConfiguration {
 	public String proxyAuthenticationType();
 
 	@Meta.AD(
+		description = "proxy-username-help", name = "proxy-username",
+		required = false
+	)
+	public String proxyUsername();
+
+	@Meta.AD(
+		description = "proxy-password-help", name = "proxy-password",
+		required = false
+	)
+	public String proxyPassword();
+
+	@Meta.AD(
 		deflt = "0", description = "keep-alive-timeout-help",
 		name = "keep-alive-timeout", required = false
 	)
