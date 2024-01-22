@@ -964,6 +964,41 @@ public class VerifyProperties {
 			"restricted.variables", "com.liferay.portal.template.freemarker"
 		},
 
+		// HTTP
+
+		{
+			"com.liferay.portal.kernel.util.Http.max.connections.per.host",
+			"max-connections-per-host", "com.liferay.portal.http.impl"
+		},
+		{
+			"com.liferay.portal.kernel.util.Http.max.total.connections",
+			"max-total-connections", "com.liferay.portal.http.impl"
+		},
+		{
+			"com.liferay.portal.kernel.util.Http.proxy.auth.type",
+			"proxy-authentication-type", "com.liferay.portal.http.impl"
+		},
+		{
+			"com.liferay.portal.kernel.util.Http.proxy.ntlm.domain",
+			"proxy-ntlm-domain", "com.liferay.portal.http.impl"
+		},
+		{
+			"com.liferay.portal.kernel.util.Http.proxy.ntlm.host",
+			"proxy-ntlm-host", "com.liferay.portal.http.impl"
+		},
+		{
+			"com.liferay.portal.kernel.util.Http.proxy.username",
+			"proxy-username", "com.liferay.portal.http.impl"
+		},
+		{
+			"com.liferay.portal.kernel.util.Http.proxy.password",
+			"proxy-password", "com.liferay.portal.http.impl"
+		},
+		{
+			"com.liferay.portal.kernel.util.Http.timeout",
+			"timeout", "com.liferay.portal.http.impl"
+		},
+
 		// IFrame
 
 		{"iframe.auth", "auth", "com.liferay.iframe.web"},
