@@ -8,10 +8,13 @@ package com.liferay.portal.http.internal;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portal.util.PortalImpl;
+
+import java.net.URI;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +29,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.conn.DefaultManagedHttpClientConnection;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -147,6 +151,25 @@ public class HttpImplTest {
 	}
 
 	@Test
+	public void testMaxConnectionsPerHost() throws Exception {
+		String host1 = "liferay.local";
+		String host2 = "liferay2.local";
+		String host3 = "liferay3.local";
+
+		_testMaxConnectionsPerHost(2, host1);
+
+		_setMaxConnectionsPerHost(1, host2 + "=2", host3 + "=3");
+		_testMaxConnectionsPerHost(1, host1);
+		_testMaxConnectionsPerHost(2, host2);
+		_testMaxConnectionsPerHost(3, host3);
+
+		_setMaxConnectionsPerHost(1, host2 + "=2");
+		_testMaxConnectionsPerHost(1, host1);
+		_testMaxConnectionsPerHost(2, host2);
+		_testMaxConnectionsPerHost(1, host3);
+	}
+
+	@Test
 	public void testTCPKeepAlive() {
 		_setTCPKeepAliveEnabled(false);
 		_testTCPKeepAlive(false);
@@ -178,6 +201,15 @@ public class HttpImplTest {
 
 	private void _setHttpKeepAliveTimeout(int keepAliveTimeout) {
 		_httpConfigurationProperties.put("keepAliveTimeout", keepAliveTimeout);
+	}
+
+	private void _setMaxConnectionsPerHost(
+		int defaultMaxConnectionsPerHost, String... maxConnectionsPerHost) {
+
+		_httpConfigurationProperties.put(
+			"defaultMaxConnectionsPerHost", defaultMaxConnectionsPerHost);
+		_httpConfigurationProperties.put(
+			"maxConnectionsPerHost", maxConnectionsPerHost);
 	}
 
 	private void _setTCPKeepAliveEnabled(boolean tcpKeepAliveEnabled) {
@@ -245,6 +277,29 @@ public class HttpImplTest {
 
 		_testHttpKeepAlive(
 			expectedKeepAlive, expectedKeepAliveTimeoutInMilliseconds);
+	}
+
+	private void _testMaxConnectionsPerHost(
+			int expectedMaxConnections, String host)
+		throws Exception {
+
+		_httpImpl.activate(_httpConfigurationProperties);
+
+		URI uri = new URI(Http.HTTP_WITH_SLASH + host);
+
+		_httpImpl.getRequestConfigBuilder(uri, 0);
+
+		PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
+			ReflectionTestUtil.getFieldValue(
+				(CloseableHttpClient)ReflectionTestUtil.invoke(
+					_httpImpl, "getCloseableHttpClient",
+					new Class<?>[] {HttpHost.class}, new Object[] {null}),
+				"connManager");
+
+		Assert.assertEquals(
+			expectedMaxConnections,
+			poolingHttpClientConnectionManager.getMaxPerRoute(
+				new HttpRoute(new HttpHost(uri.getHost(), uri.getPort()))));
 	}
 
 	private void _testTCPKeepAlive(boolean expectedEnabledTCPKeepAlive) {
