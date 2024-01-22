@@ -48,6 +48,7 @@ import java.nio.charset.Charset;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -353,6 +354,43 @@ public class HttpImpl implements Http {
 			_connectionKeepAliveStrategy = null;
 		}
 
+		PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
+			_poolingHttpClientConnectionManagerDCLSingleton.getSingleton(
+				HttpImpl::_createPoolingHttpClientConnectionManager);
+
+		_defaultMaxConnectionsPerHost =
+			httpConfiguration.defaultMaxConnectionsPerHost();
+
+		poolingHttpClientConnectionManager.setDefaultMaxPerRoute(
+			_defaultMaxConnectionsPerHost);
+
+		for (HttpRoute httpRoute : _maxConnectionsPerHostRoutes.values()) {
+			poolingHttpClientConnectionManager.setMaxPerRoute(httpRoute, -1);
+		}
+
+		_maxConnectionsPerHostEntries.clear();
+		_maxConnectionsPerHostRoutes.clear();
+
+		for (String maxConnectionPerHost :
+				httpConfiguration.maxConnectionsPerHost()) {
+
+			String[] parts = StringUtil.split(
+				maxConnectionPerHost, StringPool.EQUAL);
+
+			if ((parts.length != 2) || !Validator.isNumber(parts[1])) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Invalid max connection per host entry: " +
+							maxConnectionPerHost);
+				}
+
+				continue;
+			}
+
+			_maxConnectionsPerHostEntries.put(
+				parts[0], GetterUtil.getInteger(parts[1]));
+		}
+
 		_proxyAuthPrefs.clear();
 
 		_proxyAuthPrefs.add(AuthSchemes.BASIC);
@@ -374,10 +412,6 @@ public class HttpImpl implements Http {
 		else {
 			_proxyCredentials = null;
 		}
-
-		PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
-			_poolingHttpClientConnectionManagerDCLSingleton.getSingleton(
-				HttpImpl::_createPoolingHttpClientConnectionManager);
 
 		if (httpConfiguration.tcpKeepAliveEnabled()) {
 			poolingHttpClientConnectionManager.setDefaultSocketConfig(
@@ -451,12 +485,10 @@ public class HttpImpl implements Http {
 		}
 
 		int maxConnectionsPerHost = GetterUtil.getInteger(
-			PropsUtil.get(
-				Http.class.getName() + ".max.connections.per.host",
-				new Filter(uri.getHost())));
+			_maxConnectionsPerHostEntries.get(uri.getHost()));
 
 		if ((maxConnectionsPerHost > 0) &&
-			(maxConnectionsPerHost != _MAX_CONNECTIONS_PER_HOST)) {
+			(maxConnectionsPerHost != _defaultMaxConnectionsPerHost)) {
 
 			PoolingHttpClientConnectionManager
 				poolingHttpClientConnectionManager =
@@ -465,8 +497,11 @@ public class HttpImpl implements Http {
 							HttpImpl::
 								_createPoolingHttpClientConnectionManager);
 
+			HttpHost httpHost = new HttpHost(uri.getHost(), uri.getPort());
+
 			poolingHttpClientConnectionManager.setMaxPerRoute(
-				new HttpRoute(new HttpHost(uri.getHost(), uri.getPort())),
+				_maxConnectionsPerHostRoutes.computeIfAbsent(
+					httpHost, key -> new HttpRoute(httpHost)),
 				maxConnectionsPerHost);
 		}
 
@@ -1039,8 +1074,6 @@ public class HttpImpl implements Http {
 					SSLConnectionSocketFactory.getSystemSocketFactory()
 				).build());
 
-		poolingHttpClientConnectionManager.setDefaultMaxPerRoute(
-			_MAX_CONNECTIONS_PER_HOST);
 		poolingHttpClientConnectionManager.setMaxTotal(_MAX_TOTAL_CONNECTIONS);
 
 		return poolingHttpClientConnectionManager;
@@ -1143,9 +1176,6 @@ public class HttpImpl implements Http {
 
 	private static final int _MAX_BYTE_ARRAY_LENGTH = Integer.MAX_VALUE - 8;
 
-	private static final int _MAX_CONNECTIONS_PER_HOST = GetterUtil.getInteger(
-		PropsUtil.get(Http.class.getName() + ".max.connections.per.host"), 2);
-
 	private static final int _MAX_TOTAL_CONNECTIONS = GetterUtil.getInteger(
 		PropsUtil.get(Http.class.getName() + ".max.total.connections"), 20);
 
@@ -1183,6 +1213,11 @@ public class HttpImpl implements Http {
 	private final DCLSingleton<CloseableHttpClient>
 		_closeableHttpClientDCLSingleton = new DCLSingleton<>();
 	private volatile ConnectionKeepAliveStrategy _connectionKeepAliveStrategy;
+	private volatile int _defaultMaxConnectionsPerHost;
+	private final Map<String, Integer> _maxConnectionsPerHostEntries =
+		new HashMap<>();
+	private final Map<HttpHost, HttpRoute> _maxConnectionsPerHostRoutes =
+		new HashMap<>();
 	private final DCLSingleton<PoolingHttpClientConnectionManager>
 		_poolingHttpClientConnectionManagerDCLSingleton = new DCLSingleton<>();
 	private final List<String> _proxyAuthPrefs = new ArrayList<>();

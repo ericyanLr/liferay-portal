@@ -20,6 +20,18 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 public interface HttpConfiguration {
 
 	@Meta.AD(
+		deflt = "2", description = "default-max-connections-per-host-help",
+		name = "default-max-connections-per-host", required = false
+	)
+	public int defaultMaxConnectionsPerHost();
+
+	@Meta.AD(
+		deflt = "", description = "max-connections-per-host-help",
+		name = "max-connections-per-host", required = false
+	)
+	public String[] maxConnectionsPerHost();
+
+	@Meta.AD(
 		deflt = "0", description = "keep-alive-timeout-help",
 		name = "keep-alive-timeout", required = false
 	)
