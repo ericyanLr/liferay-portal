@@ -36,6 +36,7 @@ import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.NTUserPrincipal;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.SocketConfig;
@@ -225,6 +226,14 @@ public class HttpImplTest {
 		_testTCPKeepAlive(true);
 	}
 
+	@Test
+	public void testTimeout() {
+		_testTimeout(10000);
+
+		_setTimeout(1000);
+		_testTimeout(1000);
+	}
+
 	private Tuple _getHttpConnectionStrategies() {
 		ClientExecChain clientExecChain = ReflectionTestUtil.getFieldValue(
 			(CloseableHttpClient)ReflectionTestUtil.invoke(
@@ -284,6 +293,10 @@ public class HttpImplTest {
 	private void _setTCPKeepAliveEnabled(boolean tcpKeepAliveEnabled) {
 		_httpConfigurationProperties.put(
 			"tcpKeepAliveEnabled", tcpKeepAliveEnabled);
+	}
+
+	private void _setTimeout(int timeout) {
+		_httpConfigurationProperties.put("timeout", timeout);
 	}
 
 	private void _setUpAndUseMockCloseableHttpClient() throws Exception {
@@ -533,6 +546,20 @@ public class HttpImplTest {
 
 		Assert.assertEquals(
 			expectedEnabledTCPKeepAlive, socketConfig.isSoKeepAlive());
+	}
+
+	private void _testTimeout(int expectedTimeout) {
+		_httpImpl.activate(_httpConfigurationProperties);
+
+		RequestConfig requestConfig = ReflectionTestUtil.getFieldValue(
+			(CloseableHttpClient)ReflectionTestUtil.invoke(
+				_httpImpl, "getCloseableHttpClient",
+				new Class<?>[] {HttpHost.class}, new Object[] {null}),
+			"defaultConfig");
+
+		Assert.assertEquals(expectedTimeout, requestConfig.getConnectTimeout());
+		Assert.assertEquals(
+			expectedTimeout, requestConfig.getConnectionRequestTimeout());
 	}
 
 	private final Map<String, Object> _httpConfigurationProperties =
