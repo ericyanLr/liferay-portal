@@ -391,6 +391,18 @@ public class HttpImpl implements Http {
 				parts[0], GetterUtil.getInteger(parts[1]));
 		}
 
+		int maxTotalConnections = httpConfiguration.maxTotalConnections();
+
+		if (maxTotalConnections > 0) {
+			poolingHttpClientConnectionManager.setMaxTotal(maxTotalConnections);
+		}
+		else {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Invalid max total connections: " + maxTotalConnections);
+			}
+		}
+
 		_proxyAuthPrefs.clear();
 
 		_proxyAuthPrefs.add(AuthSchemes.BASIC);
@@ -1064,19 +1076,13 @@ public class HttpImpl implements Http {
 	private static PoolingHttpClientConnectionManager
 		_createPoolingHttpClientConnectionManager() {
 
-		PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
-			new PoolingHttpClientConnectionManager(
-				RegistryBuilder.<ConnectionSocketFactory>create(
-				).register(
-					Http.HTTP, PlainConnectionSocketFactory.getSocketFactory()
-				).register(
-					Http.HTTPS,
-					SSLConnectionSocketFactory.getSystemSocketFactory()
-				).build());
-
-		poolingHttpClientConnectionManager.setMaxTotal(_MAX_TOTAL_CONNECTIONS);
-
-		return poolingHttpClientConnectionManager;
+		return new PoolingHttpClientConnectionManager(
+			RegistryBuilder.<ConnectionSocketFactory>create(
+			).register(
+				Http.HTTP, PlainConnectionSocketFactory.getSocketFactory()
+			).register(
+				Http.HTTPS, SSLConnectionSocketFactory.getSystemSocketFactory()
+			).build());
 	}
 
 	private static void _destroyPoolingHttpClientConnectionManager(
@@ -1175,9 +1181,6 @@ public class HttpImpl implements Http {
 		"Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv 11.0) like Gecko";
 
 	private static final int _MAX_BYTE_ARRAY_LENGTH = Integer.MAX_VALUE - 8;
-
-	private static final int _MAX_TOTAL_CONNECTIONS = GetterUtil.getInteger(
-		PropsUtil.get(Http.class.getName() + ".max.total.connections"), 20);
 
 	private static final String[] _NON_PROXY_HOSTS = StringUtil.split(
 		SystemProperties.get("http.nonProxyHosts"), StringPool.PIPE);

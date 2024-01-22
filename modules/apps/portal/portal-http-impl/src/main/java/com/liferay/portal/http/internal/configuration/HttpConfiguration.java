@@ -32,6 +32,12 @@ public interface HttpConfiguration {
 	public String[] maxConnectionsPerHost();
 
 	@Meta.AD(
+		deflt = "20", description = "max-total-connections-help",
+		name = "max-total-connections", required = false
+	)
+	public int maxTotalConnections();
+
+	@Meta.AD(
 		deflt = "0", description = "keep-alive-timeout-help",
 		name = "keep-alive-timeout", required = false
 	)
