@@ -11,6 +11,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.dao.jdbc.pool.metrics.HikariConnectionPoolMetrics;
 import com.liferay.portal.dao.jdbc.util.AntiTimeDriftDataSourceWrapper;
 import com.liferay.portal.dao.jdbc.util.DataSourceWrapper;
+import com.liferay.portal.dao.jdbc.util.JNDIDataSourceWrapper;
 import com.liferay.portal.dao.jdbc.util.RetryDataSourceWrapper;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -83,6 +84,10 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 		while (dataSource instanceof DataSourceWrapper) {
 			DataSourceWrapper dataSourceWrapper = (DataSourceWrapper)dataSource;
 
+			if (dataSourceWrapper instanceof JNDIDataSourceWrapper) {
+				return;
+			}
+
 			dataSource = dataSourceWrapper.getWrappedDataSource();
 		}
 
@@ -126,7 +131,8 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 
 				Context context = new InitialContext(jndiEnvironmentProperties);
 
-				return (DataSource)JNDIUtil.lookup(context, jndiName);
+				return new JNDIDataSourceWrapper(
+					(DataSource)JNDIUtil.lookup(context, jndiName));
 			}
 			catch (Exception exception) {
 				_log.error("Unable to lookup " + jndiName, exception);
