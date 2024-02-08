@@ -3392,6 +3392,36 @@ public class PortalImpl implements Portal {
 		requestURI = StringUtil.replace(
 			requestURI, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
+		String originalRequestURI = originalHttpServletRequest.getRequestURI();
+
+		if (Validator.isNotNull(contextPath) &&
+			originalRequestURI.startsWith(contextPath)) {
+
+			originalRequestURI = originalRequestURI.substring(
+				contextPath.length());
+		}
+
+		if (originalHttpServletRequest.getAttribute(WebKeys.I18N_PATH) !=
+				null) {
+
+			int pos = originalRequestURI.indexOf(StringPool.SLASH, 1);
+
+			if (pos != -1) {
+				originalRequestURI = originalRequestURI.substring(pos);
+			}
+		}
+
+		int[] groupFriendlyURLIndex = getGroupFriendlyURLIndex(
+			originalRequestURI);
+
+		if (groupFriendlyURLIndex == null) {
+			groupFriendlyURLIndex = getGroupFriendlyURLIndex(requestURI);
+
+			if (groupFriendlyURLIndex != null) {
+				requestURI = requestURI.substring(groupFriendlyURLIndex[1]);
+			}
+		}
+
 		String layoutFriendlyURL = null;
 
 		if (originalLocale == null) {
