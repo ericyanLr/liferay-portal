@@ -4313,17 +4313,18 @@ public class PortalImpl implements Portal {
 					Group scopeGroup = GroupLocalServiceUtil.fetchGroup(
 						scopeGroupId);
 
-					if (checkStagingGroup) {
-						if (!scopeGroup.isStagingGroup() &&
-							!scopeGroup.isStagedRemotely()) {
+					if (scopeGroup != null) {
+						if (checkStagingGroup) {
+							if (!scopeGroup.isStagingGroup() &&
+								!scopeGroup.isStagedRemotely()) {
 
-							Group stagingGroup = scopeGroup.getStagingGroup();
+								Group stagingGroup =
+									scopeGroup.getStagingGroup();
 
-							scopeGroupId = stagingGroup.getGroupId();
+								scopeGroupId = stagingGroup.getGroupId();
+							}
 						}
-					}
-					else {
-						if (scopeGroup.isStagingGroup()) {
+						else if (scopeGroup.isStagingGroup()) {
 							Group portletScopeLiveGroup =
 								scopeGroup.getLiveGroup();
 
