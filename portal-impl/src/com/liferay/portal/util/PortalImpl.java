@@ -4312,11 +4312,21 @@ public class PortalImpl implements Portal {
 							layout.getUuid(), liveGroup.getGroupId(),
 							layout.isPrivateLayout());
 
-					if ((liveGroupLayout != null) &&
-						liveGroupLayout.hasScopeGroup()) {
+					if (liveGroupLayout != null) {
+						boolean hasScopeGroup = liveGroupLayout.hasScopeGroup();
 
-						scopeGroupId = _getScopeGroupId(
-							themeDisplay, liveGroupLayout, portletId);
+						if (!hasScopeGroup && liveGroupLayout.isTypeContent()) {
+							Layout liveGroupDraftLayout =
+								liveGroupLayout.fetchDraftLayout();
+
+							hasScopeGroup =
+								liveGroupDraftLayout.hasScopeGroup();
+						}
+
+						if (hasScopeGroup) {
+							scopeGroupId = _getScopeGroupId(
+								themeDisplay, liveGroupLayout, portletId);
+						}
 					}
 					else if (checkStagingGroup &&
 							 !liveGroup.isStagedRemotely()) {
