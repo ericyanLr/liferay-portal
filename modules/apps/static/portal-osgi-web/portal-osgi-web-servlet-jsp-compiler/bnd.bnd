@@ -2,25 +2,14 @@ Bundle-Name: Liferay Portal OSGi Web Servlet JSP Compiler
 Bundle-SymbolicName: com.liferay.portal.osgi.web.servlet.jsp.compiler
 Bundle-Version: 6.0.19
 Import-Package:\
-	com.sun.el;version='[3.0.0,4.0)',\
-	com.sun.el.lang;version='[3.0.0,4.0)',\
-	com.sun.el.parser;version='[3.0.0,4.0)',\
-	com.sun.el.stream;version='[3.0.0,4.0)',\
-	com.sun.el.util;version='[3.0.0,4.0)',\
-	\
-	javax.el;version='[3.0.0,4.0)',\
-	\
 	javax.servlet;version='[2.3.0,4.0.0)',\
 	javax.servlet.annotation;version='[2.6.0,4.0.0)',\
 	javax.servlet.descriptor;version='[2.6.0,4.0.0)',\
 	javax.servlet.http;version='[2.3.0,4.0.0)',\
-	javax.servlet.jsp;version='[2.3.2,3.0)',\
-	javax.servlet.jsp.el;version='[2.3.2,3.0)',\
 	javax.servlet.jsp.jstl.core;version='[1.2.1,2.0)',\
 	javax.servlet.jsp.jstl.fmt;version='[1.2.1,2.0)',\
 	javax.servlet.jsp.jstl.sql;version='[1.2.1,2.0)',\
 	javax.servlet.jsp.jstl.tlv;version='[1.2.1,2.0)',\
-	javax.servlet.jsp.tagext;version='[2.3.2,3.0)',\
 	\
 	javax.tools,\
 	\
@@ -62,6 +51,18 @@ Import-Package:\
 	org.xml.sax.helpers,\
 	\
 	*
+Export-Package:\
+	com.sun.el;version="3.0.0",\
+	com.sun.el.lang;version="3.0.0",\
+	com.sun.el.parser;version="3.0.0",\
+	com.sun.el.stream;version="3.0.0",\
+	com.sun.el.util;version="3.0.0",\
+	\
+	javax.el;version="3.0.0",\
+	\
+	javax.servlet.jsp.el;version="2.3.2.b01",\
+	javax.servlet.jsp.tagext;version="2.3.2.b01",\
+	javax.servlet.jsp;version="2.3.2.b01
 Provide-Capability:\
 	liferay.extender;\
 		liferay.extender="jsp.extender";\
