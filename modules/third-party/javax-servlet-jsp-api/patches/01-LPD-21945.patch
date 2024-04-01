@@ -1,0 +1,59 @@
+diff --git a/javax/servlet/jsp/el/ScopedAttributeELResolver.java b/javax/servlet/jsp/el/ScopedAttributeELResolver.java
+index 2f4f1bf268eb2..2bc80c1eca20e 100644
+--- a/javax/servlet/jsp/el/ScopedAttributeELResolver.java
++++ b/javax/servlet/jsp/el/ScopedAttributeELResolver.java
+@@ -86,6 +86,20 @@ import javax.el.ELException;
+
+ public class ScopedAttributeELResolver extends ELResolver {
+
++    // Indicates if a performance short-cut is available
++    private static final Class<?> AST_IDENTIFIER_KEY;
++
++    static {
++        Class<?> key = null;
++        try {
++            key = Class.forName("com.sun.el.parser.AstIdentifier");
++        } catch (Exception e) {
++            // Ignore: Expected if not running on Tomcat. Not a problem since
++            //         this just allows a short-cut.
++        }
++        AST_IDENTIFIER_KEY = key;
++    }
++
+     /**
+      * If the base object is <code>null</code>, searches the page,
+      * request, session and application scopes for an attribute with
+@@ -135,9 +149,25 @@ public class ScopedAttributeELResolver extends ELResolver {
+                 // and a runtime switch may be needed to force backward
+                 // compatility.
+                 if (value == null) {
++                    boolean resolveClass = true;
++                    // Performance short-cut available when running on Tomcat
++                    if (AST_IDENTIFIER_KEY != null) {
++                        // Tomcat will set this key to Boolean.TRUE if the
++                        // identifier is a stand-alone identifier (i.e.
++                        // identifier) rather than part of an AstValue (i.e.
++                        // identifier.something). Imports do not need to be
++                        // checked if this is a stand-alone identifier
++                        Boolean identifier = (Boolean) context.getContext(AST_IDENTIFIER_KEY);
++                        if (identifier != null && identifier.booleanValue()) {
++                            resolveClass = false;
++                        }
++                    }
+                     // check to see if the property is an imported class
+                     if (context.getImportHandler() != null) {
+-                        Class<?> c = context.getImportHandler().resolveClass(attribute);
++                        Class<?> c = null;
++                        if (resolveClass) {
++                            context.getImportHandler().resolveClass(attribute);
++                        }
+                         if (c != null) {
+                             value = new ELClass(c);
+                             // A possible optimization is to set the ELClass
+@@ -410,3 +440,5 @@ public class ScopedAttributeELResolver extends ELResolver {
+     }
+
+ }
++
++/* @generated */
+\ No newline at end of file

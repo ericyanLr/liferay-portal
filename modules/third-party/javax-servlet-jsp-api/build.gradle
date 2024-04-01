@@ -6,6 +6,7 @@ task patch(type: PatchTask)
 
 dependencies {
 	compileOnly group: "javax.servlet.jsp", name: "javax.servlet.jsp-api", transitive: false, version: "2.3.3"
+	compileOnly group: "org.glassfish", name: "javax.el", transitive: false, version: "3.0.1-b12"
 }
 
 jarSources {
@@ -16,6 +17,8 @@ patch {
 	ext {
 		autoClean = false
 	}
+
+	fileNames "javax/servlet/jsp/el/ScopedAttributeELResolver.java"
 
 	originalLibModuleName = "javax.servlet.jsp-api"
 }
