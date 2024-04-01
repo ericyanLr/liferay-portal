@@ -87,14 +87,14 @@ import javax.el.ELException;
 public class ScopedAttributeELResolver extends ELResolver {
 
     /**
-     * If the base object is <code>null</code>, searches the page,
+     * If the base object is <code>null</code>, searches the page, 
      * request, session and application scopes for an attribute with
      * the given name and returns it, or <code>null</code> if no
      * attribute exists with the current name.
      *
-     * <p>The <code>propertyResolved</code> property of the
-     * <code>ELContext</code> object must be set to <code>true</code> by
-     * this resolver before returning if base is <code>null</code>. If
+     * <p>The <code>propertyResolved</code> property of the 
+     * <code>ELContext</code> object must be set to <code>true</code> by 
+     * this resolver before returning if base is <code>null</code>. If 
      * this property is not <code>true</code> after this method is called,
      * the caller should ignore the return value.</p>
      *
@@ -102,7 +102,7 @@ public class ScopedAttributeELResolver extends ELResolver {
      * @param base Only <code>null</code> is handled by this resolver.
      *     Other values will result in an immediate return.
      * @param property The name of the scoped attribute to resolve.
-     * @return If the <code>propertyResolved</code> property of
+     * @return If the <code>propertyResolved</code> property of 
      *     <code>ELContext</code> was set to <code>true</code>, then
      *     the scoped attribute; otherwise undefined.
      * @throws NullPointerException if context is <code>null</code>
@@ -152,13 +152,13 @@ public class ScopedAttributeELResolver extends ELResolver {
     }
 
     /**
-     * If the base object is <code>null</code>, returns
+     * If the base object is <code>null</code>, returns 
      * <code>Object.class</code> to indicate that any type is valid to
      * set for a scoped attribute.
      *
-     * <p>The <code>propertyResolved</code> property of the
-     * <code>ELContext</code> object must be set to <code>true</code> by
-     * this resolver before returning if base is <code>null</code>. If
+     * <p>The <code>propertyResolved</code> property of the 
+     * <code>ELContext</code> object must be set to <code>true</code> by 
+     * this resolver before returning if base is <code>null</code>. If 
      * this property is not <code>true</code> after this method is called,
      * the caller should ignore the return value.</p>
      *
@@ -166,7 +166,7 @@ public class ScopedAttributeELResolver extends ELResolver {
      * @param base Only <code>null</code> is handled by this resolver.
      *     Other values will result in an immediate return.
      * @param property The name of the scoped attribute to resolve.
-     * @return If the <code>propertyResolved</code> property of
+     * @return If the <code>propertyResolved</code> property of 
      *     <code>ELContext</code> was set to <code>true</code>, then
      *     <code>Object.class</code>; otherwise undefined.
      * @throws NullPointerException if context is <code>null</code>
@@ -196,15 +196,15 @@ public class ScopedAttributeELResolver extends ELResolver {
      * attribute to the new value, or creates a new scoped attribute if one
      * does not exist by this name.
      *
-     * <p>If the provided attribute name matches the key of an attribute
-     * in page scope, request scope, session scope, or application scope, the
+     * <p>If the provided attribute name matches the key of an attribute 
+     * in page scope, request scope, session scope, or application scope, the 
      * corresponding attribute value will be replaced by the provided value.
      * Otherwise, a new page scope attribute will be created with the
      * given name and value.</p>
      *
-     * <p>The <code>propertyResolved</code> property of the
-     * <code>ELContext</code> object must be set to <code>true</code> by
-     * this resolver before returning if base is <code>null</code>. If
+     * <p>The <code>propertyResolved</code> property of the 
+     * <code>ELContext</code> object must be set to <code>true</code> by 
+     * this resolver before returning if base is <code>null</code>. If 
      * this property is not <code>true</code> after this method is called,
      * the caller should ignore the return value.</p>
      *
@@ -250,9 +250,9 @@ public class ScopedAttributeELResolver extends ELResolver {
      * If the base object is <code>null</code>, returns <code>false</code>
      * to indicate that scoped attributes are never read-only.
      *
-     * <p>The <code>propertyResolved</code> property of the
-     * <code>ELContext</code> object must be set to <code>true</code> by
-     * this resolver before returning if base is <code>null</code>. If
+     * <p>The <code>propertyResolved</code> property of the 
+     * <code>ELContext</code> object must be set to <code>true</code> by 
+     * this resolver before returning if base is <code>null</code>. If 
      * this property is not <code>true</code> after this method is called,
      * the caller should ignore the return value.</p>
      *
@@ -260,7 +260,7 @@ public class ScopedAttributeELResolver extends ELResolver {
      * @param base Only <code>null</code> is handled by this resolver.
      *     Other values will result in an immediate return.
      * @param property The name of the scoped attribute.
-     * @return If the <code>propertyResolved</code> property of
+     * @return If the <code>propertyResolved</code> property of 
      *     <code>ELContext</code> was set to <code>true</code>, then
      *     <code>false</code>; otherwise undefined.
      * @throws NullPointerException if context is <code>null</code>.
@@ -283,14 +283,14 @@ public class ScopedAttributeELResolver extends ELResolver {
     }
 
     /**
-     * If the base object is <code>null</code>, returns an
-     * <code>Iterator</code> containing <code>FeatureDescriptor</code> objects
-     * with information about each scoped attribute resolved by this
+     * If the base object is <code>null</code>, returns an 
+     * <code>Iterator</code> containing <code>FeatureDescriptor</code> objects 
+     * with information about each scoped attribute resolved by this 
      * resolver. Otherwise, returns <code>null</code>.
      *
-     * <p>The <code>Iterator</code> returned must contain one instance of
+     * <p>The <code>Iterator</code> returned must contain one instance of 
      * {@link java.beans.FeatureDescriptor} for each scoped attribute found in
-     * any scope. Each info object contains information about
+     * any scope. Each info object contains information about 
      * a single scoped attribute, and is initialized as follows:
      *
      * <dl>
@@ -298,7 +298,7 @@ public class ScopedAttributeELResolver extends ELResolver {
      *     <li>name - Same as displayName property.</li>
      *     <li>shortDescription - A suitable description for the scoped
      *         attribute. Should include the attribute's current scope
-     *         (page, request, session, application). Will vary by
+     *         (page, request, session, application). Will vary by 
      *         implementation.</li>
      *     <li>expert - <code>false</code></li>
      *     <li>hidden - <code>false</code></li>
@@ -310,11 +310,11 @@ public class ScopedAttributeELResolver extends ELResolver {
      *     <li>{@link ELResolver#TYPE} - The current runtime type of the scoped attribute.</li>
      *     <li>{@link ELResolver#RESOLVABLE_AT_DESIGN_TIME} - <code>true</code>.</li>
      * </dl></p>
-     *
+     * 
      * @param context The context of this evaluation.
      * @param base Only <code>null</code> is handled by this resolver.
      *     Other values will result in a <code>null</code> return value.
-     * @return An <code>Iterator</code> containing one
+     * @return An <code>Iterator</code> containing one 
      *     <code>FeatureDescriptor</code> object for each scoped attribute, or
      *     <code>null</code> if <code>base</code> is not <code>null</code>.
      */
@@ -392,7 +392,7 @@ public class ScopedAttributeELResolver extends ELResolver {
     }
 
     /**
-     * If the base object is <code>null</code>, returns
+     * If the base object is <code>null</code>, returns 
      * <code>String.class</code>.  Otherwise, returns <code>null</code>.
      *
      * @param context The context of this evaluation.
