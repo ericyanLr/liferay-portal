@@ -1,0 +1,21 @@
+import com.liferay.gradle.plugins.patcher.PatchTask
+
+apply plugin: "com.liferay.patcher"
+
+task patch(type: PatchTask)
+
+dependencies {
+	compileOnly group: "javax.servlet.jsp", name: "javax.servlet.jsp-api", transitive: false, version: "2.3.3"
+}
+
+jarSources {
+	mustRunAfter patch
+}
+
+patch {
+	ext {
+		autoClean = false
+	}
+
+	originalLibModuleName = "javax.servlet.jsp-api"
+}
