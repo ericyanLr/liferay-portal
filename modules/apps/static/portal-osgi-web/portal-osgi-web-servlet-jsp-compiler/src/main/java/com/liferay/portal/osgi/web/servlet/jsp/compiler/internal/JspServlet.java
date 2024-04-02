@@ -16,6 +16,8 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.taglib.servlet.JspFactorySwapper;
 
+import java.beans.FeatureDescriptor;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +30,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +39,9 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.el.ELContext;
+import javax.el.ELResolver;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
@@ -53,7 +59,10 @@ import javax.servlet.descriptor.JspConfigDescriptor;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.JspApplicationContext;
+import javax.servlet.jsp.JspContext;
 import javax.servlet.jsp.JspFactory;
+import javax.servlet.jsp.PageContext;
 
 import org.apache.jasper.runtime.JspFactoryImpl;
 import org.apache.jasper.runtime.TagHandlerPool;
@@ -152,6 +161,13 @@ public class JspServlet extends HttpServlet {
 			JspFactory.setDefaultFactory(new JspFactoryImpl());
 
 			JspFactorySwapper.swap();
+
+			JspFactory jspFactory = JspFactory.getDefaultFactory();
+
+			JspApplicationContext jspApplicationContext =
+				jspFactory.getJspApplicationContext(servletContext);
+
+			jspApplicationContext.addELResolver(_elResolver);
 		}
 
 		List<Bundle> bundles = new ArrayList<>();
@@ -370,6 +386,7 @@ public class JspServlet extends HttpServlet {
 
 	private Bundle[] _allParticipatingBundles;
 	private Bundle _bundle;
+	private final ELResolver _elResolver = new PreScopedAttributeELResolver();
 	private final Set<String> _fragmentHosts;
 	private JspBundleClassloader _jspBundleClassloader;
 	private final HttpServlet _jspServlet =
@@ -377,6 +394,87 @@ public class JspServlet extends HttpServlet {
 	private boolean _logVerbosityLevelDebug;
 	private final List<ServiceRegistration<?>> _serviceRegistrations =
 		new CopyOnWriteArrayList<>();
+
+	private static class PreScopedAttributeELResolver extends ELResolver {
+
+		@Override
+		public Class<?> getCommonPropertyType(
+			ELContext elContext, Object base) {
+
+			return null;
+		}
+
+		@Override
+		public Iterator<FeatureDescriptor> getFeatureDescriptors(
+			ELContext elContext, Object base) {
+
+			return null;
+		}
+
+		@Override
+		public Class<?> getType(
+			ELContext elContext, Object base, Object property) {
+
+			return null;
+		}
+
+		@Override
+		public Object getValue(
+			ELContext elContext, Object base, Object property) {
+
+			if (elContext == null) {
+				throw new NullPointerException();
+			}
+
+			Object value = null;
+
+			if ((base == null) && (property instanceof String)) {
+				String attribute = (String)property;
+				PageContext pageContext = (PageContext)elContext.getContext(
+					JspContext.class);
+
+				value = pageContext.findAttribute(attribute);
+
+				if ((value == null) && (_AST_IDENTIFIER_KEY != null)) {
+					Boolean identifier = (Boolean)elContext.getContext(
+						_AST_IDENTIFIER_KEY);
+
+					if ((identifier != null) && identifier.booleanValue()) {
+						elContext.setPropertyResolved(true);
+					}
+				}
+			}
+
+			return value;
+		}
+
+		@Override
+		public boolean isReadOnly(
+			ELContext elContext, Object base, Object property) {
+
+			return false;
+		}
+
+		@Override
+		public void setValue(
+			ELContext elContext, Object base, Object property, Object value) {
+		}
+
+		private static final Class<?> _AST_IDENTIFIER_KEY;
+
+		static {
+			Class<?> key = null;
+
+			try {
+				key = Class.forName("com.sun.el.parser.AstIdentifier");
+			}
+			catch (ClassNotFoundException classNotFoundException) {
+			}
+
+			_AST_IDENTIFIER_KEY = key;
+		}
+
+	}
 
 	private class ServletContextWrapper implements ServletContext {
 
