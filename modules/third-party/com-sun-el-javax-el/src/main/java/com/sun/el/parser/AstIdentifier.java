@@ -113,6 +113,29 @@ public final class AstIdentifier extends SimpleNode {
             }
         }
         ctx.setPropertyResolved(false);
+
+        Thread currentThread = Thread.currentThread();
+
+        ClassLoader originalContextClassLoader = currentThread.getContextClassLoader();
+
+        if (!(parent instanceof AstValue)) {
+            currentThread.setContextClassLoader(
+                new ClassLoader(originalContextClassLoader) {
+
+                    @Override
+                    public Class<?> loadClass(String name)
+                        throws ClassNotFoundException {
+
+                        if (name.equals(this.image)) {
+                            throw new ClassNotFoundException();
+                        }
+
+                        return originalContextClassLoader.loadClass(name);
+                    }
+
+                });
+        }
+
         Object ret = ctx.getELResolver().getValue(ctx, null, this.image);
         if (! ctx.isPropertyResolved()) {
             // Check if this is an imported static field
@@ -124,6 +147,10 @@ public final class AstIdentifier extends SimpleNode {
                 }
             }
             ELSupport.throwUnhandled(null, this.image);
+        }
+
+        if (!(parent instanceof AstValue)) {
+            currentThread.setContextClassLoader(originalContextClassLoader);
         }
         return ret;
     }
