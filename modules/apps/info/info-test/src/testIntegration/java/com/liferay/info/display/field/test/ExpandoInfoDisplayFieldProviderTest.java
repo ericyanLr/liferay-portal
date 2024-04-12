@@ -119,18 +119,18 @@ public class ExpandoInfoDisplayFieldProviderTest {
 		ExpandoValue expandoValue = _addExpandoValue(
 			expandoColumn,
 			HashMapBuilder.put(
-				LocaleUtil.ENGLISH, "en-value-1"
+				LocaleUtil.FRANCE, "fr-value-1"
 			).put(
-				LocaleUtil.FRENCH, "fr-value-1"
+				LocaleUtil.US, "en-value-1"
 			).build());
 
 		Assert.assertEquals(
-			expandoValue.getString(LocaleUtil.ENGLISH),
-			_getValue(expandoColumn.getName(), LocaleUtil.ENGLISH));
+			expandoValue.getString(LocaleUtil.US),
+			_getValue(expandoColumn.getName(), LocaleUtil.US));
 
 		Assert.assertEquals(
-			expandoValue.getString(LocaleUtil.FRENCH),
-			_getValue(expandoColumn.getName(), LocaleUtil.FRENCH));
+			expandoValue.getString(LocaleUtil.FRANCE),
+			_getValue(expandoColumn.getName(), LocaleUtil.FRANCE));
 	}
 
 	@Test
