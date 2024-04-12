@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -124,13 +125,25 @@ public class ExpandoInfoDisplayFieldProviderTest {
 				LocaleUtil.US, "en-value-1"
 			).build());
 
-		Assert.assertEquals(
-			expandoValue.getString(LocaleUtil.US),
-			_getValue(expandoColumn.getName(), LocaleUtil.US));
+		Locale originalThemeDisplayLocale =
+			LocaleThreadLocal.getThemeDisplayLocale();
 
-		Assert.assertEquals(
-			expandoValue.getString(LocaleUtil.FRANCE),
-			_getValue(expandoColumn.getName(), LocaleUtil.FRANCE));
+		try {
+			LocaleThreadLocal.setThemeDisplayLocale(LocaleUtil.US);
+
+			Assert.assertEquals(
+				expandoValue.getString(LocaleUtil.US),
+				_getValue(expandoColumn.getName(), LocaleUtil.US));
+
+			LocaleThreadLocal.setThemeDisplayLocale(LocaleUtil.FRANCE);
+
+			Assert.assertEquals(
+				expandoValue.getString(LocaleUtil.FRANCE),
+				_getValue(expandoColumn.getName(), LocaleUtil.FRANCE));
+		}
+		finally {
+			LocaleThreadLocal.setThemeDisplayLocale(originalThemeDisplayLocale);
+		}
 	}
 
 	@Test
