@@ -31,6 +31,7 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import org.junit.Assert;
@@ -116,20 +117,20 @@ public class ExpandoInfoDisplayFieldProviderTest {
 			_expandoTable, "test-localized-string",
 			ExpandoColumnConstants.STRING_LOCALIZED);
 
-		ExpandoValue expandoValue = _addExpandoValue(
-			expandoColumn,
-			HashMapBuilder.put(
-				LocaleUtil.FRANCE, "fr-value-1"
-			).put(
-				LocaleUtil.US, "en-value-1"
-			).build());
+		Map<Locale, String> expectedValues = HashMapBuilder.put(
+			LocaleUtil.FRANCE, "fr-value-1"
+		).put(
+			LocaleUtil.US, "en-value-1"
+		).build();
+
+		_addExpandoValue(expandoColumn, expectedValues);
 
 		Assert.assertEquals(
-			expandoValue.getString(LocaleUtil.US),
+			expectedValues.get(LocaleUtil.US),
 			_getValue(expandoColumn.getName(), LocaleUtil.US));
 
 		Assert.assertEquals(
-			expandoValue.getString(LocaleUtil.FRANCE),
+			expectedValues.get(LocaleUtil.FRANCE),
 			_getValue(expandoColumn.getName(), LocaleUtil.FRANCE));
 	}
 
