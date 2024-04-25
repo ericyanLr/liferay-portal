@@ -4308,21 +4308,28 @@ public class PortalImpl implements Portal {
 							layout.getUuid(), liveGroup.getGroupId(),
 							layout.isPrivateLayout());
 
-					if ((liveGroupLayout != null) &&
-						liveGroupLayout.hasScopeGroup()) {
+					boolean hasScopeGroup = false;
 
+					if (liveGroupLayout != null) {
 						scopeGroupId = _getScopeGroupId(
 							themeDisplay, liveGroupLayout, portletId);
-					}
-					else if (checkStagingGroup &&
-							 !liveGroup.isStagedRemotely()) {
 
-						Group stagingGroup = liveGroup.getStagingGroup();
-
-						scopeGroupId = stagingGroup.getGroupId();
+						if (scopeGroupId != liveGroupLayout.getGroupId()) {
+							hasScopeGroup = true;
+						}
 					}
-					else {
-						scopeGroupId = liveGroup.getGroupId();
+
+					if (!hasScopeGroup) {
+						if (checkStagingGroup &&
+							!liveGroup.isStagedRemotely()) {
+
+							Group stagingGroup = liveGroup.getStagingGroup();
+
+							scopeGroupId = stagingGroup.getGroupId();
+						}
+						else {
+							scopeGroupId = liveGroup.getGroupId();
+						}
 					}
 				}
 			}
