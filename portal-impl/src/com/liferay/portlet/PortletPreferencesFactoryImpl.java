@@ -280,9 +280,19 @@ public class PortletPreferencesFactoryImpl
 			ownerType = PortletKeys.PREFS_OWNER_TYPE_USER;
 		}
 
+		long plid = 0;
+
+		if (layout.isPortletEmbedded(portletId, layout.getGroupId())) {
+			ownerId = layout.getGroupId();
+			plid = PortletKeys.PREFS_PLID_SHARED;
+		}
+		else {
+			plid = layout.getPlid();
+		}
+
 		return getLayoutPortletSetup(
-			layout.getCompanyId(), ownerId, ownerType, layout.getPlid(),
-			portletId, defaultPreferences);
+			layout.getCompanyId(), ownerId, ownerType, plid, portletId,
+			defaultPreferences);
 	}
 
 	@Override
