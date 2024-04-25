@@ -4308,9 +4308,25 @@ public class PortalImpl implements Portal {
 							layout.getUuid(), liveGroup.getGroupId(),
 							layout.isPrivateLayout());
 
-					if ((liveGroupLayout != null) &&
-						liveGroupLayout.hasScopeGroup()) {
+					boolean hasScopeGroup = false;
 
+					if (liveGroupLayout != null) {
+						if (liveGroupLayout.isTypeContent()) {
+							Layout liveGroupDraftLayout =
+								liveGroupLayout.fetchDraftLayout();
+
+							if ((liveGroupDraftLayout != null) &&
+								liveGroupDraftLayout.hasScopeGroup()) {
+
+								hasScopeGroup = true;
+							}
+						}
+						else {
+							hasScopeGroup = liveGroupLayout.hasScopeGroup();
+						}
+					}
+
+					if (hasScopeGroup) {
 						scopeGroupId = _getScopeGroupId(
 							themeDisplay, liveGroupLayout, portletId);
 					}
