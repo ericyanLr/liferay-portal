@@ -68,6 +68,25 @@ public class StagingPortletLayoutTest extends BaseLocalStagingTestCase {
 		throws Exception {
 
 		LayoutTestUtil.addPortletToLayout(stagingLayout, portletId);
+		publishLayouts();
+
+		_testScopeGroupId(
+			liveGroup.getGroupId(), liveLayout, stagingLayout, portletId,
+			false);
+		_testScopeGroupId(
+			stagingGroup.getGroupId(), liveLayout, stagingLayout, portletId,
+			true);
+
+		_updateLayoutPortletScope(
+			stagingLayout, portletId, StringPool.BLANK, "company");
+		publishLayouts();
+
+		_testScopeGroupId(
+			liveGroup.getGroupId(), liveLayout, stagingLayout, portletId,
+			false);
+		_testScopeGroupId(
+			stagingGroup.getGroupId(), liveLayout, stagingLayout, portletId,
+			true);
 
 		_updateLayoutPortletScope(
 			stagingLayout, portletId, stagingLayout.getUuid(), "layout");
