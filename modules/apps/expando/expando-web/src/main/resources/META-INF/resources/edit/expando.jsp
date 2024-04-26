@@ -93,6 +93,8 @@ else {
 
 	PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.format(request, "new-x", new Object[] {propertyDisplayType}), null);
 }
+
+boolean hasUpdatePermission = ExpandoColumnPermissionUtil.contains(permissionChecker, expandoColumn, ActionKeys.UPDATE);
 %>
 
 <liferay-ui:error exception="<%= ColumnNameException.class %>" message="please-enter-a-valid-name" />
@@ -138,7 +140,9 @@ else {
 				<%= LanguageUtil.format(request, expandoColumn != null ? "edit-x" : "new-x", new Object[] {propertyDisplayType}) %>
 			</h2>
 
-			<liferay-frontend:fieldset>
+			<liferay-frontend:fieldset
+				disabled="<%= !hasUpdatePermission %>"
+			>
 				<aui:field-wrapper cssClass="form-group lfr-input-text-container">
 					<c:choose>
 						<c:when test="<%= expandoColumn != null %>">
@@ -165,6 +169,7 @@ else {
 		<liferay-frontend:edit-form-footer>
 			<liferay-frontend:edit-form-buttons
 				redirect="<%= redirect %>"
+				submitDisabled="<%= !hasUpdatePermission %>"
 			/>
 		</liferay-frontend:edit-form-footer>
 	</liferay-frontend:edit-form>
