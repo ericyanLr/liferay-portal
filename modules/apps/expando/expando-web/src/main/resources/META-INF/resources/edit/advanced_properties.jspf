@@ -6,8 +6,8 @@
 --%>
 
 <liferay-frontend:fieldset
-	collapsed="<%= true %>"
-	collapsible="<%= true %>"
+	collapsed="<%= hasUpdatePermission %>"
+	collapsible="<%= hasUpdatePermission %>"
 	disabled="<%= !hasUpdatePermission %>"
 	label="advanced-properties"
 >
