@@ -66,7 +66,7 @@ public class ActionUtil {
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		return PortletPreferencesFactoryUtil.getLayoutPortletSetup(
+		return themeDisplay.getStrictLayoutPortletSetup(
 			themeDisplay.getLayout(), portlet.getPortletId());
 	}
 
