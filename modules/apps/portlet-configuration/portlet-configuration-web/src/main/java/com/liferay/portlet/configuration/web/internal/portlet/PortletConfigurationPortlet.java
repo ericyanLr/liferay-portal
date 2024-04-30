@@ -282,11 +282,12 @@ public class PortletConfigurationPortlet extends MVCPortlet {
 
 		Portlet portlet = ActionUtil.getPortlet(actionRequest);
 
-		PortletPreferences portletPreferences =
-			ActionUtil.getLayoutPortletSetup(actionRequest, portlet);
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 
 		actionRequest = ActionUtil.getWrappedActionRequest(
-			actionRequest, portletPreferences);
+			actionRequest,
+			_getPortletPreferences(themeDisplay, portlet.getPortletId()));
 
 		_updateScope(actionRequest, portlet);
 
