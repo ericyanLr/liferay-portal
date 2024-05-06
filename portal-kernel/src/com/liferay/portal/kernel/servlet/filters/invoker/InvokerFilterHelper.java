@@ -457,7 +457,7 @@ public class InvokerFilterHelper {
 			Map<String, String> initParameterMap = new HashMap<>();
 
 			for (String key : serviceReference.getPropertyKeys()) {
-				if (!key.startsWith("init.param.")) {
+				if (!key.startsWith("init-param.")) {
 					continue;
 				}
 
@@ -465,7 +465,7 @@ public class InvokerFilterHelper {
 					serviceReference.getProperty(key));
 
 				initParameterMap.put(
-					StringUtil.removeSubstring(key, "init.param."), value);
+					StringUtil.removeSubstring(key, "init-param."), value);
 			}
 
 			ServletContext servletContext = ServletContextPool.get(
