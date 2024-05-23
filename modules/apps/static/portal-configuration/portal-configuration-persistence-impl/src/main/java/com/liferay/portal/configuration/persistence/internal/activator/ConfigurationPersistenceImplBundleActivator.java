@@ -5,12 +5,18 @@
 
 package com.liferay.portal.configuration.persistence.internal.activator;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.persistence.ReloadablePersistenceManager;
 import com.liferay.portal.configuration.persistence.internal.ConfigurationPersistenceManager;
+import com.liferay.portal.configuration.persistence.internal.configuration.persistence.listener.ConfigurationImportGlobalConfigurationModelListener;
 import com.liferay.portal.configuration.persistence.internal.upgrade.ConfigurationUpgradeStepFactoryImpl;
+import com.liferay.portal.configuration.persistence.listener.ConfigurationModelListener;
 import com.liferay.portal.configuration.persistence.upgrade.ConfigurationUpgradeStepFactory;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.felix.cm.PersistenceManager;
 
@@ -27,6 +33,14 @@ public class ConfigurationPersistenceImplBundleActivator
 
 	@Override
 	public void start(BundleContext bundleContext) {
+		_configurationModelListenerServiceRegistrations.add(
+			bundleContext.registerService(
+				ConfigurationModelListener.class,
+				new ConfigurationImportGlobalConfigurationModelListener(),
+				HashMapDictionaryBuilder.<String, Object>put(
+					"model.class.name", StringPool.STAR
+				).build()));
+
 		_configurationPersistenceManager = new ConfigurationPersistenceManager(
 			bundleContext, InfrastructureUtil.getDataSource());
 
@@ -64,9 +78,18 @@ public class ConfigurationPersistenceImplBundleActivator
 			_configurationPersistenceManagerServiceRegistration.unregister();
 		}
 
+		for (ServiceRegistration<ConfigurationModelListener>
+				serviceRegistration :
+					_configurationModelListenerServiceRegistrations) {
+
+			serviceRegistration.unregister();
+		}
+
 		_configurationPersistenceManager.stop();
 	}
 
+	private final List<ServiceRegistration<ConfigurationModelListener>>
+		_configurationModelListenerServiceRegistrations = new ArrayList<>();
 	private ConfigurationPersistenceManager _configurationPersistenceManager;
 	private ServiceRegistration<?>
 		_configurationPersistenceManagerServiceRegistration;
