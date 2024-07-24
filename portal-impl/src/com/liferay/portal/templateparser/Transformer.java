@@ -95,7 +95,6 @@ public class Transformer {
 
 		if (themeDisplay != null) {
 			companyId = themeDisplay.getCompanyId();
-			companyGroupId = themeDisplay.getCompanyGroupId();
 			scopeGroupId = themeDisplay.getScopeGroupId();
 			siteGroupId = themeDisplay.getSiteGroupId();
 		}

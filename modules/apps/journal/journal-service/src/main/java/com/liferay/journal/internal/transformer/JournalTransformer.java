@@ -877,7 +877,6 @@ public class JournalTransformer {
 
 		if (themeDisplay != null) {
 			companyId = themeDisplay.getCompanyId();
-			companyGroupId = themeDisplay.getCompanyGroupId();
 			scopeGroupId = themeDisplay.getScopeGroupId();
 			siteGroupId = themeDisplay.getSiteGroupId();
 		}
