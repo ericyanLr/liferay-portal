@@ -77,6 +77,8 @@ public class DDLDisplayTemplateTransformer {
 
 		contextObjects.put(
 			TemplateConstants.CLASS_NAME_ID, ddmTemplate.getClassNameId());
+		contextObjects.put(
+			TemplateConstants.TEMPLATE_GROUP_ID, ddmTemplate.getGroupId());
 
 		TemplateHandler templateHandler =
 			TemplateHandlerRegistryUtil.getTemplateHandler(

@@ -51,7 +51,8 @@ public class PortletDisplayTemplateConstants {
 
 	public static final String TAGLIB_LIFERAY_HASH = "taglibLiferayHash";
 
-	public static final String TEMPLATE_GROUP_ID = "templateGroupId";
+	public static final String TEMPLATE_GROUP_ID =
+		TemplateConstants.TEMPLATE_GROUP_ID;
 
 	public static final String TEMPLATE_ID = TemplateConstants.TEMPLATE_ID;
 

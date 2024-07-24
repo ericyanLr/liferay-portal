@@ -86,6 +86,9 @@ public class TemplateDisplayTemplateTransformer {
 		DDMTemplate ddmTemplate = DDMTemplateLocalServiceUtil.fetchDDMTemplate(
 			_templateEntry.getDDMTemplateId());
 
+		contextObjects.put(
+			TemplateConstants.TEMPLATE_GROUP_ID, ddmTemplate.getGroupId());
+
 		return transformer.transform(
 			themeDisplay, contextObjects, ddmTemplate.getScript(),
 			TemplateConstants.LANG_TYPE_FTL, new UnsyncStringWriter(),
