@@ -89,7 +89,8 @@ public class Transformer {
 		}
 
 		long companyId = 0;
-		long companyGroupId = 0;
+		long companyGroupId = GetterUtil.getLong(
+			contextObjects.get("company_group_id"));
 		long scopeGroupId = 0;
 		long siteGroupId = 0;
 
