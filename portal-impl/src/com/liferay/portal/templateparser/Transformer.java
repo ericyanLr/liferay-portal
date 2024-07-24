@@ -100,10 +100,13 @@ public class Transformer {
 			siteGroupId = themeDisplay.getSiteGroupId();
 		}
 
+		long templateGroupId = GetterUtil.getLong(
+			contextObjects.get("templateGroupId"));
 		String templateId = String.valueOf(contextObjects.get("template_id"));
 
 		Template template = getTemplate(
-			getTemplateId(templateId, companyId, companyGroupId, scopeGroupId),
+			getTemplateId(
+				templateId, companyId, companyGroupId, templateGroupId),
 			script, langType);
 
 		try {
