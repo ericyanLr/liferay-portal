@@ -23,8 +23,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class StrutsUtil {
 
-	public static final String EXCEPTION =
-		StrutsUtil.class.getName() + "_EXCEPTION";
+	public static final String EXCEPTION = "javax.servlet.jsp.jspException";
 
 	public static final String TEXT_HTML_DIR = "/html";
 
