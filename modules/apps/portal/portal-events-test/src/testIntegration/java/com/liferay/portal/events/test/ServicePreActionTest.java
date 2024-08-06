@@ -7,7 +7,12 @@ package com.liferay.portal.events.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.events.ServicePreAction;
+import com.liferay.portal.kernel.events.ActionException;
+import com.liferay.portal.kernel.events.LifecycleAction;
+import com.liferay.portal.kernel.events.LifecycleEvent;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -31,13 +36,20 @@ import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.PropsValuesTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.InstancePool;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsUtil;
@@ -102,6 +114,30 @@ public class ServicePreActionTest {
 			WebKeys.VIRTUAL_HOST_LAYOUT_SET, _group.getPublicLayoutSet());
 		_mockHttpServletRequest.setRequestURI(
 			_portal.getPathMain() + "/portal/login");
+	}
+
+	@Test
+	public void testErrorPage() throws Exception {
+		InstancePool.get(TestAction.class.getName(), false);
+
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.portal.internal.servlet.MainServlet",
+				LoggerTestUtil.ERROR);
+			SafeCloseable safeCloseable =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"SERVLET_SERVICE_EVENTS_PRE",
+					new String[] {TestAction.class.getName()})) {
+
+			TestAction.setIncludeJspException(false);
+
+			_testErrorPage("http://localhost:8080");
+			_testErrorPage("http://localhost:8080/c");
+
+			TestAction.setIncludeJspException(true);
+
+			_testErrorPage("http://localhost:8080");
+			_testErrorPage("http://localhost:8080/c");
+		}
 	}
 
 	@Test
@@ -259,6 +295,34 @@ public class ServicePreActionTest {
 		Assert.assertEquals(layout.getPlid(), plid);
 	}
 
+	public static class TestAction implements LifecycleAction {
+
+		public static void setIncludeJspException(boolean includeJspException) {
+			_includeJspException = includeJspException;
+		}
+
+		@Override
+		public void processLifecycleEvent(LifecycleEvent lifecycleEvent)
+			throws ActionException {
+
+			ActionException actionException = new ActionException(
+				ServicePreActionTest.class.getName());
+
+			if (_includeJspException) {
+				HttpServletRequest httpServletRequest =
+					lifecycleEvent.getRequest();
+
+				httpServletRequest.setAttribute(
+					"javax.servlet.error.exception", actionException);
+			}
+
+			throw actionException;
+		}
+
+		private static boolean _includeJspException;
+
+	}
+
 	private Layout _getLayout(Object layoutComposite) {
 		return ReflectionTestUtil.invoke(
 			layoutComposite, "getLayout", null, null);
@@ -320,11 +384,39 @@ public class ServicePreActionTest {
 		return themeDisplay.getPlid();
 	}
 
+	private void _testErrorPage(String location) throws Exception {
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"portal_web.docroot.html.common.error_jsp",
+				LoggerTestUtil.ERROR)) {
+
+			String content = _http.URLtoString(location);
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			LogEntry logEntry = logEntries.get(0);
+
+			Throwable throwable = logEntry.getThrowable();
+
+			Assert.assertEquals(
+				ServicePreActionTest.class.getName(), throwable.getMessage());
+			Assert.assertTrue(content.contains(throwable.getMessage()));
+
+			Assert.assertTrue(
+				content.contains(
+					LanguageUtil.get(
+						LocaleUtil.getSiteDefault(),
+						"an-unexpected-system-error-occurred")));
+		}
+	}
+
 	private static Company _company;
 	private static long _companyThreadLocalCompanyId;
 
 	@DeleteAfterTestRun
 	private Group _group;
+
+	@Inject
+	private Http _http;
 
 	@Inject
 	private LayoutLocalService _layoutLocalService;
