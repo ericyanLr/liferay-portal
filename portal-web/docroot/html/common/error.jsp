@@ -10,6 +10,10 @@
 <%@ page isErrorPage="true" %>
 
 <%
+if (exception == null) {
+	exception = (Throwable)request.getAttribute(StrutsUtil.EXCEPTION);
+}
+
 String message = null;
 
 StringBundler sb = new StringBundler(9);
