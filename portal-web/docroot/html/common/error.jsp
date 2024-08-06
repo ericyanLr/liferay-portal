@@ -23,25 +23,27 @@ sb.append(request.getHeader("Referer"));
 sb.append(", remote address ");
 sb.append(request.getRemoteAddr());
 
-if (exception == null) {
+Exception strutsUtilException = (Exception)request.getAttribute(StrutsUtil.EXCEPTION);
+
+if (strutsUtilException == null) {
 	sb.append(", null exception");
 }
 
-if (exception != null) {
-	message = exception.getMessage();
+if (strutsUtilException != null) {
+	message = strutsUtilException.getMessage();
 }
 
-if (exception instanceof PrincipalException) {
-	if (exception != null) {
-		_log.warn(exception, exception);
+if (strutsUtilException instanceof PrincipalException) {
+	if (strutsUtilException != null) {
+		_log.warn(strutsUtilException);
 	}
 	else {
 		_log.warn(sb.toString());
 	}
 }
 else {
-	if (exception != null) {
-		_log.error(exception, exception);
+	if (strutsUtilException != null) {
+		_log.error(strutsUtilException);
 	}
 	else {
 		_log.error(sb.toString());
@@ -57,7 +59,7 @@ else {
 			<td>
 				<font color="#FF0000" face="Verdana, Tahoma, Arial" size="2">
 					<c:choose>
-						<c:when test="<%= exception instanceof PrincipalException %>">
+						<c:when test="<%= strutsUtilException instanceof PrincipalException %>">
 							<liferay-ui:message key="you-do-not-have-permission-to-view-this-page" />
 						</c:when>
 						<c:otherwise>

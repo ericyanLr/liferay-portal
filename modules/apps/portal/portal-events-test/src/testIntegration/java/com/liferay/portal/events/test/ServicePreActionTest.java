@@ -399,13 +399,14 @@ public class ServicePreActionTest {
 
 			Assert.assertEquals(
 				ServicePreActionTest.class.getName(), throwable.getMessage());
-			Assert.assertTrue(content.contains(throwable.getMessage()));
 
 			Assert.assertTrue(
 				content.contains(
 					LanguageUtil.get(
 						LocaleUtil.getSiteDefault(),
 						"an-unexpected-system-error-occurred")));
+			Assert.assertTrue(
+				content.contains(ServicePreActionTest.class.getName()));
 		}
 	}
 
