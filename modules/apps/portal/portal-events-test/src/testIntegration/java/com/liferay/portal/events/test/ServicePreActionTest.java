@@ -7,7 +7,12 @@ package com.liferay.portal.events.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.events.ServicePreAction;
+import com.liferay.portal.kernel.events.ActionException;
+import com.liferay.portal.kernel.events.LifecycleAction;
+import com.liferay.portal.kernel.events.LifecycleEvent;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -31,13 +36,20 @@ import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.PropsValuesTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.InstancePool;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsUtil;
@@ -102,6 +114,35 @@ public class ServicePreActionTest {
 			WebKeys.VIRTUAL_HOST_LAYOUT_SET, _group.getPublicLayoutSet());
 		_mockHttpServletRequest.setRequestURI(
 			_portal.getPathMain() + "/portal/login");
+	}
+
+	@Test
+	public void testErrorPage() throws Exception {
+		TestAction testAction = new TestAction();
+
+		InstancePool.put(TestAction.class.getName(), testAction);
+
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.portal.internal.servlet.MainServlet",
+				LoggerTestUtil.ERROR);
+			SafeCloseable safeCloseable =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"SERVLET_SERVICE_EVENTS_PRE",
+					new String[] {TestAction.class.getName()})) {
+
+			String expectedMessage = ServicePreActionTest.class.getName();
+
+			_testErrorPage(expectedMessage, "http://localhost:8080");
+			_testErrorPage(expectedMessage, "http://localhost:8080/c");
+
+			testAction.includeJspException = true;
+
+			expectedMessage =
+				ServicePreActionTest.class.getName() + "_JspException";
+
+			_testErrorPage(expectedMessage, "http://localhost:8080");
+			_testErrorPage(expectedMessage, "http://localhost:8080/c");
+		}
 	}
 
 	@Test
@@ -320,11 +361,40 @@ public class ServicePreActionTest {
 		return themeDisplay.getPlid();
 	}
 
+	private void _testErrorPage(String expectedMessage, String location)
+		throws Exception {
+
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"portal_web.docroot.html.common.error_jsp",
+				LoggerTestUtil.ERROR)) {
+
+			String content = _http.URLtoString(location);
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			LogEntry logEntry = logEntries.get(0);
+
+			Throwable throwable = logEntry.getThrowable();
+
+			Assert.assertEquals(expectedMessage, throwable.getMessage());
+
+			Assert.assertTrue(content.contains(expectedMessage));
+			Assert.assertTrue(
+				content.contains(
+					LanguageUtil.get(
+						LocaleUtil.getSiteDefault(),
+						"an-unexpected-system-error-occurred")));
+		}
+	}
+
 	private static Company _company;
 	private static long _companyThreadLocalCompanyId;
 
 	@DeleteAfterTestRun
 	private Group _group;
+
+	@Inject
+	private Http _http;
 
 	@Inject
 	private LayoutLocalService _layoutLocalService;
@@ -354,5 +424,29 @@ public class ServicePreActionTest {
 
 	@Inject
 	private UserLocalService _userLocalService;
+
+	private class TestAction implements LifecycleAction {
+
+		@Override
+		public void processLifecycleEvent(LifecycleEvent lifecycleEvent)
+			throws ActionException {
+
+			String message = ServicePreActionTest.class.getName();
+
+			if (includeJspException) {
+				HttpServletRequest httpServletRequest =
+					lifecycleEvent.getRequest();
+
+				httpServletRequest.setAttribute(
+					"javax.servlet.error.exception",
+					new ActionException(message + "_JspException"));
+			}
+
+			throw new ActionException(message);
+		}
+
+		public boolean includeJspException;
+
+	}
 
 }
