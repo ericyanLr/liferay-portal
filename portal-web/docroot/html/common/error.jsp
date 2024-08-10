@@ -7,8 +7,6 @@
 
 <%@ include file="/html/common/init.jsp" %>
 
-<%@ page isErrorPage="true" %>
-
 <%
 String message = null;
 
