@@ -7,12 +7,14 @@ package com.liferay.portal.messaging.internal;
 
 import com.liferay.portal.kernel.cluster.ClusterInvokeThreadLocal;
 import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GroupThreadLocal;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.Validator;
@@ -48,7 +50,18 @@ public class MessageBusThreadLocalUtil {
 		}
 
 		if (!message.contains("principalName")) {
-			message.put("principalName", PrincipalThreadLocal.getName());
+			long userId = PrincipalThreadLocal.getUserId();
+
+			if (userId > 0) {
+				User user = UserLocalServiceUtil.fetchUser(userId);
+
+				if ((user != null) &&
+					(user.getCompanyId() == message.getLong("companyId"))) {
+
+					message.put(
+						"principalName", PrincipalThreadLocal.getName());
+				}
+			}
 		}
 
 		if (!message.contains("principalPassword")) {
