@@ -745,6 +745,10 @@ public class LayoutServiceContextHelperImpl
 				LayoutSet layoutSet = _layout.getLayoutSet();
 
 				themeDisplay.setLayoutSet(layoutSet);
+				themeDisplay.setLayouts(
+					_layoutLocalService.getLayouts(
+						layoutSet.getGroupId(), layoutSet.isPrivateLayout(),
+						LayoutConstants.DEFAULT_PARENT_LAYOUT_ID));
 
 				themeDisplay.setLayoutTypePortlet(
 					(LayoutTypePortlet)_layout.getLayoutType());

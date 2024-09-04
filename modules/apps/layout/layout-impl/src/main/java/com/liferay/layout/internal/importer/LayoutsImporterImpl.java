@@ -229,25 +229,31 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 			String pageElementJSON, int position, boolean preserveItemIds)
 		throws Exception {
 
-		Consumer<LayoutStructure> consumer = processedLayoutStructure -> {
-			try {
-				_updateLayoutPageTemplateStructure(
-					layout, processedLayoutStructure);
-			}
-			catch (Exception exception) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(exception);
+		try (AutoCloseable autoCloseable =
+				 _layoutServiceContextHelper.getServiceContextAutoCloseable(
+					 layout)) {
+
+			Consumer<LayoutStructure> consumer = processedLayoutStructure -> {
+				try {
+					_updateLayoutPageTemplateStructure(
+						layout, processedLayoutStructure);
 				}
-			}
-		};
+				catch (Exception exception) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(exception);
+					}
+				}
+			};
 
-		long segmentsExperienceId =
-			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				layout.getPlid());
+			long segmentsExperienceId =
+				_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+					layout.getPlid());
 
-		return _importPageElement(
-			consumer, layout, layoutStructure, parentItemId, pageElementJSON,
-			position, preserveItemIds, segmentsExperienceId);
+			return _importPageElement(
+				consumer, layout, layoutStructure, parentItemId,
+				pageElementJSON,
+				position, preserveItemIds, segmentsExperienceId);
+		}
 	}
 
 	@Override
@@ -257,24 +263,30 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 			long segmentsExperienceId)
 		throws Exception {
 
-		Consumer<LayoutStructure> consumer = processedLayoutStructure -> {
-			try {
-				_layoutPageTemplateStructureLocalService.
-					updateLayoutPageTemplateStructureData(
-						layout.getGroupId(), layout.getPlid(),
-						segmentsExperienceId,
-						processedLayoutStructure.toString());
-			}
-			catch (Exception exception) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(exception);
-				}
-			}
-		};
+		try (AutoCloseable autoCloseable =
+				 _layoutServiceContextHelper.getServiceContextAutoCloseable(
+					 layout)) {
 
-		return _importPageElement(
-			consumer, layout, layoutStructure, parentItemId, pageElementJSON,
-			position, preserveItemIds, segmentsExperienceId);
+			Consumer<LayoutStructure> consumer = processedLayoutStructure -> {
+				try {
+					_layoutPageTemplateStructureLocalService.
+						updateLayoutPageTemplateStructureData(
+							layout.getGroupId(), layout.getPlid(),
+							segmentsExperienceId,
+							processedLayoutStructure.toString());
+				}
+				catch (Exception exception) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(exception);
+					}
+				}
+			};
+
+			return _importPageElement(
+				consumer, layout, layoutStructure, parentItemId,
+				pageElementJSON,
+				position, preserveItemIds, segmentsExperienceId);
+		}
 	}
 
 	@Override
@@ -1956,25 +1968,30 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 
 		Layout layout = _layoutLocalService.getLayout(plid);
 
-		LayoutStructure layoutStructure = new LayoutStructure();
+		try (AutoCloseable autoCloseable =
+				 _layoutServiceContextHelper.getServiceContextAutoCloseable(
+					 layout)) {
 
-		if (pageDefinition != null) {
-			PageElement pageElement = pageDefinition.getPageElement();
+			LayoutStructure layoutStructure = new LayoutStructure();
 
-			LayoutStructureItem rootLayoutStructureItem =
-				layoutStructure.addRootLayoutStructureItem(pageElement.getId());
+			if (pageDefinition != null) {
+				PageElement pageElement = pageDefinition.getPageElement();
 
-			if ((pageElement.getType() == PageElement.Type.ROOT) &&
-				(pageElement.getPageElements() != null)) {
+				LayoutStructureItem rootLayoutStructureItem =
+					layoutStructure.addRootLayoutStructureItem(
+						pageElement.getId());
 
-				double pageDefinitionVersion = GetterUtil.getDouble(
-					pageDefinition.getVersion(), 1);
-				int position = 0;
+				if ((pageElement.getType() == PageElement.Type.ROOT) &&
+					(pageElement.getPageElements() != null)) {
 
-				for (PageElement childPageElement :
+					double pageDefinitionVersion = GetterUtil.getDouble(
+						pageDefinition.getVersion(), 1);
+					int position = 0;
+
+					for (PageElement childPageElement :
 						pageElement.getPageElements()) {
 
-					if (_processPageElement(
+						if (_processPageElement(
 							new ArrayList<>(), layout, layoutStructure,
 							pageDefinitionVersion, childPageElement,
 							rootLayoutStructureItem.getItemId(), position,
@@ -1984,31 +2001,32 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 									layout.getPlid()),
 							warningMessages)) {
 
-						position++;
+							position++;
+						}
 					}
 				}
-			}
 
-			if (pageDefinition.getPageRules() != null) {
-				for (PageRule pageRule : pageDefinition.getPageRules()) {
-					LayoutStructureRuleImporter.addLayoutStructureRule(
-						layoutStructure, pageRule);
+				if (pageDefinition.getPageRules() != null) {
+					for (PageRule pageRule : pageDefinition.getPageRules()) {
+						LayoutStructureRuleImporter.addLayoutStructureRule(
+							layoutStructure, pageRule);
+					}
 				}
+
+				Settings settings = pageDefinition.getSettings();
+
+				layout = _layoutLocalService.fetchLayout(layout.getPlid());
+
+				layout = _updateLayoutSettings(userId, layout, settings);
+			}
+			else {
+				layoutStructure.addRootLayoutStructureItem();
 			}
 
-			Settings settings = pageDefinition.getSettings();
+			_updateLayoutPageTemplateStructure(layout, layoutStructure);
 
-			layout = _layoutLocalService.fetchLayout(layout.getPlid());
-
-			layout = _updateLayoutSettings(userId, layout, settings);
+			_updateLayouts(plid, userId);
 		}
-		else {
-			layoutStructure.addRootLayoutStructureItem();
-		}
-
-		_updateLayoutPageTemplateStructure(layout, layoutStructure);
-
-		_updateLayouts(plid, userId);
 	}
 
 	private boolean _processPageElement(
@@ -2168,21 +2186,16 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 				layout.getPlid()),
 			jsonObject.toString(), serviceContext);
 
-		try (AutoCloseable autoCloseable =
-				_layoutServiceContextHelper.getServiceContextAutoCloseable(
-					layout)) {
+		for (FragmentEntryLink fragmentEntryLink :
+				_fragmentEntryLinkLocalService.getFragmentEntryLinksByPlid(
+					layout.getGroupId(), layout.getPlid())) {
 
-			for (FragmentEntryLink fragmentEntryLink :
-					_fragmentEntryLinkLocalService.getFragmentEntryLinksByPlid(
-						layout.getGroupId(), layout.getPlid())) {
+			for (FragmentEntryLinkListener fragmentEntryLinkListener :
+					_fragmentEntryLinkListenerRegistry.
+						getFragmentEntryLinkListeners()) {
 
-				for (FragmentEntryLinkListener fragmentEntryLinkListener :
-						_fragmentEntryLinkListenerRegistry.
-							getFragmentEntryLinkListeners()) {
-
-					fragmentEntryLinkListener.onAddFragmentEntryLink(
-						fragmentEntryLink);
-				}
+				fragmentEntryLinkListener.onAddFragmentEntryLink(
+					fragmentEntryLink);
 			}
 		}
 	}
