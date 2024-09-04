@@ -81,20 +81,55 @@ public class UserWorkflowHandler extends BaseWorkflowHandler<User> {
 		ServiceContext serviceContext = (ServiceContext)workflowContext.get(
 			WorkflowConstants.CONTEXT_SERVICE_CONTEXT);
 
-		if (((user.getStatus() == WorkflowConstants.STATUS_DRAFT) ||
-			 (user.getStatus() == WorkflowConstants.STATUS_PENDING)) &&
-			(status == WorkflowConstants.STATUS_APPROVED)) {
+		AuditRequestThreadLocal currentAuditRequestThreadLocal = null;
 
-			_userLocalService.completeUserRegistration(user, serviceContext);
+		try {
+			if (((user.getStatus() == WorkflowConstants.STATUS_DRAFT) ||
+				 (user.getStatus() == WorkflowConstants.STATUS_PENDING)) &&
+				(status == WorkflowConstants.STATUS_APPROVED)) {
 
-			_updateAuditRequestThreadLocal(workflowContext);
+				_userLocalService.completeUserRegistration(
+					user, serviceContext);
+
+				currentAuditRequestThreadLocal =
+					AuditRequestThreadLocal.getAuditThreadLocal();
+
+				_updateAuditRequestThreadLocal(workflowContext);
+			}
+
+			return _userLocalService.updateStatus(user, status, serviceContext);
 		}
+		finally {
+			if (currentAuditRequestThreadLocal != null) {
+				AuditRequestThreadLocal auditRequestThreadLocal =
+					AuditRequestThreadLocal.getAuditThreadLocal();
 
-		return _userLocalService.updateStatus(user, status, serviceContext);
+				auditRequestThreadLocal.setClientHost(
+					currentAuditRequestThreadLocal.getClientHost());
+				auditRequestThreadLocal.setClientIP(
+					currentAuditRequestThreadLocal.getClientIP());
+				auditRequestThreadLocal.setQueryString(
+					currentAuditRequestThreadLocal.getQueryString());
+				auditRequestThreadLocal.setRealUserEmailAddress(
+					currentAuditRequestThreadLocal.getRealUserEmailAddress());
+				auditRequestThreadLocal.setRealUserId(
+					currentAuditRequestThreadLocal.getRealUserId());
+				auditRequestThreadLocal.setRequestURL(
+					currentAuditRequestThreadLocal.getRequestURL());
+				auditRequestThreadLocal.setServerName(
+					currentAuditRequestThreadLocal.getServerName());
+				auditRequestThreadLocal.setServerPort(
+					currentAuditRequestThreadLocal.getServerPort());
+				auditRequestThreadLocal.setSessionID(
+					currentAuditRequestThreadLocal.getSessionID());
+			}
+		}
 	}
 
 	private void _updateAuditRequestThreadLocal(
 		Map<String, Serializable> workflowContext) {
+
+		AuditRequestThreadLocal.removeAuditThreadLocal();
 
 		AuditRequestThreadLocal auditRequestThreadLocal =
 			AuditRequestThreadLocal.getAuditThreadLocal();
