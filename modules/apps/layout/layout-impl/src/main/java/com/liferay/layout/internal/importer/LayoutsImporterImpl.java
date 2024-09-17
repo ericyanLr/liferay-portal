@@ -2025,16 +2025,33 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 		LayoutStructureItem layoutStructureItem = null;
 
 		if (layoutStructureItemImporter != null) {
-			layoutStructureItem =
-				layoutStructureItemImporter.addLayoutStructureItem(
-					layoutStructure,
-					new LayoutStructureItemImporterContext(
-						layout, pageDefinitionVersion, parentItemId, position,
-						preserveItemIds, segmentsExperienceId,
-						_groupLocalService, _infoItemServiceRegistry,
-						_infoSearchClassMapperRegistry, _layoutLocalService,
-						_layoutPageTemplateEntryLocalService),
-					pageElement, warningMessages);
+			AutoCloseable autoCloseable = null;
+
+			try {
+				if (layoutStructureItemImporter.getPageElementType() ==
+						PageElement.Type.FRAGMENT) {
+
+					autoCloseable =
+						_layoutServiceContextHelper.
+							getServiceContextAutoCloseable(layout);
+				}
+
+				layoutStructureItem =
+					layoutStructureItemImporter.addLayoutStructureItem(
+						layoutStructure,
+						new LayoutStructureItemImporterContext(
+							layout, pageDefinitionVersion, parentItemId,
+							position, preserveItemIds, segmentsExperienceId,
+							_groupLocalService, _infoItemServiceRegistry,
+							_infoSearchClassMapperRegistry, _layoutLocalService,
+							_layoutPageTemplateEntryLocalService),
+						pageElement, warningMessages);
+			}
+			finally {
+				if (autoCloseable != null) {
+					autoCloseable.close();
+				}
+			}
 		}
 		else if (pageElement.getType() == PageElement.Type.ROOT) {
 			layoutStructureItem = layoutStructure.getMainLayoutStructureItem();
