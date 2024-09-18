@@ -188,9 +188,7 @@ public class ResourcePermissionLocalServiceImpl
 				companyId, RoleConstants.OWNER);
 
 			List<String> ownerActionIds =
-				ResourceActionsUtil.getModelResourceActions(name);
-
-			filterOwnerActions(name, ownerActionIds);
+				ResourceActionsUtil.getModelResourceOwnerDefaultActions(name);
 
 			String[] ownerPermissions = ownerActionIds.toArray(new String[0]);
 
@@ -1316,9 +1314,8 @@ public class ResourcePermissionLocalServiceImpl
 					modelResource);
 
 			List<String> ownerModelActionIds =
-				ResourceActionsUtil.getModelResourceActions(modelResource);
-
-			filterOwnerActions(modelResource, ownerModelActionIds);
+				ResourceActionsUtil.getModelResourceOwnerDefaultActions(
+					modelResource);
 
 			_initPortletDefaultPermissions(
 				portlet.getCompanyId(), modelResource, guestRole, ownerRole,
@@ -1746,15 +1743,6 @@ public class ResourcePermissionLocalServiceImpl
 			resource.getPrimKey(), guestRole.getRoleId(), actionIds);
 	}
 
-	protected void filterOwnerActions(String name, List<String> actionIds) {
-		List<String> defaultOwnerActions =
-			ResourceActionsUtil.getModelResourceOwnerDefaultActions(name);
-
-		if (!defaultOwnerActions.isEmpty()) {
-			actionIds.retainAll(defaultOwnerActions);
-		}
-	}
-
 	protected long getGroupId(AuditedModel auditedModel) {
 		if (auditedModel instanceof GroupedModel) {
 			GroupedModel groupedModel = (GroupedModel)auditedModel;
@@ -1995,9 +1983,9 @@ public class ResourcePermissionLocalServiceImpl
 				actionIds = ResourceActionsUtil.getPortletResourceActions(name);
 			}
 			else {
-				actionIds = ResourceActionsUtil.getModelResourceActions(name);
-
-				filterOwnerActions(name, actionIds);
+				actionIds =
+					ResourceActionsUtil.getModelResourceOwnerDefaultActions(
+						name);
 			}
 
 			Role role = _roleLocalService.getRole(
