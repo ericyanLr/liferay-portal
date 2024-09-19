@@ -7819,6 +7819,7 @@ public class PortalImpl implements Portal {
 					PortletQNameUtil.getPublicRenderParameterName(qName));
 			}
 
+			FriendlyURLMapperThreadLocal.setParentParameters(params);
 			FriendlyURLMapperThreadLocal.setPRPIdentifiers(prpIdentifiers);
 
 			if (friendlyURLMapper.isCheckMappingWithPrefix()) {
