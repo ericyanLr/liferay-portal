@@ -7802,6 +7802,10 @@ public class PortalImpl implements Portal {
 
 			Map<String, String[]> actualParams = new HashMap<>();
 
+			if ((params != null) && params.containsKey("p_p_lifecycle")) {
+				actualParams.put("p_p_lifecycle", params.get("p_p_lifecycle"));
+			}
+
 			Map<String, String> prpIdentifiers = new HashMap<>();
 
 			Set<PublicRenderParameter> publicRenderParameters =
