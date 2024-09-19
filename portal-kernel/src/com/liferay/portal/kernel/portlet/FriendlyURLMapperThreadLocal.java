@@ -12,14 +12,26 @@ import java.util.Map;
  */
 public class FriendlyURLMapperThreadLocal {
 
+	public static Map<String, String[]> getParentParameters() {
+		return _parentParameters.get();
+	}
+
 	public static Map<String, String> getPRPIdentifiers() {
 		return _prpIdentifiers.get();
+	}
+
+	public static void setParentParameters(
+		Map<String, String[]> parentParameters) {
+
+		_parentParameters.set(parentParameters);
 	}
 
 	public static void setPRPIdentifiers(Map<String, String> prpIdentifiers) {
 		_prpIdentifiers.set(prpIdentifiers);
 	}
 
+	private static final ThreadLocal<Map<String, String[]>> _parentParameters =
+		new ThreadLocal<>();
 	private static final ThreadLocal<Map<String, String>> _prpIdentifiers =
 		new ThreadLocal<>();
 
