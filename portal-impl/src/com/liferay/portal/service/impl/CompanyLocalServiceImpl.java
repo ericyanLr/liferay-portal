@@ -230,7 +230,11 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			CompanyThreadLocal.setInitializingCompanyIdWithSafeCloseable(
 				company.getCompanyId());
 
+		String principalName = PrincipalThreadLocal.getName();
+
 		try {
+			PrincipalThreadLocal.setName(null);
+
 			return _transactionAwareInvoke(
 				() -> {
 					company.setWebId(webId);
@@ -334,6 +338,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 				}
 			}
 			finally {
+				PrincipalThreadLocal.setName(principalName);
 				safeCloseable.close();
 			}
 
@@ -342,6 +347,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		finally {
 			TransactionCommitCallbackUtil.registerCallback(
 				() -> {
+					PrincipalThreadLocal.setName(principalName);
 					safeCloseable.close();
 
 					return null;
