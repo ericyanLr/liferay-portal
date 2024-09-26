@@ -36,6 +36,48 @@
 			<guest-unsupported />
 		</permissions>
 	</portlet-resource>
+	<portlet-resource>
+		<portlet-name>com_liferay_portal_security_ResourcePermissionLocalServiceTest_ResourceActionsDefaultsPortlet</portlet-name>
+		<permissions>
+			<supports>
+				<action-key>ADD_TO_PAGE</action-key>
+				<action-key>CONFIGURATION</action-key>
+				<action-key>VIEW</action-key>
+			</supports>
+			<site-member-defaults>
+				<action-key>VIEW</action-key>
+			</site-member-defaults>
+			<guest-defaults>
+				<action-key>VIEW</action-key>
+			</guest-defaults>
+			<owner-defaults>
+				<action-key>VIEW</action-key>
+			</owner-defaults>
+		</permissions>
+	</portlet-resource>
+	<portlet-resource>
+		<portlet-name>com_liferay_portal_security_ResourcePermissionLocalServiceTest_ResourceActionsEmptyDefaultsPortlet</portlet-name>
+		<permissions>
+			<supports>
+				<action-key>ADD_TO_PAGE</action-key>
+				<action-key>CONFIGURATION</action-key>
+				<action-key>VIEW</action-key>
+			</supports>
+			<site-member-defaults />
+			<guest-defaults />
+			<owner-defaults />
+		</permissions>
+	</portlet-resource>
+	<portlet-resource>
+		<portlet-name>com_liferay_portal_security_ResourcePermissionLocalServiceTest_ResourceActionsUndeclaredDefaultsPortlet</portlet-name>
+		<permissions>
+			<supports>
+				<action-key>ADD_TO_PAGE</action-key>
+				<action-key>CONFIGURATION</action-key>
+				<action-key>VIEW</action-key>
+			</supports>
+		</permissions>
+	</portlet-resource>
 	<model-resource>
 		<model-name>com.liferay.portal.security.permission.nonsite</model-name>
 		<portlet-ref>
@@ -88,6 +130,60 @@
 				<action-key>VIEW</action-key>
 			</guest-defaults>
 			<guest-unsupported />
+		</permissions>
+	</model-resource>
+	<model-resource>
+		<model-name>com.liferay.portal.security.permission.ResourceActionsDefaults</model-name>
+		<portlet-ref>
+			<portlet-name>com_liferay_portal_security_ResourcePermissionLocalServiceTest_ResourceActionsDefaultsPortlet</portlet-name>
+		</portlet-ref>
+		<root>true</root>
+		<permissions>
+			<supports>
+				<action-key>ADD_TO_PAGE</action-key>
+				<action-key>CONFIGURATION</action-key>
+				<action-key>VIEW</action-key>
+			</supports>
+			<site-member-defaults>
+				<action-key>VIEW</action-key>
+			</site-member-defaults>
+			<guest-defaults>
+				<action-key>VIEW</action-key>
+			</guest-defaults>
+			<owner-defaults>
+				<action-key>VIEW</action-key>
+			</owner-defaults>
+		</permissions>
+	</model-resource>
+	<model-resource>
+		<model-name>com.liferay.portal.security.permission.ResourceActionsEmptyDefaults</model-name>
+		<portlet-ref>
+			<portlet-name>com_liferay_portal_security_ResourcePermissionLocalServiceTest_ResourceActionsEmptyDefaultsPortlet</portlet-name>
+		</portlet-ref>
+		<root>true</root>
+		<permissions>
+			<supports>
+				<action-key>ADD_TO_PAGE</action-key>
+				<action-key>CONFIGURATION</action-key>
+				<action-key>VIEW</action-key>
+			</supports>
+			<site-member-defaults />
+			<guest-defaults />
+			<owner-defaults />
+		</permissions>
+	</model-resource>
+	<model-resource>
+		<model-name>com.liferay.portal.security.permission.ResourceActionsUndeclaredDefaults</model-name>
+		<portlet-ref>
+			<portlet-name>com_liferay_portal_security_ResourcePermissionLocalServiceTest_ResourceActionsUndeclaredDefaultsPortlet</portlet-name>
+		</portlet-ref>
+		<root>true</root>
+		<permissions>
+			<supports>
+				<action-key>ADD_TO_PAGE</action-key>
+				<action-key>CONFIGURATION</action-key>
+				<action-key>VIEW</action-key>
+			</supports>
 		</permissions>
 	</model-resource>
 </resource-action-mapping>
