@@ -7,13 +7,13 @@ package com.liferay.portal.cache.ehcache.internal;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.cache.AggregatedPortalCacheListener;
+import com.liferay.portal.cache.TransactionalPortalCache;
 import com.liferay.portal.kernel.cache.PortalCacheListener;
 import com.liferay.portal.kernel.cache.PortalCacheListenerScope;
+import com.liferay.portal.kernel.cache.transactional.TransactionalPortalCacheUtil;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
-import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.util.ProxyFactory;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
@@ -51,9 +51,8 @@ public class ShardedEhcachePortalCacheTest {
 
 	@ClassRule
 	@Rule
-	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, LiferayUnitTestRule.INSTANCE);
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
 
 	@Before
 	public void setUp() {
@@ -483,6 +482,16 @@ public class ShardedEhcachePortalCacheTest {
 	}
 
 	@Test
+	public void testTransactionalPortalCacheWithoutTransaction() {
+		_testTransactionalPortalCache(false);
+	}
+
+	@Test
+	public void testTransactionalPortalCacheWithTransaction() {
+		_testTransactionalPortalCache(true);
+	}
+
+	@Test
 	public void testUnregisterPortalCacheListener() {
 		_assertPortalCacheListener(
 			_getShardedCacheName(_TEST_CACHE_NAME, _TEST_COMPANY_ID_1), null);
@@ -649,6 +658,31 @@ public class ShardedEhcachePortalCacheTest {
 			ReflectionTestUtil.getFieldValue(
 				ShardedEhcachePortalCache.class, "_SHARDED_SEPARATOR"),
 			companyId);
+	}
+
+	private void _testTransactionalPortalCache(boolean transaction) {
+		TransactionalPortalCache<String, String> transactionalPortalCache =
+			new TransactionalPortalCache<>(_shardedEhcachePortalCache, false);
+
+		if (transaction) {
+			TransactionalPortalCacheUtil.begin();
+		}
+
+		_companyIdThreadLocal.set(_TEST_COMPANY_ID_1);
+
+		Assert.assertNull(transactionalPortalCache.get(_TEST_KEY_2));
+
+		transactionalPortalCache.put(_TEST_KEY_2, _TEST_VALUE_1);
+
+		Assert.assertSame(
+			_TEST_VALUE_1, transactionalPortalCache.get(_TEST_KEY_2));
+
+		_companyIdThreadLocal.set(_TEST_COMPANY_ID_2);
+
+		Assert.assertSame(
+			_TEST_VALUE_2, transactionalPortalCache.get(_TEST_KEY_2));
+
+		Assert.assertNull(transactionalPortalCache.get(_TEST_KEY_1));
 	}
 
 	private static final int _MAX_ENTRIES_LOCAL_HEAP_DEFAULT = 100;
