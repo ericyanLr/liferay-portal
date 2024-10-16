@@ -19,11 +19,6 @@ import java.io.InputStream;
 
 import java.net.URL;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -70,11 +65,6 @@ public class JspServletPerformanceTest {
 
 		_bundle.start();
 
-		Runtime runtime = Runtime.getRuntime();
-
-		_executorService = Executors.newFixedThreadPool(
-			runtime.availableProcessors());
-
 		ServiceTracker<Servlet, Servlet> serviceTracker = new ServiceTracker<>(
 			bundleContext,
 			FrameworkUtil.createFilter(
@@ -98,8 +88,6 @@ public class JspServletPerformanceTest {
 
 	@After
 	public void tearDown() throws Exception {
-		_executorService.shutdownNow();
-
 		_bundle.uninstall();
 	}
 
@@ -229,14 +217,8 @@ public class JspServletPerformanceTest {
 		Assert.assertEquals(
 			jspFileName, HtmlUtil.stripHtml(URLUtil.toString(url)));
 
-		List<Future<?>> futures = new ArrayList<>();
-
 		for (int i = 0; i < numberOfRequests; i++) {
-			futures.add(_executorService.submit(() -> URLUtil.toString(url)));
-		}
-
-		for (Future<?> future : futures) {
-			future.get();
+			URLUtil.toString(url);
 		}
 	}
 
@@ -256,6 +238,5 @@ public class JspServletPerformanceTest {
 		"/test-jsp-servlet-performance";
 
 	private static Bundle _bundle;
-	private static ExecutorService _executorService;
 
 }
