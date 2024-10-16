@@ -32,9 +32,9 @@ import java.util.zip.ZipEntry;
 
 import javax.servlet.Servlet;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,8 +58,8 @@ public class JspServletPerformanceTest {
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
 
-	@BeforeClass
-	public static void setUpClass() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 		Bundle bundle = FrameworkUtil.getBundle(
 			JspServletPerformanceTest.class);
 
@@ -96,8 +96,8 @@ public class JspServletPerformanceTest {
 		}
 	}
 
-	@AfterClass
-	public static void tearDownClass() throws Exception {
+	@After
+	public void tearDown() throws Exception {
 		_executorService.shutdownNow();
 
 		_bundle.uninstall();
@@ -136,7 +136,7 @@ public class JspServletPerformanceTest {
 		}
 	}
 
-	private static InputStream _createBundle() throws Exception {
+	private InputStream _createBundle() throws Exception {
 		try (UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
 				new UnsyncByteArrayOutputStream();
 			JarOutputStream jarOutputStream = new JarOutputStream(
@@ -212,7 +212,7 @@ public class JspServletPerformanceTest {
 		}
 	}
 
-	private static byte[] _getBytes(String... strings) {
+	private byte[] _getBytes(String... strings) {
 		String string = StringBundler.concat(strings);
 
 		return string.getBytes();
