@@ -37,6 +37,11 @@ public class AnnotationCORSClientTest extends BaseCORSClientTestCase {
 				"liferay.cors.annotation", true
 			).build());
 	}
+	
+	@Test
+	public void testCI() throws Exception {
+		testApplicationAnnotationCORSForGuestUser();
+	}
 
 	@Test
 	public void testApplicationAnnotationCORSForGuestUser() throws Exception {
