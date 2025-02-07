@@ -8,18 +8,22 @@ package com.liferay.portal.util.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.events.ServicePreAction;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.TreeMapBuilder;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.language.LanguageResources;
 import com.liferay.portal.servlet.I18nServlet;
@@ -105,7 +109,7 @@ public class PortalImplLocaleTest {
 	public void testInvalidResourceWithLocale() throws Exception {
 		MockHttpServletResponse mockHttpServletResponse =
 			_testLocaleForLanguageId(
-				"/en", "/WEB-INF/web.xml;.js", LocaleUtil.GERMANY);
+				"localhost", "/en", "/WEB-INF/web.xml;.js", LocaleUtil.GERMANY);
 
 		Assert.assertEquals(
 			HttpServletResponse.SC_NOT_FOUND,
@@ -132,17 +136,35 @@ public class PortalImplLocaleTest {
 		_testLocaleForLanguageId("/de_DE", LocaleUtil.GERMANY);
 	}
 
+	@Test
+	public void testVirtualHostLocale() throws Exception {
+		String hostName =
+			RandomTestUtil.randomString(6) + StringPool.PERIOD +
+				RandomTestUtil.randomString(3);
+
+		_layoutSetLocalService.updateVirtualHosts(
+			_group.getGroupId(), false,
+			TreeMapBuilder.put(
+				hostName, LocaleUtil.toLanguageId(LocaleUtil.UK)
+			).build());
+
+		_testLocaleForLanguageId(
+			hostName, "", _group.getFriendlyURL() + _layout.getFriendlyURL(),
+			LocaleUtil.UK);
+	}
+
 	private void _testLocaleForLanguageId(
 			String i18nLanguageId, Locale expectedLocale)
 		throws Exception {
 
 		_testLocaleForLanguageId(
-			i18nLanguageId, _group.getFriendlyURL() + _layout.getFriendlyURL(),
-			expectedLocale);
+			"localhost", i18nLanguageId,
+			_group.getFriendlyURL() + _layout.getFriendlyURL(), expectedLocale);
 	}
 
 	private MockHttpServletResponse _testLocaleForLanguageId(
-			String i18nLanguageId, String pathInfo, Locale expectedLocale)
+			String host, String i18nLanguageId, String pathInfo,
+			Locale expectedLocale)
 		throws Exception {
 
 		MockServletContext mockServletContext = new MockServletContext() {
@@ -157,7 +179,7 @@ public class PortalImplLocaleTest {
 			new MockHttpServletRequest(
 				mockServletContext, HttpMethods.GET, i18nLanguageId + pathInfo);
 
-		mockHttpServletRequest.addHeader("Host", "localhost");
+		mockHttpServletRequest.addHeader("Host", host);
 		mockHttpServletRequest.setAttribute(WebKeys.LAYOUT, _layout);
 		mockHttpServletRequest.setPathInfo(pathInfo);
 		mockHttpServletRequest.setServletPath(i18nLanguageId);
@@ -168,6 +190,7 @@ public class PortalImplLocaleTest {
 		mockHttpServletRequest.setCookies(mockHttpServletResponse.getCookies());
 
 		_i18nServlet.service(mockHttpServletRequest, mockHttpServletResponse);
+		_servicePreAction.run(mockHttpServletRequest, mockHttpServletResponse);
 
 		Assert.assertEquals(
 			expectedLocale,
@@ -190,9 +213,14 @@ public class PortalImplLocaleTest {
 	@DeleteAfterTestRun
 	private Layout _layout;
 
+	@Inject
+	private LayoutSetLocalService _layoutSetLocalService;
+
 	private final PortalImpl _portalImpl = new PortalImpl();
 
 	@Inject
 	private Props _props;
+
+	private final ServicePreAction _servicePreAction = new ServicePreAction();
 
 }
