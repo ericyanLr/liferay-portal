@@ -3229,6 +3229,17 @@ public class PortalImpl implements Portal {
 			}
 		}
 
+		String virtualHostLanguageId = (String)httpServletRequest.getAttribute(
+			WebKeys.VIRTUAL_HOST_LANGUAGE_ID);
+
+		if (Validator.isNotNull(virtualHostLanguageId)) {
+			locale = LocaleUtil.fromLanguageId(virtualHostLanguageId);
+
+			if (LanguageUtil.isAvailableLocale(groupId, locale)) {
+				return locale;
+			}
+		}
+
 		String doAsUserLanguageId = ParamUtil.getString(
 			httpServletRequest, "doAsUserLanguageId");
 
