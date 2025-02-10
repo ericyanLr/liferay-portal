@@ -105,7 +105,7 @@ public class PortalImplLocaleTest {
 	public void testInvalidResourceWithLocale() throws Exception {
 		MockHttpServletResponse mockHttpServletResponse =
 			_testLocaleForLanguageId(
-				"/en", "/WEB-INF/web.xml;.js", LocaleUtil.GERMANY);
+				"localhost", "/en", "/WEB-INF/web.xml;.js", LocaleUtil.GERMANY);
 
 		Assert.assertEquals(
 			HttpServletResponse.SC_NOT_FOUND,
@@ -137,12 +137,13 @@ public class PortalImplLocaleTest {
 		throws Exception {
 
 		_testLocaleForLanguageId(
-			i18nLanguageId, _group.getFriendlyURL() + _layout.getFriendlyURL(),
-			expectedLocale);
+			"localhost", i18nLanguageId,
+			_group.getFriendlyURL() + _layout.getFriendlyURL(), expectedLocale);
 	}
 
 	private MockHttpServletResponse _testLocaleForLanguageId(
-			String i18nLanguageId, String pathInfo, Locale expectedLocale)
+			String host, String i18nLanguageId, String pathInfo,
+			Locale expectedLocale)
 		throws Exception {
 
 		MockServletContext mockServletContext = new MockServletContext() {
@@ -157,7 +158,7 @@ public class PortalImplLocaleTest {
 			new MockHttpServletRequest(
 				mockServletContext, HttpMethods.GET, i18nLanguageId + pathInfo);
 
-		mockHttpServletRequest.addHeader("Host", "localhost");
+		mockHttpServletRequest.addHeader("Host", host);
 		mockHttpServletRequest.setAttribute(WebKeys.LAYOUT, _layout);
 		mockHttpServletRequest.setPathInfo(pathInfo);
 		mockHttpServletRequest.setServletPath(i18nLanguageId);
