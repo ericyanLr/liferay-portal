@@ -11,15 +11,18 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.TreeMapBuilder;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.language.LanguageResources;
 import com.liferay.portal.servlet.I18nServlet;
@@ -132,6 +135,23 @@ public class PortalImplLocaleTest {
 		_testLocaleForLanguageId("/de_DE", LocaleUtil.GERMANY);
 	}
 
+	@Test
+	public void testVirtualHostLocale() throws Exception {
+		String hostName =
+			RandomTestUtil.randomString(6) + StringPool.PERIOD +
+				RandomTestUtil.randomString(3);
+
+		_layoutSetLocalService.updateVirtualHosts(
+			_group.getGroupId(), false,
+			TreeMapBuilder.put(
+				hostName, LocaleUtil.toLanguageId(LocaleUtil.UK)
+			).build());
+
+		_testLocaleForLanguageId(
+			hostName, "", _group.getFriendlyURL() + _layout.getFriendlyURL(),
+			LocaleUtil.UK);
+	}
+
 	private void _testLocaleForLanguageId(
 			String i18nLanguageId, Locale expectedLocale)
 		throws Exception {
@@ -170,6 +190,8 @@ public class PortalImplLocaleTest {
 
 		_i18nServlet.service(mockHttpServletRequest, mockHttpServletResponse);
 
+		_portalImpl.getCompany(mockHttpServletRequest);
+
 		Assert.assertEquals(
 			expectedLocale,
 			_portalImpl.getLocale(
@@ -190,6 +212,9 @@ public class PortalImplLocaleTest {
 
 	@DeleteAfterTestRun
 	private Layout _layout;
+
+	@Inject
+	private LayoutSetLocalService _layoutSetLocalService;
 
 	private final PortalImpl _portalImpl = new PortalImpl();
 
