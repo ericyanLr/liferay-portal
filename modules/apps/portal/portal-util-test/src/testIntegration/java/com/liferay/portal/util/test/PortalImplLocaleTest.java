@@ -7,6 +7,7 @@ package com.liferay.portal.util.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
@@ -137,7 +138,10 @@ public class PortalImplLocaleTest {
 		throws Exception {
 
 		_testLocaleForLanguageId(
-			i18nLanguageId, _group.getFriendlyURL() + _layout.getFriendlyURL(),
+			i18nLanguageId,
+			StringBundler.concat(
+				PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING,
+				_group.getFriendlyURL(), _layout.getFriendlyURL()),
 			expectedLocale);
 	}
 
