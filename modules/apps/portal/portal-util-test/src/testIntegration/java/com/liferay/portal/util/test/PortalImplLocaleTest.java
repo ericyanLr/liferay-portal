@@ -7,11 +7,13 @@ package com.liferay.portal.util.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -21,7 +23,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.language.LanguageResources;
 import com.liferay.portal.servlet.I18nServlet;
 import com.liferay.portal.test.rule.Inject;
@@ -33,6 +35,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
 
+import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
@@ -162,7 +165,6 @@ public class PortalImplLocaleTest {
 				mockServletContext, HttpMethods.GET, i18nLanguageId + pathInfo);
 
 		mockHttpServletRequest.addHeader("Host", "localhost");
-		mockHttpServletRequest.setAttribute(WebKeys.LAYOUT, _layout);
 		mockHttpServletRequest.setPathInfo(pathInfo);
 		mockHttpServletRequest.setServletPath(i18nLanguageId);
 
@@ -172,6 +174,20 @@ public class PortalImplLocaleTest {
 		mockHttpServletRequest.setCookies(mockHttpServletResponse.getCookies());
 
 		_i18nServlet.service(mockHttpServletRequest, mockHttpServletResponse);
+
+		String redirect = mockHttpServletResponse.getHeader(
+			HttpHeaders.LOCATION);
+
+		if (Validator.isNotNull(redirect)) {
+			mockHttpServletRequest.setPathInfo(
+				redirect.substring(redirect.indexOf(CharPool.SLASH, 1)));
+			mockHttpServletRequest.setRequestURI(redirect);
+			mockHttpServletRequest.setServletPath(
+				redirect.substring(0, redirect.indexOf(CharPool.SLASH, 1)));
+		}
+
+		_publicFriendlyURLServlet.service(
+			mockHttpServletRequest, mockHttpServletResponse);
 
 		Assert.assertEquals(
 			expectedLocale,
@@ -198,5 +214,10 @@ public class PortalImplLocaleTest {
 
 	@Inject
 	private Props _props;
+
+	@Inject(
+		filter = "component.name=com.liferay.friendly.url.internal.servlet.PublicFriendlyURLServlet"
+	)
+	private Servlet _publicFriendlyURLServlet;
 
 }
