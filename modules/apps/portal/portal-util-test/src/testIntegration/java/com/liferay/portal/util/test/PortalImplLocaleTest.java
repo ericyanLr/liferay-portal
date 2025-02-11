@@ -133,6 +133,7 @@ public class PortalImplLocaleTest {
 
 	@Test
 	public void testSiteDefaultLocale() throws Exception {
+		_testLocaleForLanguageId("localhost", "", LocaleUtil.GERMANY);
 		_testLocaleForLanguageId("localhost", "/de_DE", LocaleUtil.GERMANY);
 	}
 
