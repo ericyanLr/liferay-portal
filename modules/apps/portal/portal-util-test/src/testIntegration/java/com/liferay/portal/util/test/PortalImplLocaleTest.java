@@ -13,7 +13,9 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.HttpMethods;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
@@ -28,13 +30,17 @@ import com.liferay.portal.servlet.I18nServlet;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PortalImpl;
+import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.util.PropsValues;
 
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
 import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
@@ -45,6 +51,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
@@ -132,6 +139,7 @@ public class PortalImplLocaleTest {
 
 	@Test
 	public void testSiteDefaultLocale() throws Exception {
+		_testLocaleForLanguageId("localhost", "", LocaleUtil.GERMANY);
 		_testLocaleForLanguageId("localhost", "/de_DE", LocaleUtil.GERMANY);
 	}
 
@@ -171,24 +179,53 @@ public class PortalImplLocaleTest {
 		_i18nServlet.init(new MockServletConfig(mockServletContext));
 
 		MockHttpServletRequest mockHttpServletRequest =
-			new MockHttpServletRequest(
-				mockServletContext, HttpMethods.GET, i18nLanguageId + pathInfo);
+			new MockHttpServletRequest(mockServletContext);
 
 		mockHttpServletRequest.addHeader("Host", host);
-		mockHttpServletRequest.setPathInfo(pathInfo);
-		mockHttpServletRequest.setServletPath(i18nLanguageId);
+		mockHttpServletRequest.setMethod(HttpMethods.GET);
+
+		_setRequestURI(mockHttpServletRequest, i18nLanguageId + pathInfo);
 
 		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();
 
 		mockHttpServletRequest.setCookies(mockHttpServletResponse.getCookies());
 
-		_i18nServlet.service(mockHttpServletRequest, mockHttpServletResponse);
+		if (Validator.isNull(i18nLanguageId)) {
+			PortalInstances.getCompanyId(mockHttpServletRequest);
 
-		String forwardedUrl = mockHttpServletResponse.getForwardedUrl();
+			ReflectionTestUtil.invoke(
+				_i18nFilter, "processFilter",
+				new Class<?>[] {
+					HttpServletRequest.class, HttpServletResponse.class,
+					FilterChain.class
+				},
+				mockHttpServletRequest, mockHttpServletResponse,
+				new MockFilterChain());
 
-		if (Validator.isNotNull(forwardedUrl)) {
-			_setRequestURI(mockHttpServletRequest, forwardedUrl);
+			String redirect = mockHttpServletResponse.getHeader(
+				HttpHeaders.LOCATION);
+
+			if (Validator.isNotNull(redirect)) {
+				i18nLanguageId = redirect.substring(
+					0, redirect.indexOf(CharPool.SLASH, 1));
+
+				_setRequestURI(
+					mockHttpServletRequest, i18nLanguageId + pathInfo);
+
+				mockHttpServletResponse = new MockHttpServletResponse();
+			}
+		}
+
+		if (Validator.isNotNull(i18nLanguageId)) {
+			_i18nServlet.service(
+				mockHttpServletRequest, mockHttpServletResponse);
+
+			String forwardedUrl = mockHttpServletResponse.getForwardedUrl();
+
+			if (Validator.isNotNull(forwardedUrl)) {
+				_setRequestURI(mockHttpServletRequest, forwardedUrl);
+			}
 		}
 
 		_publicFriendlyURLServlet.service(
@@ -206,6 +243,9 @@ public class PortalImplLocaleTest {
 
 	@DeleteAfterTestRun
 	private Group _group;
+
+	@Inject(filter = "servlet-filter-name=I18n Filter")
+	private Filter _i18nFilter;
 
 	private final I18nServlet _i18nServlet = new I18nServlet();
 
