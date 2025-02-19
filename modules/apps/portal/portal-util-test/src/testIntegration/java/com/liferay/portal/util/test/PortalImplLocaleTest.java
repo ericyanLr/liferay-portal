@@ -135,6 +135,16 @@ public class PortalImplLocaleTest {
 		_testLocaleForLanguageId("/de_DE", LocaleUtil.GERMANY);
 	}
 
+	private void _setRequestURI(
+		MockHttpServletRequest mockHttpServletRequest, String requestURI) {
+
+		mockHttpServletRequest.setPathInfo(
+			requestURI.substring(requestURI.indexOf(CharPool.SLASH, 1)));
+		mockHttpServletRequest.setRequestURI(requestURI);
+		mockHttpServletRequest.setServletPath(
+			requestURI.substring(0, requestURI.indexOf(CharPool.SLASH, 1)));
+	}
+
 	private void _testLocaleForLanguageId(
 			String i18nLanguageId, Locale expectedLocale)
 		throws Exception {
@@ -177,13 +187,7 @@ public class PortalImplLocaleTest {
 		String forwardedUrl = mockHttpServletResponse.getForwardedUrl();
 
 		if (Validator.isNotNull(forwardedUrl)) {
-			mockHttpServletRequest.setPathInfo(
-				forwardedUrl.substring(
-					forwardedUrl.indexOf(CharPool.SLASH, 1)));
-			mockHttpServletRequest.setRequestURI(forwardedUrl);
-			mockHttpServletRequest.setServletPath(
-				forwardedUrl.substring(
-					0, forwardedUrl.indexOf(CharPool.SLASH, 1)));
+			_setRequestURI(mockHttpServletRequest, forwardedUrl);
 		}
 
 		_publicFriendlyURLServlet.service(
