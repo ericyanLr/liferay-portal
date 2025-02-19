@@ -13,16 +13,20 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.HttpMethods;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.TreeMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.language.LanguageResources;
 import com.liferay.portal.servlet.I18nServlet;
@@ -35,7 +39,10 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
 import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
@@ -46,6 +53,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
@@ -137,6 +145,25 @@ public class PortalImplLocaleTest {
 		_testLocaleForLanguageId("localhost", "/de_DE", LocaleUtil.GERMANY);
 	}
 
+	@Test
+	public void testVirtualHostLocale() throws Exception {
+		String hostName =
+			RandomTestUtil.randomString(6) + StringPool.PERIOD +
+				RandomTestUtil.randomString(3);
+
+		_layoutSetLocalService.updateVirtualHosts(
+			_group.getGroupId(), false,
+			TreeMapBuilder.put(
+				hostName, LocaleUtil.toLanguageId(LocaleUtil.UK)
+			).build());
+
+		_testLocaleForLanguageId(hostName, "", LocaleUtil.UK);
+		_testLocaleForLanguageId(hostName, "/de", LocaleUtil.GERMANY);
+		_testLocaleForLanguageId(hostName, "/de_DE", LocaleUtil.GERMANY);
+		_testLocaleForLanguageId(hostName, "/en", LocaleUtil.UK);
+		_testLocaleForLanguageId(hostName, "/en_GB", LocaleUtil.UK);
+	}
+
 	private void _testLocaleForLanguageId(
 			String host, String i18nLanguageId, Locale expectedLocale)
 		throws Exception {
@@ -188,6 +215,15 @@ public class PortalImplLocaleTest {
 				redirect.substring(0, redirect.indexOf(CharPool.SLASH, 1)));
 		}
 
+		ReflectionTestUtil.invoke(
+			_i18nFilter, "processFilter",
+			new Class<?>[] {
+				HttpServletRequest.class, HttpServletResponse.class,
+				FilterChain.class
+			},
+			mockHttpServletRequest, mockHttpServletResponse,
+			new MockFilterChain());
+
 		_publicFriendlyURLServlet.service(
 			mockHttpServletRequest, mockHttpServletResponse);
 
@@ -204,6 +240,9 @@ public class PortalImplLocaleTest {
 	@DeleteAfterTestRun
 	private Group _group;
 
+	@Inject(filter = "servlet-filter-name=I18n Filter")
+	private Filter _i18nFilter;
+
 	private final I18nServlet _i18nServlet = new I18nServlet();
 
 	@Inject
@@ -211,6 +250,9 @@ public class PortalImplLocaleTest {
 
 	@DeleteAfterTestRun
 	private Layout _layout;
+
+	@Inject
+	private LayoutSetLocalService _layoutSetLocalService;
 
 	private final PortalImpl _portalImpl = new PortalImpl();
 
