@@ -7,12 +7,14 @@ package com.liferay.portal.util.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -20,10 +22,13 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.PrefsPropsTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.TreeMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.language.LanguageResources;
 import com.liferay.portal.servlet.I18nServlet;
@@ -143,6 +148,33 @@ public class PortalImplLocaleTest {
 		_testLocaleForLanguageId("localhost", "/de_DE", LocaleUtil.GERMANY);
 	}
 
+	@Test
+	public void testVirtualHostLocale() throws Exception {
+		String hostName =
+			RandomTestUtil.randomString(6) + StringPool.PERIOD +
+				RandomTestUtil.randomString(3);
+
+		_layoutSetLocalService.updateVirtualHosts(
+			_group.getGroupId(), false,
+			TreeMapBuilder.put(
+				hostName, LocaleUtil.toLanguageId(LocaleUtil.UK)
+			).build());
+
+		_testLocaleForLanguageId(hostName, "", LocaleUtil.UK);
+		_testLocaleForLanguageId(hostName, "/de", LocaleUtil.GERMANY);
+		_testLocaleForLanguageId(hostName, "/de_DE", LocaleUtil.GERMANY);
+		_testLocaleForLanguageId(hostName, "/en", LocaleUtil.UK);
+		_testLocaleForLanguageId(hostName, "/en_GB", LocaleUtil.UK);
+
+		try (SafeCloseable safeCloseable =
+				PrefsPropsTestUtil.swapWithSafeCloseable(
+					TestPropsValues.getCompanyId(),
+					PropsKeys.LOCALE_PREPEND_FRIENDLY_URL_STYLE, 0)) {
+
+			_testLocaleForLanguageId(hostName, "", LocaleUtil.UK);
+		}
+	}
+
 	private void _setRequestURI(
 		MockHttpServletRequest mockHttpServletRequest, String requestURI) {
 
@@ -254,6 +286,9 @@ public class PortalImplLocaleTest {
 
 	@DeleteAfterTestRun
 	private Layout _layout;
+
+	@Inject
+	private LayoutSetLocalService _layoutSetLocalService;
 
 	private final PortalImpl _portalImpl = new PortalImpl();
 
