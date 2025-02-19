@@ -105,12 +105,10 @@ public class I18nFilter extends BasePortalFilter {
 		return friendlyURL;
 	}
 
-	protected String getRedirect(HttpServletRequest httpServletRequest)
+	protected String getRedirect(
+			HttpServletRequest httpServletRequest,
+			int localePrependFriendlyURLStyle)
 		throws Exception {
-
-		int localePrependFriendlyURLStyle = PrefsPropsUtil.getInteger(
-			_portal.getCompanyId(httpServletRequest),
-			PropsKeys.LOCALE_PREPEND_FRIENDLY_URL_STYLE);
 
 		if (localePrependFriendlyURLStyle == 0) {
 			return null;
@@ -383,9 +381,34 @@ public class I18nFilter extends BasePortalFilter {
 
 		httpServletRequest.setAttribute(SKIP_FILTER, Boolean.TRUE);
 
-		String redirect = getRedirect(httpServletRequest);
+		int localePrependFriendlyURLStyle = PrefsPropsUtil.getInteger(
+			_portal.getCompanyId(httpServletRequest),
+			PropsKeys.LOCALE_PREPEND_FRIENDLY_URL_STYLE);
+
+		String redirect = getRedirect(
+			httpServletRequest, localePrependFriendlyURLStyle);
 
 		if (redirect == null) {
+			String virtualHostLanguageId =
+				(String)httpServletRequest.getAttribute(
+					WebKeys.VIRTUAL_HOST_LANGUAGE_ID);
+
+			if ((localePrependFriendlyURLStyle == 0) &&
+				Validator.isNotNull(virtualHostLanguageId)) {
+
+				HttpSession httpSession = httpServletRequest.getSession();
+
+				if (httpSession.getAttribute(WebKeys.LOCALE) == null) {
+					Locale locale = LocaleUtil.fromLanguageId(
+						virtualHostLanguageId);
+
+					httpSession.setAttribute(WebKeys.LOCALE, locale);
+
+					_language.updateCookie(
+						httpServletRequest, httpServletResponse, locale);
+				}
+			}
+
 			processFilter(
 				I18nFilter.class.getName(), httpServletRequest,
 				httpServletResponse, filterChain);
