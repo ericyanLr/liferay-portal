@@ -152,6 +152,46 @@ public class VirtualHostFilterTest {
 			StringPool.SLASH, _mockHttpServletResponse.getForwardedUrl());
 	}
 
+	@Test
+	public void testProcessFilter5() {
+		try (SafeCloseable safeCloseable =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"COMPANY_DEFAULT_HOME_URL", "/web/guest")) {
+
+			_mockHttpServletRequest.setRequestURI("/en-US");
+
+			_virtualHostFilter.init(_mockFilterConfig);
+
+			ReflectionTestUtil.invoke(
+				_virtualHostFilter, "processFilter",
+				new Class<?>[] {
+					HttpServletRequest.class, HttpServletResponse.class,
+					FilterChain.class
+				},
+				_mockHttpServletRequest, _mockHttpServletResponse,
+				_mockFilterChain);
+
+			Assert.assertEquals(
+				"/en-US/web/guest", _mockHttpServletResponse.getForwardedUrl());
+
+			_mockHttpServletResponse.setForwardedUrl(null);
+
+			_mockHttpServletRequest.setRequestURI("/en-US/");
+
+			ReflectionTestUtil.invoke(
+				_virtualHostFilter, "processFilter",
+				new Class<?>[] {
+					HttpServletRequest.class, HttpServletResponse.class,
+					FilterChain.class
+				},
+				_mockHttpServletRequest, _mockHttpServletResponse,
+				_mockFilterChain);
+
+			Assert.assertEquals(
+				"/en-US/web/guest", _mockHttpServletResponse.getForwardedUrl());
+		}
+	}
+
 	private String _getLastPath(
 		MockHttpServletRequest mockHttpServletRequest,
 		MockHttpServletResponse mockHttpServletResponse,
