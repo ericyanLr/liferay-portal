@@ -144,6 +144,38 @@ public class VirtualHostFilterTest {
 		}
 	}
 
+	@Test
+	public void testProcessFilterForwardedURLWithLanguageId() {
+		try (SafeCloseable safeCloseable =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"VIRTUAL_HOSTS_DEFAULT_SITE_NAME", "Guest")) {
+
+			_mockHttpServletRequest.setRequestURI("/en-US");
+
+			Assert.assertEquals(
+				"/en-US/web/guest",
+				_getForwardedURL(
+					_mockHttpServletRequest, _mockHttpServletResponse,
+					_mockFilterChain));
+		}
+	}
+
+	@Test
+	public void testProcessFilterForwardedURLWithLanguageIdAndTrailingSlash() {
+		try (SafeCloseable safeCloseable =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"VIRTUAL_HOSTS_DEFAULT_SITE_NAME", "Guest")) {
+
+			_mockHttpServletRequest.setRequestURI("/en-US/");
+
+			Assert.assertEquals(
+				"/en-US/web/guest",
+				_getForwardedURL(
+					_mockHttpServletRequest, _mockHttpServletResponse,
+					_mockFilterChain));
+		}
+	}
+
 	private String _getForwardedURL(
 		MockHttpServletRequest mockHttpServletRequest,
 		MockHttpServletResponse mockHttpServletResponse,
