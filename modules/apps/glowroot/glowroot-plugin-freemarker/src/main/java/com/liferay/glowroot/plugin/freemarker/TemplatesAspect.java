@@ -138,7 +138,7 @@ public class TemplatesAspect {
 
 			sb.append(", Site Group ID ");
 			sb.append(themeDisplayShim.getSiteGroupId());
-			sb.append(", and Template ID ");
+			sb.append(", and DDMTemplate ID ");
 
 			DDMTemplateShim dDMTemplateShim = (DDMTemplateShim)parameters[1];
 
@@ -222,7 +222,7 @@ public class TemplatesAspect {
 			sb.append(themeDisplayShim.getCompanyId());
 			sb.append(", Site Group ID ");
 			sb.append(themeDisplayShim.getSiteGroupId());
-			sb.append(", and Template ID ");
+			sb.append(", and DDMTemplate ID ");
 			sb.append(contextObjects.get("template_id"));
 			sb.append(")");
 
