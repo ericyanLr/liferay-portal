@@ -128,22 +128,32 @@ public class TemplatesAspect {
 
 			TraceEntry traceEntry = null;
 
+			DDMTemplateShim dDMTemplateShim = (DDMTemplateShim)parameters[1];
+			ThemeDisplayShim themeDisplayShim = (ThemeDisplayShim)parameters[9];
+
+			String companyId = "?";
+			String ddmScript = "?";
+			String ddmTemplateId = "?";
+			String siteGroupId = "?";
+
+			if (dDMTemplateShim != null) {
+				ddmScript = dDMTemplateShim.getScript();
+				ddmTemplateId = String.valueOf(dDMTemplateShim.getTemplateId());
+			}
+
+			if (themeDisplayShim != null) {
+				companyId = String.valueOf(themeDisplayShim.getCompanyId());
+				siteGroupId = String.valueOf(themeDisplayShim.getSiteGroupId());
+			}
+
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("Journal Article FreeMarker Template (Company ID ");
-
-			ThemeDisplayShim themeDisplayShim = (ThemeDisplayShim)parameters[9];
-
-			sb.append(themeDisplayShim.getCompanyId());
-
+			sb.append(companyId);
 			sb.append(", Site Group ID ");
-			sb.append(themeDisplayShim.getSiteGroupId());
+			sb.append(siteGroupId);
 			sb.append(", and DDMTemplate ID ");
-
-			DDMTemplateShim dDMTemplateShim = (DDMTemplateShim)parameters[1];
-
-			sb.append(dDMTemplateShim.getTemplateId());
-
+			sb.append(ddmTemplateId);
 			sb.append(")");
 
 			if (_INSTRUMENTATION_LEVEL_TRACE.equals(
@@ -156,7 +166,7 @@ public class TemplatesAspect {
 				optionalThreadContext.setTransactionOuter();
 
 				optionalThreadContext.addTransactionAttribute(
-					"Script", dDMTemplateShim.getScript());
+					"Script", ddmScript);
 			}
 			else if (_INSTRUMENTATION_LEVEL_DEBUG.equals(
 						TemplatesPluginProperties.instrumentationLevel())) {
