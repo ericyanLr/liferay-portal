@@ -8,14 +8,19 @@ package com.liferay.portal.dao.jdbc.util;
 import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.spring.hibernate.SpringHibernateThreadLocalUtil;
 
 import java.io.PrintWriter;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -36,7 +41,16 @@ public class DynamicDataSource implements DataSource {
 	public Connection getConnection() throws SQLException {
 		DataSource dataSource = _getDataSource();
 
-		return dataSource.getConnection();
+		Connection connection = dataSource.getConnection();
+
+		if (dataSource == _writeDataSource) {
+			return (Connection)ProxyUtil.newProxyInstance(
+				DynamicDataSource.class.getClassLoader(),
+				new Class<?>[] {Connection.class},
+				new WriteDataSourceInvocationHandler(connection));
+		}
+
+		return connection;
 	}
 
 	@Override
@@ -45,7 +59,16 @@ public class DynamicDataSource implements DataSource {
 
 		DataSource dataSource = _getDataSource();
 
-		return dataSource.getConnection(userName, password);
+		Connection connection = dataSource.getConnection(userName, password);
+
+		if (dataSource == _writeDataSource) {
+			return (Connection)ProxyUtil.newProxyInstance(
+				DynamicDataSource.class.getClassLoader(),
+				new Class<?>[] {Connection.class},
+				new WriteDataSourceInvocationHandler(connection));
+		}
+
+		return connection;
 	}
 
 	@Override
@@ -105,9 +128,21 @@ public class DynamicDataSource implements DataSource {
 		return dataSource.unwrap(clazz);
 	}
 
+	private boolean _delayProvidingReadDataSource() {
+		long elapsedTime =
+			System.currentTimeMillis() - _writeDataSourceLastConnectionTime;
+
+		if (elapsedTime < 1000) {
+			return true;
+		}
+
+		return false;
+	}
+
 	private DataSource _getDataSource() {
 		if (!_writeDataSourceThreadLocal.get() &&
-			SpringHibernateThreadLocalUtil.isCurrentTransactionReadOnly()) {
+			SpringHibernateThreadLocalUtil.isCurrentTransactionReadOnly() &&
+			!_delayProvidingReadDataSource()) {
 
 			if (_log.isTraceEnabled()) {
 				_log.trace("Returning read data source");
@@ -128,6 +163,7 @@ public class DynamicDataSource implements DataSource {
 	private static final Log _log = LogFactoryUtil.getLog(
 		DynamicDataSource.class);
 
+	private static volatile long _writeDataSourceLastConnectionTime;
 	private static final ThreadLocal<Boolean> _writeDataSourceThreadLocal =
 		new CentralizedThreadLocal<>(
 			DynamicDataSource.class + "._writeDataSourceThreadLocal",
@@ -135,5 +171,33 @@ public class DynamicDataSource implements DataSource {
 
 	private final DataSource _readDataSource;
 	private final DataSource _writeDataSource;
+
+	private static class WriteDataSourceInvocationHandler
+		implements InvocationHandler {
+
+		@Override
+		public Object invoke(Object object, Method method, Object[] args)
+			throws Throwable {
+
+			String methodName = method.getName();
+
+			if (Objects.equals(methodName, "close") && _hasCommits) {
+				_writeDataSourceLastConnectionTime = System.currentTimeMillis();
+			}
+			else if (Objects.equals(methodName, "commit") && !_hasCommits) {
+				_hasCommits = true;
+			}
+
+			return method.invoke(_target, args);
+		}
+
+		private WriteDataSourceInvocationHandler(Object target) {
+			_target = target;
+		}
+
+		private boolean _hasCommits;
+		private final Object _target;
+
+	}
 
 }
