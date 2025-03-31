@@ -7,11 +7,13 @@ package com.liferay.glowroot.plugin.freemarker.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
+import com.liferay.fragment.processor.FragmentEntryProcessor;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.util.JournalHelper;
 import com.liferay.layout.display.page.LayoutDisplayPageProviderRegistry;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -21,11 +23,13 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.spring.aop.AopInvocationHandler;
+import com.liferay.portal.templateparser.Transformer;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -43,6 +47,20 @@ public class TemplatesAspectTest {
 	@Rule
 	public static final LiferayIntegrationTestRule liferayIntegrationTestRule =
 		new LiferayIntegrationTestRule();
+
+	@Test
+	public void testFreeMarkerFragmentEntryProcessorAdviceWithNullArguments()
+		throws Exception {
+
+		long startTime = System.currentTimeMillis();
+
+		_fragmentEntryProcessor.processFragmentEntryLinkHTML(null, null, null);
+
+		_assertTransaction(
+			"Fragment Entry Link FreeMarker Template (Company ID ?, Fragment " +
+				"Entry Link ID ?, and Group ID ?)",
+			startTime);
+	}
 
 	@Test
 	public void testJournalTransformerAdviceWithNullArguments()
@@ -79,6 +97,20 @@ public class TemplatesAspectTest {
 			startTime);
 	}
 
+	@Test
+	public void testTransformerAdviceWithNullArguments() throws Exception {
+		long startTime = System.currentTimeMillis();
+
+		Transformer transformer = new Transformer(StringPool.BLANK, false);
+
+		transformer.transform(null, null, null, null, null, null, null);
+
+		_assertTransaction(
+			"Transformer FreeMarker Template (Company ID ?, Site Group ID ?, " +
+				"and DDMTemplate ID ?)",
+			startTime);
+	}
+
 	private void _assertTransaction(String expectedMessage, long startTime)
 		throws Exception {
 
@@ -94,13 +126,33 @@ public class TemplatesAspectTest {
 		JSONArray transactionsJSONArray = jsonObject.getJSONArray(
 			"transactions");
 
-		JSONObject transactionJSONObject = transactionsJSONArray.getJSONObject(
-			0);
+		boolean containsExpectedMessage = false;
 
-		Assert.assertEquals(
-			expectedMessage,
-			transactionJSONObject.getString("transactionName"));
+		for (int i = 0; i < transactionsJSONArray.length(); i++) {
+			JSONObject transactionJSONObject =
+				transactionsJSONArray.getJSONObject(i);
+
+			if (Objects.equals(
+					expectedMessage,
+					transactionJSONObject.getString("transactionName"))) {
+
+				containsExpectedMessage = true;
+
+				break;
+			}
+		}
+
+		Assert.assertTrue(
+			StringBundler.concat(
+				"Failed to find transaction name: ", expectedMessage, " in: ",
+				transactionsJSONArray),
+			containsExpectedMessage);
 	}
+
+	@Inject(
+		filter = "component.name=com.liferay.fragment.entry.processor.freemarker.FreeMarkerFragmentEntryProcessor"
+	)
+	private FragmentEntryProcessor _fragmentEntryProcessor;
 
 	@Inject
 	private JournalArticleLocalService _journalArticleLocalService;
