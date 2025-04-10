@@ -1053,6 +1053,46 @@ public class WabProcessor {
 		}
 	}
 
+	private void _processPlugins(
+		Builder analyzer, Properties pluginPackageProperties) {
+
+		List<Object> disabledPlugins = new ArrayList<>();
+		Properties properties = PropsUtil.getProperties(
+			"module.framework.web.generator.bnd.plugin.enabled[", true);
+
+		Set<Object> plugins = analyzer.getPlugins();
+
+		for (Object plugin : plugins) {
+			if (plugin instanceof DSAnnotations ||
+				plugin instanceof ServiceComponent) {
+
+				disabledPlugins.add(plugin);
+
+				continue;
+			}
+
+			Class<?> clazz = plugin.getClass();
+
+			String name = clazz.getName() + "]";
+
+			if (!GetterUtil.getBoolean(properties.getProperty(name), true)) {
+				disabledPlugins.add(plugin);
+			}
+		}
+
+		plugins.removeAll(disabledPlugins);
+
+		plugins.add(new JspAnalyzerPlugin());
+
+		if (pluginPackageProperties.containsKey("portal-dependency-jars") &&
+			_log.isWarnEnabled()) {
+
+			_log.warn(
+				"The property \"portal-dependency-jars\" is deprecated. " +
+					"Specified JARs may not be included in the class path.");
+		}
+	}
+
 	private void _processPortalListenerClassesDependencies(Analyzer analyzer) {
 		File file = new File(_pluginDir, "WEB-INF/web.xml");
 
@@ -1526,44 +1566,7 @@ public class WabProcessor {
 
 			analyzer.setProperties(pluginPackageProperties);
 
-			List<Object> disabledPlugins = new ArrayList<>();
-			Properties properties = PropsUtil.getProperties(
-				"module.framework.web.generator.bnd.plugin.enabled[", true);
-
-			Set<Object> plugins = analyzer.getPlugins();
-
-			for (Object plugin : plugins) {
-				if (plugin instanceof DSAnnotations ||
-					plugin instanceof ServiceComponent) {
-
-					disabledPlugins.add(plugin);
-
-					continue;
-				}
-
-				Class<?> clazz = plugin.getClass();
-
-				String name = clazz.getName() + "]";
-
-				if (!GetterUtil.getBoolean(
-						properties.getProperty(name), true)) {
-
-					disabledPlugins.add(plugin);
-				}
-			}
-
-			plugins.removeAll(disabledPlugins);
-
-			plugins.add(new JspAnalyzerPlugin());
-
-			if (pluginPackageProperties.containsKey("portal-dependency-jars") &&
-				_log.isWarnEnabled()) {
-
-				_log.warn(
-					"The property \"portal-dependency-jars\" is deprecated. " +
-						"Specified JARs may not be included in the class " +
-							"path.");
-			}
+			_processPlugins(analyzer, pluginPackageProperties);
 
 			_processBeans(analyzer);
 
