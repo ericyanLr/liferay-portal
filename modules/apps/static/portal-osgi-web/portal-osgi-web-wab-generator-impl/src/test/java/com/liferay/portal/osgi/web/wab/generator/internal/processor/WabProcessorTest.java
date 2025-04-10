@@ -282,6 +282,39 @@ public class WabProcessorTest {
 	}
 
 	@Test
+	public void testJspIsAnalyzed() throws Exception {
+		WabProcessor wabProcessor = new TestWabProcessor(
+			getFile("dependencies/test-jsp.war"),
+			Collections.singletonMap(
+				"Web-ContextPath", new String[] {"/test-jsp"}));
+
+		File processedFile = wabProcessor.getProcessedFile();
+
+		Assert.assertNotNull(processedFile);
+
+		try (Jar jar = new Jar(processedFile)) {
+			Domain domain = Domain.domain(jar.getManifest());
+
+			Parameters requirements = domain.getRequireCapability();
+
+			Map.Entry<String, Attrs> entry = _findRequirement(
+				requirements, "osgi.extender",
+				HashMapBuilder.<String, Object>put(
+					"osgi.extender", "jsp.taglib"
+				).put(
+					"uri", "http://liferay.com/tld/frontend"
+				).build());
+
+			Assert.assertNotNull(entry);
+
+			Parameters importedPackages = domain.getImportPackage();
+
+			Assert.assertTrue(
+				importedPackages.containsKey("com.liferay.journal.constants"));
+		}
+	}
+
+	@Test
 	public void testSkinnyCDIWabGainsOSGiCDIIntegration() throws Exception {
 		WabProcessor wabProcessor = new TestWabProcessor(
 			getFile("dependencies/PortletV3AnnotatedDemo.war"),
