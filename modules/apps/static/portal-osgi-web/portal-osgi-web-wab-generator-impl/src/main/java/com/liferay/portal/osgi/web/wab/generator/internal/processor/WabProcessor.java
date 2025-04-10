@@ -1499,6 +1499,33 @@ public class WabProcessor {
 			analyzer.setProperty("-jsp", "*.jsp,*.jspf,*.jspx");
 			analyzer.setProperty("Web-ContextPath", _getWebContextPath());
 
+			_processBundleVersion(analyzer);
+			_processBundleClasspath(analyzer);
+			_processBundleSymbolicName(analyzer);
+			_processExtraHeaders(analyzer);
+			_processPluginPackagePropertiesExportImportPackages(
+				pluginPackageProperties);
+
+			_processBundleManifestVersion(analyzer);
+
+			_processLiferayPortletXML();
+			_processWebXML("WEB-INF/web.xml");
+			_processWebXML("WEB-INF/liferay-web.xml");
+
+			_processResourceActionXML();
+
+			_processDeclarativeReferences(analyzer);
+
+			_processExtraRequirements();
+
+			_processPackageNames(analyzer);
+
+			_processRequiredDeploymentContexts(analyzer);
+
+			_processExcludedJSPs(analyzer);
+
+			analyzer.setProperties(pluginPackageProperties);
+
 			List<Object> disabledPlugins = new ArrayList<>();
 			Properties properties = PropsUtil.getProperties(
 				"module.framework.web.generator.bnd.plugin.enabled[", true);
@@ -1537,33 +1564,6 @@ public class WabProcessor {
 						"Specified JARs may not be included in the class " +
 							"path.");
 			}
-
-			_processBundleVersion(analyzer);
-			_processBundleClasspath(analyzer);
-			_processBundleSymbolicName(analyzer);
-			_processExtraHeaders(analyzer);
-			_processPluginPackagePropertiesExportImportPackages(
-				pluginPackageProperties);
-
-			_processBundleManifestVersion(analyzer);
-
-			_processLiferayPortletXML();
-			_processWebXML("WEB-INF/web.xml");
-			_processWebXML("WEB-INF/liferay-web.xml");
-
-			_processResourceActionXML();
-
-			_processDeclarativeReferences(analyzer);
-
-			_processExtraRequirements();
-
-			_processPackageNames(analyzer);
-
-			_processRequiredDeploymentContexts(analyzer);
-
-			_processExcludedJSPs(analyzer);
-
-			analyzer.setProperties(pluginPackageProperties);
 
 			_processBeans(analyzer);
 
