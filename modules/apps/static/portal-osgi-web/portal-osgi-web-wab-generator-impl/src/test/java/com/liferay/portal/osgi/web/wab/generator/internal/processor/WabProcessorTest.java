@@ -16,8 +16,11 @@ import aQute.bnd.version.Version;
 
 import aQute.lib.filter.Filter;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Node;
@@ -25,9 +28,11 @@ import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.security.xml.SecureXMLFactoryProviderImpl;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
+import com.liferay.portal.util.FastDateFormatFactoryImpl;
 import com.liferay.portal.xml.SAXReaderImpl;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -48,6 +53,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -65,6 +75,12 @@ public class WabProcessorTest {
 
 	@BeforeClass
 	public static void setUpClass() {
+		FastDateFormatFactoryUtil fastDateFormatFactoryUtil =
+			new FastDateFormatFactoryUtil();
+
+		fastDateFormatFactoryUtil.setFastDateFormatFactory(
+			new FastDateFormatFactoryImpl());
+
 		SAXReaderUtil saxReaderUtil = new SAXReaderUtil();
 
 		SAXReaderImpl secureSAXReaderImpl = new SAXReaderImpl();
@@ -193,6 +209,42 @@ public class WabProcessorTest {
 					"com.liferay.portal.kernel.servlet.filters.invoker"));
 			Assert.assertTrue(
 				importedPackages.containsKey("com.liferay.portal.webserver"));
+		}
+	}
+
+	@Test
+	public void testCustomizePluginsJspAnalyzerAdded() throws Exception {
+		WabProcessor wabProcessor = new TestWabProcessor(
+			_createWab(
+				Collections.singletonMap(
+					"META-INF/resources/test.jsp",
+					_getBytes(
+						"<%@ taglib uri=\"http://liferay.com/tld/frontend\" ",
+						"prefix=\"liferay-frontend\" %>", "<%@ page import=\"",
+						"com.liferay.blogs.constants.BlogsConstants\" %>"))),
+			Collections.singletonMap(
+				"Web-ContextPath", new String[] {"/test-plugins"}));
+
+		File processedFile = wabProcessor.getProcessedFile();
+
+		Assert.assertNotNull(processedFile);
+
+		try (Jar jar = new Jar(processedFile)) {
+			Domain domain = Domain.domain(jar.getManifest());
+
+			Assert.assertNotNull(
+				_findRequirement(
+					domain.getRequireCapability(), "osgi.extender",
+					HashMapBuilder.<String, Object>put(
+						"osgi.extender", "jsp.taglib"
+					).put(
+						"uri", "http://liferay.com/tld/frontend"
+					).build()));
+
+			Parameters importedPackages = domain.getImportPackage();
+
+			Assert.assertTrue(
+				importedPackages.containsKey("com.liferay.blogs.constants"));
 		}
 	}
 
@@ -506,6 +558,37 @@ public class WabProcessorTest {
 		return path.toFile();
 	}
 
+	private File _createWab(Map<String, byte[]> fileEntries) throws Exception {
+		File file = FileUtil.createTempFile("war");
+
+		try (JarOutputStream jarOutputStream = new JarOutputStream(
+				new FileOutputStream(file))) {
+
+			Manifest manifest = new Manifest();
+
+			Attributes attributes = manifest.getMainAttributes();
+
+			attributes.putValue("Manifest-Version", "1.0");
+
+			jarOutputStream.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+
+			manifest.write(jarOutputStream);
+
+			jarOutputStream.closeEntry();
+
+			for (Map.Entry<String, byte[]> entry : fileEntries.entrySet()) {
+				jarOutputStream.putNextEntry(new ZipEntry(entry.getKey()));
+				jarOutputStream.write(entry.getValue());
+			}
+
+			jarOutputStream.closeEntry();
+
+			jarOutputStream.finish();
+		}
+
+		return file;
+	}
+
 	private Map.Entry<String, Attrs> _findRequirement(
 			Parameters requirements, String namespace,
 			Map<String, Object> arguments)
@@ -534,6 +617,12 @@ public class WabProcessorTest {
 		}
 
 		return null;
+	}
+
+	private byte[] _getBytes(String... strings) {
+		String string = StringBundler.concat(strings);
+
+		return string.getBytes();
 	}
 
 	private static class TestWabProcessor extends WabProcessor {
