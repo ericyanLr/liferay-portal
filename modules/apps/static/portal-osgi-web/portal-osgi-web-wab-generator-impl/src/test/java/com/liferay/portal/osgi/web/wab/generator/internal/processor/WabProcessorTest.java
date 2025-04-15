@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.security.xml.SecureXMLFactoryProviderImpl;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portal.util.FastDateFormatFactoryImpl;
+import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.xml.SAXReaderImpl;
 
 import java.io.File;
@@ -213,6 +214,53 @@ public class WabProcessorTest {
 	}
 
 	@Test
+	public void testCustomizePluginsDisableUsingPortalProperty()
+		throws Exception {
+
+		Properties properties = new Properties() {
+			{
+				put(
+					"module.framework.web.generator.bnd.plugin.enabled[" +
+						"aQute.bnd.cdi.CDIAnnotations]",
+					"false");
+			}
+		};
+
+		WabProcessor wabProcessor = new TestWabProcessor(
+			getFile("dependencies/PortletV3AnnotatedDemo.war"),
+			Collections.singletonMap(
+				"Web-ContextPath",
+				new String[] {"/portlet-V3-annotated-demo"}));
+
+		File processedFile = null;
+
+		try {
+			PropsUtil.addProperties(properties);
+
+			processedFile = wabProcessor.getProcessedFile();
+		}
+		finally {
+			PropsUtil.removeProperties(properties);
+		}
+
+		Assert.assertNotNull(processedFile);
+
+		try (Jar jar = new Jar(processedFile)) {
+			Domain domain = Domain.domain(jar.getManifest());
+
+			Map.Entry<String, Attrs> entry = _findRequirement(
+				domain.getRequireCapability(), "osgi.extender",
+				HashMapBuilder.<String, Object>put(
+					"osgi.extender", "osgi.cdi"
+				).put(
+					"version", new Version(1)
+				).build());
+
+			Assert.assertNull(entry);
+		}
+	}
+
+	@Test
 	public void testCustomizePluginsJspAnalyzerAdded() throws Exception {
 		WabProcessor wabProcessor = new TestWabProcessor(
 			_createWab(
@@ -245,6 +293,28 @@ public class WabProcessorTest {
 
 			Assert.assertTrue(
 				importedPackages.containsKey("com.liferay.blogs.constants"));
+		}
+	}
+
+	@Test
+	public void testCustomizePluginsServiceComponentAnalyzerDisabled()
+		throws Exception {
+
+		WabProcessor wabProcessor = new TestWabProcessor(
+			_createWab(
+				Collections.singletonMap(
+					"WEB-INF/liferay-plugin-package.properties",
+					_getBytes("Service-Component: test.plugins.disabled"))),
+			Collections.singletonMap(
+				"Web-ContextPath", new String[] {"/test-plugins"}));
+
+		File processedFile = wabProcessor.getProcessedFile();
+
+		Assert.assertNotNull(processedFile);
+
+		try (Jar jar = new Jar(processedFile)) {
+			Assert.assertNull(
+				jar.getResource("OSGI-INF/test.plugins.disabled.xml"));
 		}
 	}
 
