@@ -1539,8 +1539,6 @@ public class WabProcessor {
 			analyzer.setProperty("-jsp", "*.jsp,*.jspf,*.jspx");
 			analyzer.setProperty("Web-ContextPath", _getWebContextPath());
 
-			_customizePlugins(analyzer, pluginPackageProperties);
-
 			_processBundleVersion(analyzer);
 			_processBundleClasspath(analyzer);
 			_processBundleSymbolicName(analyzer);
@@ -1567,6 +1565,8 @@ public class WabProcessor {
 			_processExcludedJSPs(analyzer);
 
 			analyzer.setProperties(pluginPackageProperties);
+
+			_customizePlugins(analyzer, pluginPackageProperties);
 
 			_processBeans(analyzer);
 
