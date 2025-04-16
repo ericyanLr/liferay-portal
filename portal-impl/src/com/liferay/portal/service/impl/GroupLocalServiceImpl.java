@@ -38,6 +38,7 @@ import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstant
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCachable;
 import com.liferay.portal.kernel.cluster.ClusterExecutorUtil;
+import com.liferay.portal.kernel.cluster.ClusterInvokeThreadLocal;
 import com.liferay.portal.kernel.cluster.ClusterRequest;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
@@ -5394,7 +5395,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	private static void _clearStagingGroupIds() {
 		_stagingGroupIdsDCLSingleton.destroy(null);
 
-		if (!ClusterExecutorUtil.isEnabled()) {
+		if (!ClusterExecutorUtil.isEnabled() ||
+			!ClusterInvokeThreadLocal.isEnabled()) {
+
 			return;
 		}
 
