@@ -23,6 +23,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.filter.Filter;
 
 import com.liferay.ant.bnd.jsp.JspAnalyzerPlugin;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.configuration.Configuration;
@@ -1573,6 +1574,24 @@ public class WabProcessor {
 				jar = analyzer.build();
 
 				File outputFile = analyzer.getOutputFile(null);
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						StringBundler.concat(
+							"Analyzer[", jar.getBsn(), "] Errors: ",
+							analyzer.getErrors()));
+					_log.debug(
+						StringBundler.concat(
+							"Analyzer[", jar.getBsn(), "] Plugins: ",
+							TransformUtil.transform(
+								analyzer.getPlugins(),
+								plugin -> plugin.getClass(
+								).getName())));
+					_log.debug(
+						StringBundler.concat(
+							"Analyzer[", jar.getBsn(), "] Warnings: ",
+							analyzer.getWarnings()));
+				}
 
 				jar.write(outputFile);
 
