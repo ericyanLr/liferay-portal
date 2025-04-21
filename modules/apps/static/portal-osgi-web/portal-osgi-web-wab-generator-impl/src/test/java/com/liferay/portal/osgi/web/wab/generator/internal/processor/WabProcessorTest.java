@@ -5,8 +5,10 @@
 
 package com.liferay.portal.osgi.web.wab.generator.internal.processor;
 
+import aQute.bnd.component.DSAnnotations;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.make.component.ServiceComponent;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
@@ -16,6 +18,7 @@ import aQute.bnd.version.Version;
 
 import aQute.lib.filter.Filter;
 
+import com.liferay.ant.bnd.jsp.JspAnalyzerPlugin;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
@@ -281,6 +284,51 @@ public class WabProcessorTest {
 					"com.liferay.portal.kernel.servlet.filters.invoker"));
 			Assert.assertTrue(
 				importedPackages.containsKey("com.liferay.portal.webserver"));
+		}
+	}
+
+	@Test
+	public void testCustomizedPlugins() throws Exception {
+		WabProcessor wabProcessor = new TestWabProcessor(
+			_createWab(
+				Collections.singletonMap(
+					"WEB-INF/beans.xml",
+					_getBytes("<?xml version=\"1.0\" ?><beans/>"))),
+			Collections.singletonMap(
+				"Web-ContextPath", new String[] {"/test-plugins"}));
+
+		try (LogCapture logCapture = LoggerTestUtil.configureJDKLogger(
+				WabProcessor.class.getName(), Level.FINE)) {
+
+			wabProcessor.getProcessedFile();
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			LogEntry logEntry = logEntries.get(1);
+
+			String message = logEntry.getMessage();
+
+			String messagePrefix = "Analyzer[test-plugins] Plugins: ";
+
+			Assert.assertTrue(message, message.startsWith(messagePrefix));
+
+			List<String> plugins = ListUtil.fromString(
+				message.substring(
+					messagePrefix.length() + 1, message.length() - 1),
+				StringPool.COMMA_AND_SPACE);
+
+			Assert.assertTrue(
+				plugins.toString(),
+				!plugins.contains(DSAnnotations.class.getName()));
+			Assert.assertTrue(
+				plugins.toString(),
+				!plugins.contains(ServiceComponent.class.getName()));
+			Assert.assertTrue(
+				plugins.toString(),
+				plugins.contains(JspAnalyzerPlugin.class.getName()));
+			Assert.assertTrue(
+				plugins.toString(),
+				plugins.contains(WabProcessor.class.getName() + "$2"));
 		}
 	}
 
