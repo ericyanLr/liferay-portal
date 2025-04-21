@@ -16,18 +16,29 @@ import aQute.bnd.version.Version;
 
 import aQute.lib.filter.Filter;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Node;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.security.xml.SecureXMLFactoryProviderImpl;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
+import com.liferay.portal.util.FastDateFormatFactoryImpl;
 import com.liferay.portal.xml.SAXReaderImpl;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -48,6 +59,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.zip.ZipEntry;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -65,6 +83,12 @@ public class WabProcessorTest {
 
 	@BeforeClass
 	public static void setUpClass() {
+		FastDateFormatFactoryUtil fastDateFormatFactoryUtil =
+			new FastDateFormatFactoryUtil();
+
+		fastDateFormatFactoryUtil.setFastDateFormatFactory(
+			new FastDateFormatFactoryImpl());
+
 		SAXReaderUtil saxReaderUtil = new SAXReaderUtil();
 
 		SAXReaderImpl secureSAXReaderImpl = new SAXReaderImpl();
@@ -83,6 +107,70 @@ public class WabProcessorTest {
 			new UnsecureSAXReaderUtil();
 
 		unsecureSAXReaderUtil.setSAXReader(new SAXReaderImpl());
+	}
+
+	@Test
+	public void testBndIncludeProperty() throws Exception {
+		String expectedKey = "Test-Key";
+		String expectedValue = RandomTestUtil.randomString();
+
+		WabProcessor wabProcessor = new TestWabProcessor(
+			_createWab(
+				HashMapBuilder.put(
+					"test.properties",
+					_getBytes(expectedKey + ":" + expectedValue)
+				).put(
+					"WEB-INF/liferay-plugin-package.properties",
+					_getBytes("-include test.properties")
+				).build()),
+			Collections.singletonMap(
+				"Web-ContextPath", new String[] {"/test-bnd-property"}));
+
+		File processedFile = wabProcessor.getProcessedFile();
+
+		Assert.assertNotNull(processedFile);
+
+		try (Jar jar = new Jar(processedFile)) {
+			Domain domain = Domain.domain(jar.getManifest());
+
+			Assert.assertEquals(expectedValue, domain.get(expectedKey));
+		}
+	}
+
+	@Test
+	public void testBndInitProperty() throws Exception {
+		String expectedValue = RandomTestUtil.randomString();
+
+		WabProcessor wabProcessor = new TestWabProcessor(
+			_createWab(
+				Collections.singletonMap(
+					"WEB-INF/liferay-plugin-package.properties",
+					_getBytes("-init ${warning;" + expectedValue + "}"))),
+			Collections.singletonMap(
+				"Web-ContextPath", new String[] {"/test-bnd-property"}));
+
+		try (LogCapture logCapture = LoggerTestUtil.configureJDKLogger(
+				WabProcessor.class.getName(), Level.FINE)) {
+
+			wabProcessor.getProcessedFile();
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			LogEntry logEntry = logEntries.get(2);
+
+			String message = logEntry.getMessage();
+
+			String messagePrefix = "Analyzer[test-bnd-property] Warnings: ";
+
+			Assert.assertTrue(message, message.startsWith(messagePrefix));
+
+			List<String> warnings = ListUtil.fromString(
+				message.substring(
+					messagePrefix.length() + 1, message.length() - 1),
+				StringPool.COMMA_AND_SPACE);
+
+			Assert.assertEquals(Arrays.asList(expectedValue), warnings);
+		}
 	}
 
 	@Test
@@ -506,6 +594,47 @@ public class WabProcessorTest {
 		return path.toFile();
 	}
 
+	private File _createWab(Map<String, byte[]> fileEntries) throws Exception {
+		File file = FileUtil.createTempFile("war");
+
+		try (JarOutputStream jarOutputStream = new JarOutputStream(
+				new FileOutputStream(file))) {
+
+			Manifest manifest = new Manifest();
+
+			Attributes attributes = manifest.getMainAttributes();
+
+			attributes.putValue("Manifest-Version", "1.0");
+
+			jarOutputStream.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+
+			manifest.write(jarOutputStream);
+
+			jarOutputStream.closeEntry();
+
+			jarOutputStream.putNextEntry(
+				new JarEntry("ext/WEB-INF/classes/empty.txt"));
+
+			jarOutputStream.closeEntry();
+
+			jarOutputStream.putNextEntry(
+				new JarEntry("WEB-INF/classes/empty.txt"));
+
+			jarOutputStream.closeEntry();
+
+			for (Map.Entry<String, byte[]> entry : fileEntries.entrySet()) {
+				jarOutputStream.putNextEntry(new ZipEntry(entry.getKey()));
+				jarOutputStream.write(entry.getValue());
+
+				jarOutputStream.closeEntry();
+			}
+
+			jarOutputStream.finish();
+		}
+
+		return file;
+	}
+
 	private Map.Entry<String, Attrs> _findRequirement(
 			Parameters requirements, String namespace,
 			Map<String, Object> arguments)
@@ -534,6 +663,12 @@ public class WabProcessorTest {
 		}
 
 		return null;
+	}
+
+	private byte[] _getBytes(String... strings) {
+		String string = StringBundler.concat(strings);
+
+		return string.getBytes();
 	}
 
 	private static class TestWabProcessor extends WabProcessor {
