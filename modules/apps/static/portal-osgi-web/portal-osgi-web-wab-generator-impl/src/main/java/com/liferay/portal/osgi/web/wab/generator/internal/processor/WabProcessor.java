@@ -426,6 +426,46 @@ public class WabProcessor {
 		return path;
 	}
 
+	private void _customizePlugins(
+		Builder analyzer, Properties pluginPackageProperties) {
+
+		List<Object> disabledPlugins = new ArrayList<>();
+		Properties properties = PropsUtil.getProperties(
+			"module.framework.web.generator.bnd.plugin.enabled[", true);
+
+		Set<Object> plugins = analyzer.getPlugins();
+
+		for (Object plugin : plugins) {
+			if (plugin instanceof DSAnnotations ||
+				plugin instanceof ServiceComponent) {
+
+				disabledPlugins.add(plugin);
+
+				continue;
+			}
+
+			Class<?> clazz = plugin.getClass();
+
+			String name = clazz.getName() + "]";
+
+			if (!GetterUtil.getBoolean(properties.getProperty(name), true)) {
+				disabledPlugins.add(plugin);
+			}
+		}
+
+		plugins.removeAll(disabledPlugins);
+
+		plugins.add(new JspAnalyzerPlugin());
+
+		if (pluginPackageProperties.containsKey("portal-dependency-jars") &&
+			_log.isWarnEnabled()) {
+
+			_log.warn(
+				"The property \"portal-dependency-jars\" is deprecated. " +
+					"Specified JARs may not be included in the class path.");
+		}
+	}
+
 	private Discover _findDiscoveryMode(Document document) {
 		if (!document.hasContent()) {
 			return Discover.all;
@@ -1500,45 +1540,6 @@ public class WabProcessor {
 			analyzer.setProperty("-jsp", "*.jsp,*.jspf,*.jspx");
 			analyzer.setProperty("Web-ContextPath", _getWebContextPath());
 
-			List<Object> disabledPlugins = new ArrayList<>();
-			Properties properties = PropsUtil.getProperties(
-				"module.framework.web.generator.bnd.plugin.enabled[", true);
-
-			Set<Object> plugins = analyzer.getPlugins();
-
-			for (Object plugin : plugins) {
-				if (plugin instanceof DSAnnotations ||
-					plugin instanceof ServiceComponent) {
-
-					disabledPlugins.add(plugin);
-
-					continue;
-				}
-
-				Class<?> clazz = plugin.getClass();
-
-				String name = clazz.getName() + "]";
-
-				if (!GetterUtil.getBoolean(
-						properties.getProperty(name), true)) {
-
-					disabledPlugins.add(plugin);
-				}
-			}
-
-			plugins.removeAll(disabledPlugins);
-
-			plugins.add(new JspAnalyzerPlugin());
-
-			if (pluginPackageProperties.containsKey("portal-dependency-jars") &&
-				_log.isWarnEnabled()) {
-
-				_log.warn(
-					"The property \"portal-dependency-jars\" is deprecated. " +
-						"Specified JARs may not be included in the class " +
-							"path.");
-			}
-
 			_processBundleVersion(analyzer);
 			_processBundleClasspath(analyzer);
 			_processBundleSymbolicName(analyzer);
@@ -1565,6 +1566,8 @@ public class WabProcessor {
 			_processExcludedJSPs(analyzer);
 
 			analyzer.setProperties(pluginPackageProperties);
+
+			_customizePlugins(analyzer, pluginPackageProperties);
 
 			_processBeans(analyzer);
 
