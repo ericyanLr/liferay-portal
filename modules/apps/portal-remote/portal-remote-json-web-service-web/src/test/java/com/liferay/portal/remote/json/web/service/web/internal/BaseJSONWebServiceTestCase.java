@@ -18,6 +18,7 @@ import com.liferay.portal.remote.json.web.service.JSONWebServiceAction;
 import com.liferay.portal.remote.json.web.service.JSONWebServiceActionsManager;
 import com.liferay.portal.remote.json.web.service.exception.NoSuchJSONWebServiceException;
 import com.liferay.portal.remote.json.web.service.web.internal.action.JSONWebServiceInvokerAction;
+import com.liferay.portlet.expando.service.impl.ExpandoValueLocalServiceImpl;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -48,6 +49,8 @@ public abstract class BaseJSONWebServiceTestCase {
 	}
 
 	protected static void initPortalServices() {
+		new ExpandoValueLocalServiceImpl();
+
 		JSONWebServiceActionsManagerImpl jsonWebServiceActionsManagerImpl =
 			new JSONWebServiceActionsManagerImpl();
 
