@@ -29,6 +29,8 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.typeconverter.DateArrayConverter;
+import com.liferay.portal.typeconverter.DateTypeConverter;
+import com.liferay.portal.typeconverter.LocaleTypeConverter;
 import com.liferay.portal.typeconverter.NumberArrayConverter;
 import com.liferay.portal.typeconverter.NumberConverter;
 import com.liferay.portlet.expando.model.impl.ExpandoValueImpl;
@@ -59,7 +61,9 @@ public class ExpandoValueLocalServiceImpl
 	public ExpandoValueLocalServiceImpl() {
 		TypeConverterManager typeConverterManager = TypeConverterManager.get();
 
+		typeConverterManager.register(Date.class, new DateTypeConverter());
 		typeConverterManager.register(Date[].class, new DateArrayConverter());
+		typeConverterManager.register(Locale.class, new LocaleTypeConverter());
 		typeConverterManager.register(Number.class, new NumberConverter());
 		typeConverterManager.register(
 			Number[].class, new NumberArrayConverter());

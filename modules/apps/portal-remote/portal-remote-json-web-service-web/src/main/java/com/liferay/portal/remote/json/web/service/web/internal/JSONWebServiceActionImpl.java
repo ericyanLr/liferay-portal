@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MethodParameter;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.remote.json.web.service.JSONWebServiceAction;
-import com.liferay.portal.typeconverter.DateTypeConverter;
-import com.liferay.portal.typeconverter.LocaleTypeConverter;
 import com.liferay.portal.util.PropsUtil;
 
 import java.io.File;
@@ -33,7 +31,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -578,12 +575,5 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 	private final JSONWebServiceActionConfig _jsonWebServiceActionConfig;
 	private final JSONWebServiceActionParameters
 		_jsonWebServiceActionParameters;
-
-	static {
-		TypeConverterManager typeConverterManager = TypeConverterManager.get();
-
-		typeConverterManager.register(Date.class, new DateTypeConverter());
-		typeConverterManager.register(Locale.class, new LocaleTypeConverter());
-	}
 
 }
