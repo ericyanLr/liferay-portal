@@ -163,6 +163,11 @@ public class PermissionCheckFinderEntryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByGroupIdArrayable() throws Exception {
+		_persistence.countByGroupId(new long[] {RandomTestUtil.nextLong(), 0L});
+	}
+
+	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		PermissionCheckFinderEntry newPermissionCheckFinderEntry =
 			addPermissionCheckFinderEntry();
