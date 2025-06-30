@@ -13,10 +13,12 @@ import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -258,6 +260,8 @@ public class PermissionCheckFinderEntryPersistenceTest {
 		_persistence.filterFindByGroupId(
 			0, QueryUtil.ALL_POS, QueryUtil.ALL_POS, getOrderByComparator());
 
+		// Test scope: GROUP
+
 		Group group1 = GroupTestUtil.addGroup();
 
 		_groups.add(group1);
@@ -355,6 +359,75 @@ public class PermissionCheckFinderEntryPersistenceTest {
 			_persistence.filterFindByGroupId(
 				new long[]{
 					group1.getGroupId(), group3.getGroupId()},
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null));
+
+		// Test Scope: GROUP_TEMPLATE
+
+		Group group4 = GroupTestUtil.addGroup();
+
+		_groups.add(group4);
+
+		PermissionCheckFinderEntry newPermissionCheckFinderEntry4 =
+			_addPermissionCheckFinderEntry(group4.getGroupId(), 1);
+
+		Group group5 = GroupTestUtil.addGroup();
+
+		_groups.add(group5);
+
+		PermissionCheckFinderEntry newPermissionCheckFinderEntry5 =
+			_addPermissionCheckFinderEntry(group5.getGroupId(), 2);
+
+		ResourcePermissionLocalServiceUtil.addResourcePermission(
+			CompanyThreadLocal.getCompanyId(),
+			PermissionCheckFinderEntry.class.getName(),
+			ResourceConstants.SCOPE_GROUP_TEMPLATE,
+			String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID),
+			role.getRoleId(), ActionKeys.VIEW);
+
+		Assert.assertTrue(InlineSQLHelperUtil.isEnabled(group4.getGroupId()));
+		Assert.assertTrue(InlineSQLHelperUtil.isEnabled(group5.getGroupId()));
+
+		Assert.assertEquals(
+			Arrays.asList(newPermissionCheckFinderEntry4),
+			_persistence.filterFindByGroupId(
+				group4.getGroupId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				null));
+		Assert.assertEquals(
+			Arrays.asList(newPermissionCheckFinderEntry5),
+			_persistence.filterFindByGroupId(
+				group5.getGroupId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				null));
+		Assert.assertEquals(
+			Collections.emptyList(),
+			_persistence.filterFindByGroupId(
+				0L, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null));
+
+		Assert.assertEquals(
+			Arrays.asList(newPermissionCheckFinderEntry4),
+			_persistence.filterFindByGroupId(
+				new long[]{group4.getGroupId()}, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, null));
+		Assert.assertEquals(
+			Arrays.asList(newPermissionCheckFinderEntry5),
+			_persistence.filterFindByGroupId(
+				new long[]{group5.getGroupId()}, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, null));
+		Assert.assertEquals(
+			Collections.emptyList(),
+			_persistence.filterFindByGroupId(
+				new long[]{0L}, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null));
+
+		Assert.assertEquals(
+			Arrays.asList(
+				newPermissionCheckFinderEntry4, newPermissionCheckFinderEntry5),
+			_persistence.filterFindByGroupId(
+				new long[]{
+					group4.getGroupId(), group5.getGroupId()},
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null));
+		Assert.assertEquals(
+			Arrays.asList(newPermissionCheckFinderEntry4),
+			_persistence.filterFindByGroupId(
+				new long[]{group4.getGroupId(), 0L},
 				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null));
 	}
 
