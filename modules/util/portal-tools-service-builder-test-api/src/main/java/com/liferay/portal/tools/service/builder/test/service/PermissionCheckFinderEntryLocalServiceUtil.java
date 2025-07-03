@@ -35,6 +35,12 @@ public class PermissionCheckFinderEntryLocalServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.tools.service.builder.test.service.impl.PermissionCheckFinderEntryLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+	public static PermissionCheckFinderEntry addPermissionCheckFinderEntry(
+		long groupId, int integer, String name, String type) {
+
+		return getService().addPermissionCheckFinderEntry(
+			groupId, integer, name, type);
+	}
 
 	/**
 	 * Adds the permission check finder entry to the database. Also notifies the appropriate model listeners.
@@ -212,6 +218,18 @@ public class PermissionCheckFinderEntryLocalServiceUtil {
 
 		return getService().fetchPermissionCheckFinderEntry(
 			permissionCheckFinderEntryId);
+	}
+
+	public static List<PermissionCheckFinderEntry> filterFindByGroupId(
+		long groupId) {
+
+		return getService().filterFindByGroupId(groupId);
+	}
+
+	public static List<PermissionCheckFinderEntry> filterFindByGroupId(
+		long[] groupIds) {
+
+		return getService().filterFindByGroupId(groupIds);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
