@@ -7,6 +7,7 @@ package com.liferay.layout.utility.page.status.internal.request.contributor;
 
 import com.liferay.layout.utility.page.kernel.constants.LayoutUtilityPageEntryConstants;
 import com.liferay.layout.utility.page.kernel.request.contributor.StatusLayoutUtilityPageEntryRequestContributor;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -18,6 +19,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.VirtualHost;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -73,119 +75,128 @@ public class CommonStatusLayoutUtilityPageEntryRequestContributor
 			companyId = PortalInstancePool.getDefaultCompanyId();
 		}
 
-		PermissionChecker permissionChecker = _getPermissionChecker(
-			companyId, dynamicServletRequest);
+		try (SafeCloseable safeCloseable =
+				CompanyThreadLocal.setCompanyIdWithSafeCloseable(companyId)) {
 
-		if (permissionChecker == null) {
-			return;
-		}
+			PermissionChecker permissionChecker = _getPermissionChecker(
+				companyId, dynamicServletRequest);
 
-		String currentURL = _portal.getCurrentURL(dynamicServletRequest);
-
-		if (Validator.isNull(currentURL)) {
-			_addVirtualHostAttributesAndParameters(
-				dynamicServletRequest, null, permissionChecker, virtualHost);
-
-			return;
-		}
-
-		String pathProxy = _portal.getPathProxy();
-
-		if (Validator.isNotNull(pathProxy) &&
-			currentURL.startsWith(pathProxy)) {
-
-			currentURL = currentURL.substring(pathProxy.length());
-		}
-
-		String contextPath = dynamicServletRequest.getContextPath();
-
-		if (Validator.isNotNull(contextPath) &&
-			!contextPath.equals(StringPool.SLASH)) {
-
-			currentURL = currentURL.substring(contextPath.length());
-		}
-
-		if (Validator.isNull(currentURL)) {
-			_addVirtualHostAttributesAndParameters(
-				dynamicServletRequest, null, permissionChecker, virtualHost);
-
-			return;
-		}
-
-		String languageId = StringPool.BLANK;
-
-		Set<String> languageIds = I18nServlet.getLanguageIds();
-
-		for (String currentLanguageId : languageIds) {
-			if (StringUtil.startsWith(
-					currentURL, currentLanguageId + StringPool.FORWARD_SLASH)) {
-
-				currentURL = currentURL.substring(currentLanguageId.length());
-
-				languageId = currentLanguageId.substring(1);
-
-				break;
+			if (permissionChecker == null) {
+				return;
 			}
+
+			String currentURL = _portal.getCurrentURL(dynamicServletRequest);
+
+			if (Validator.isNull(currentURL)) {
+				_addVirtualHostAttributesAndParameters(
+					dynamicServletRequest, null, permissionChecker,
+					virtualHost);
+
+				return;
+			}
+
+			String pathProxy = _portal.getPathProxy();
+
+			if (Validator.isNotNull(pathProxy) &&
+				currentURL.startsWith(pathProxy)) {
+
+				currentURL = currentURL.substring(pathProxy.length());
+			}
+
+			String contextPath = dynamicServletRequest.getContextPath();
+
+			if (Validator.isNotNull(contextPath) &&
+				!contextPath.equals(StringPool.SLASH)) {
+
+				currentURL = currentURL.substring(contextPath.length());
+			}
+
+			if (Validator.isNull(currentURL)) {
+				_addVirtualHostAttributesAndParameters(
+					dynamicServletRequest, null, permissionChecker,
+					virtualHost);
+
+				return;
+			}
+
+			String languageId = StringPool.BLANK;
+
+			Set<String> languageIds = I18nServlet.getLanguageIds();
+
+			for (String currentLanguageId : languageIds) {
+				if (StringUtil.startsWith(
+						currentURL,
+						currentLanguageId + StringPool.FORWARD_SLASH)) {
+
+					currentURL = currentURL.substring(
+						currentLanguageId.length());
+
+					languageId = currentLanguageId.substring(1);
+
+					break;
+				}
+			}
+
+			if (Validator.isNull(currentURL) ||
+				currentURL.equals(StringPool.SLASH)) {
+
+				_addVirtualHostAttributesAndParameters(
+					dynamicServletRequest, languageId, permissionChecker,
+					virtualHost);
+
+				return;
+			}
+
+			String[] urlParts = currentURL.split("\\/", 4);
+
+			if ((currentURL.charAt(0) != CharPool.SLASH) &&
+				(urlParts.length != 4)) {
+
+				_addVirtualHostAttributesAndParameters(
+					dynamicServletRequest, languageId, permissionChecker,
+					virtualHost);
+
+				return;
+			}
+
+			String urlPrefix = StringPool.SLASH + urlParts[1];
+
+			if (!(_PUBLIC_GROUP_SERVLET_MAPPING.equals(urlPrefix) ||
+				  _PRIVATE_GROUP_SERVLET_MAPPING.equals(urlPrefix) ||
+				  _PRIVATE_USER_SERVLET_MAPPING.equals(urlPrefix))) {
+
+				_addVirtualHostAttributesAndParameters(
+					dynamicServletRequest, languageId, permissionChecker,
+					virtualHost);
+
+				return;
+			}
+
+			Group group = _groupLocalService.fetchFriendlyURLGroup(
+				companyId, StringPool.SLASH + urlParts[2]);
+
+			if ((group == null) || !group.isActive()) {
+				_addVirtualHostAttributesAndParameters(
+					dynamicServletRequest, languageId, permissionChecker,
+					virtualHost);
+
+				return;
+			}
+
+			Layout layout = _getFirstLayout(
+				group.getGroupId(), permissionChecker);
+
+			if (layout == null) {
+				_addVirtualHostAttributesAndParameters(
+					dynamicServletRequest, languageId, permissionChecker,
+					virtualHost);
+
+				return;
+			}
+
+			_addLayoutAttributesAndParameters(
+				dynamicServletRequest, languageId, layout);
 		}
-
-		if (Validator.isNull(currentURL) ||
-			currentURL.equals(StringPool.SLASH)) {
-
-			_addVirtualHostAttributesAndParameters(
-				dynamicServletRequest, languageId, permissionChecker,
-				virtualHost);
-
-			return;
-		}
-
-		String[] urlParts = currentURL.split("\\/", 4);
-
-		if ((currentURL.charAt(0) != CharPool.SLASH) &&
-			(urlParts.length != 4)) {
-
-			_addVirtualHostAttributesAndParameters(
-				dynamicServletRequest, languageId, permissionChecker,
-				virtualHost);
-
-			return;
-		}
-
-		String urlPrefix = StringPool.SLASH + urlParts[1];
-
-		if (!(_PUBLIC_GROUP_SERVLET_MAPPING.equals(urlPrefix) ||
-			  _PRIVATE_GROUP_SERVLET_MAPPING.equals(urlPrefix) ||
-			  _PRIVATE_USER_SERVLET_MAPPING.equals(urlPrefix))) {
-
-			_addVirtualHostAttributesAndParameters(
-				dynamicServletRequest, languageId, permissionChecker,
-				virtualHost);
-
-			return;
-		}
-
-		Group group = _groupLocalService.fetchFriendlyURLGroup(
-			companyId, StringPool.SLASH + urlParts[2]);
-
-		if ((group == null) || !group.isActive()) {
-			_addVirtualHostAttributesAndParameters(
-				dynamicServletRequest, languageId, permissionChecker,
-				virtualHost);
-
-			return;
-		}
-
-		Layout layout = _getFirstLayout(group.getGroupId(), permissionChecker);
-
-		if (layout == null) {
-			_addVirtualHostAttributesAndParameters(
-				dynamicServletRequest, languageId, permissionChecker,
-				virtualHost);
-
-			return;
-		}
-
-		_addLayoutAttributesAndParameters(
-			dynamicServletRequest, languageId, layout);
 	}
 
 	private void _addLayoutAttributesAndParameters(
