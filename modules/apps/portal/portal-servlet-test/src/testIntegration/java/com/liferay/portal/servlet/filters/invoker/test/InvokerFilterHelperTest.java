@@ -7,6 +7,8 @@ package com.liferay.portal.servlet.filters.invoker.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.servlet.ServletContextClassLoaderPool;
+import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.servlet.filters.invoker.Dispatcher;
 import com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilterChain;
 import com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilterHelper;
@@ -14,11 +16,13 @@ import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.servlet.filters.BasePortalFilter;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Arrays;
@@ -274,6 +278,22 @@ public class InvokerFilterHelperTest {
 				_TEST_FILTER_A, _TEST_FILTER_B, _TEST_FILTER_C, _TEST_FILTER_1,
 				_TEST_FILTER_2, _TEST_FILTER_3),
 			_getInvokerFilterChainFilters());
+	}
+
+	@Test
+	public void testFirstFilterIsAbsoluteRedirectsFilter() {
+		ServletContext servletContext = ServletContextPool.get(
+			ServletContextClassLoaderPool.getServletContextName(
+				PortalClassLoaderUtil.getClassLoader()));
+
+		InvokerFilterHelper invokerFilterHelper =
+			(InvokerFilterHelper)servletContext.getAttribute(
+				InvokerFilterHelper.class.getName());
+
+		List<String> filterNames = ReflectionTestUtil.invoke(
+			invokerFilterHelper, "_getFilterNames", null);
+
+		Assert.assertEquals("Absolute Redirects Filter", filterNames.get(0));
 	}
 
 	private List<String> _getInvokerFilterChainFilters() {
