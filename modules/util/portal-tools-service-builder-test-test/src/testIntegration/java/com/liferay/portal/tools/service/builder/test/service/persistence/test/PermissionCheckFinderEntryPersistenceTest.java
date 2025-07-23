@@ -501,10 +501,8 @@ public class PermissionCheckFinderEntryPersistenceTest {
 
 		permissionCheckFinderEntry.setType(RandomTestUtil.randomString());
 
-		permissionCheckFinderEntry = _persistence.update(
-			permissionCheckFinderEntry);
-
-		_permissionCheckFinderEntries.add(permissionCheckFinderEntry);
+		_permissionCheckFinderEntries.add(
+			_persistence.update(permissionCheckFinderEntry));
 
 		return permissionCheckFinderEntry;
 	}
