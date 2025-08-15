@@ -168,7 +168,7 @@ public class InlineSQLHelperImplTest {
 	}
 
 	@Test
-	public void testGroupAdminResourcePermission() throws Exception {
+	public void testGroupResourcePermission() throws Exception {
 		_addGroupRole(_groupOne, RoleConstants.SITE_ADMINISTRATOR);
 		_addGroupRole(_groupTwo, RoleConstants.SITE_MEMBER);
 
