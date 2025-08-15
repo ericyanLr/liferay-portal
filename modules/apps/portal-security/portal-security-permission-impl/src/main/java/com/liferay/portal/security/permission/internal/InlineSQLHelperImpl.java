@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.security.permission.contributor.PermissionSQLContributor;
@@ -92,9 +93,13 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			groupIds = new long[] {0};
 		}
 
-		if (_getSkipReplaceAndViewableGroupIdsObjectValuePair(
-				permissionChecker, modelClassName, classPKColumn, groupIds)) {
+		ObjectValuePair<Boolean, long[]> objectValuePair =
+			_getSkipReplaceAndViewableGroupIdsObjectValuePair(
+				permissionChecker, modelClassName, classPKColumn, groupIds);
 
+		boolean skipReplace = objectValuePair.getKey();
+
+		if (skipReplace) {
 			return null;
 		}
 
@@ -212,10 +217,13 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if ((sql == null) ||
+		ObjectValuePair<Boolean, long[]> objectValuePair =
 			_getSkipReplaceAndViewableGroupIdsObjectValuePair(
-				permissionChecker, className, classPKField, groupIds)) {
+				permissionChecker, className, classPKField, groupIds);
 
+		boolean skipReplace = objectValuePair.getKey();
+
+		if ((sql == null) || skipReplace) {
 			return sql;
 		}
 
@@ -532,12 +540,13 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		return ArrayUtil.toLongArray(roleIds);
 	}
 
-	private boolean _getSkipReplaceAndViewableGroupIdsObjectValuePair(
-		PermissionChecker permissionChecker, String className,
-		Object classPKField, long[] groupIds) {
+	private ObjectValuePair<Boolean, long[]>
+		_getSkipReplaceAndViewableGroupIdsObjectValuePair(
+			PermissionChecker permissionChecker, String className,
+			Object classPKField, long[] groupIds) {
 
 		if (!_inlinePermissionConfiguration.sqlCheckEnabled()) {
-			return true;
+			return new ObjectValuePair<>(true, new long[0]);
 		}
 
 		if (Validator.isNull(className)) {
@@ -602,7 +611,7 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		long[] viewableGroupIdsArray = ArrayUtil.toLongArray(viewableGroupIds);
 
 		if (ArrayUtil.containsAll(viewableGroupIdsArray, groupIds)) {
-			return true;
+			return new ObjectValuePair<>(true, viewableGroupIdsArray);
 		}
 
 		try {
@@ -612,7 +621,7 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 					_getRoleIds(ArrayUtil.append(groupIds, 0)),
 					ActionKeys.VIEW)) {
 
-				return true;
+				return new ObjectValuePair<>(true, viewableGroupIdsArray);
 			}
 		}
 		catch (PortalException portalException) {
@@ -625,7 +634,7 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			}
 		}
 
-		return false;
+		return new ObjectValuePair<>(false, viewableGroupIdsArray);
 	}
 
 	private DSLQuery _insertResourcePermissionQuery(
