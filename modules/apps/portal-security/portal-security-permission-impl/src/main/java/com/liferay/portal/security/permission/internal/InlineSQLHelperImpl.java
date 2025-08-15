@@ -92,7 +92,7 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			groupIds = new long[] {0};
 		}
 
-		if (_skipReplace(
+		if (_getSkipReplaceAndViewableGroupIdsObjectValuePair(
 				permissionChecker, modelClassName, classPKColumn, groupIds)) {
 
 			return null;
@@ -213,7 +213,7 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			PermissionThreadLocal.getPermissionChecker();
 
 		if ((sql == null) ||
-			_skipReplace(
+			_getSkipReplaceAndViewableGroupIdsObjectValuePair(
 				permissionChecker, className, classPKField, groupIds)) {
 
 			return sql;
@@ -532,6 +532,102 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		return ArrayUtil.toLongArray(roleIds);
 	}
 
+	private boolean _getSkipReplaceAndViewableGroupIdsObjectValuePair(
+		PermissionChecker permissionChecker, String className,
+		Object classPKField, long[] groupIds) {
+
+		if (!_inlinePermissionConfiguration.sqlCheckEnabled()) {
+			return true;
+		}
+
+		if (Validator.isNull(className)) {
+			throw new IllegalArgumentException("className is null");
+		}
+
+		if (Objects.equals(className, AssetTag.class.getName())) {
+			throw new IllegalArgumentException(
+				"AssetTag does not support inline permissions. See LPS-82433.");
+		}
+
+		if (Validator.isNull(classPKField)) {
+			throw new IllegalArgumentException("classPKField is null");
+		}
+
+		long companyId = permissionChecker.getCompanyId();
+		Set<Long> viewableGroupIds = new HashSet<>();
+
+		for (long groupId : groupIds) {
+			Group group = _groupLocalService.fetchGroup(groupId);
+
+			if (group == null) {
+				continue;
+			}
+			else if (group.getCompanyId() != companyId) {
+				throw new IllegalArgumentException(
+					"Permission queries across multiple portal instances are " +
+						"not supported");
+			}
+			else if (!isEnabled(groupId)) {
+				viewableGroupIds.add(groupId);
+
+				continue;
+			}
+
+			long[] roleIds = _getRoleIds(groupId);
+
+			try {
+				if (_resourcePermissionLocalService.hasResourcePermission(
+						companyId, className, ResourceConstants.SCOPE_GROUP,
+						String.valueOf(groupId), roleIds, ActionKeys.VIEW) ||
+					_resourcePermissionLocalService.hasResourcePermission(
+						companyId, className,
+						ResourceConstants.SCOPE_GROUP_TEMPLATE,
+						String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID),
+						roleIds, ActionKeys.VIEW)) {
+
+					viewableGroupIds.add(groupId);
+				}
+			}
+			catch (PortalException portalException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						StringBundler.concat(
+							"Unable to get resource permissions for ",
+							className, " with group ", groupId),
+						portalException);
+				}
+			}
+		}
+
+		long[] viewableGroupIdsArray = ArrayUtil.toLongArray(viewableGroupIds);
+
+		if (ArrayUtil.containsAll(viewableGroupIdsArray, groupIds)) {
+			return true;
+		}
+
+		try {
+			if (_resourcePermissionLocalService.hasResourcePermission(
+					companyId, className, ResourceConstants.SCOPE_COMPANY,
+					String.valueOf(companyId),
+					_getRoleIds(ArrayUtil.append(groupIds, 0)),
+					ActionKeys.VIEW)) {
+
+				return true;
+			}
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					StringBundler.concat(
+						"Unable to get resource permissions for ", className,
+						" with company ", companyId),
+					portalException);
+			}
+		}
+
+		return false;
+	}
+
 	private DSLQuery _insertResourcePermissionQuery(
 		DSLQuery dslQuery, Predicate permissionWherePredicate) {
 
@@ -642,102 +738,6 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		}
 
 		return sb.toString();
-	}
-
-	private boolean _skipReplace(
-		PermissionChecker permissionChecker, String className,
-		Object classPKField, long[] groupIds) {
-
-		if (!_inlinePermissionConfiguration.sqlCheckEnabled()) {
-			return true;
-		}
-
-		if (Validator.isNull(className)) {
-			throw new IllegalArgumentException("className is null");
-		}
-
-		if (Objects.equals(className, AssetTag.class.getName())) {
-			throw new IllegalArgumentException(
-				"AssetTag does not support inline permissions. See LPS-82433.");
-		}
-
-		if (Validator.isNull(classPKField)) {
-			throw new IllegalArgumentException("classPKField is null");
-		}
-
-		long companyId = permissionChecker.getCompanyId();
-		Set<Long> viewableGroupIds = new HashSet<>();
-
-		for (long groupId : groupIds) {
-			Group group = _groupLocalService.fetchGroup(groupId);
-
-			if (group == null) {
-				continue;
-			}
-			else if (group.getCompanyId() != companyId) {
-				throw new IllegalArgumentException(
-					"Permission queries across multiple portal instances are " +
-						"not supported");
-			}
-			else if (!isEnabled(groupId)) {
-				viewableGroupIds.add(groupId);
-
-				continue;
-			}
-
-			long[] roleIds = _getRoleIds(groupId);
-
-			try {
-				if (_resourcePermissionLocalService.hasResourcePermission(
-						companyId, className, ResourceConstants.SCOPE_GROUP,
-						String.valueOf(groupId), roleIds, ActionKeys.VIEW) ||
-					_resourcePermissionLocalService.hasResourcePermission(
-						companyId, className,
-						ResourceConstants.SCOPE_GROUP_TEMPLATE,
-						String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID),
-						roleIds, ActionKeys.VIEW)) {
-
-					viewableGroupIds.add(groupId);
-				}
-			}
-			catch (PortalException portalException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						StringBundler.concat(
-							"Unable to get resource permissions for ",
-							className, " with group ", groupId),
-						portalException);
-				}
-			}
-		}
-
-		long[] viewableGroupIdsArray = ArrayUtil.toLongArray(viewableGroupIds);
-
-		if (ArrayUtil.containsAll(viewableGroupIdsArray, groupIds)) {
-			return true;
-		}
-
-		try {
-			if (_resourcePermissionLocalService.hasResourcePermission(
-					companyId, className, ResourceConstants.SCOPE_COMPANY,
-					String.valueOf(companyId),
-					_getRoleIds(ArrayUtil.append(groupIds, 0)),
-					ActionKeys.VIEW)) {
-
-				return true;
-			}
-		}
-		catch (PortalException portalException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(
-					StringBundler.concat(
-						"Unable to get resource permissions for ", className,
-						" with company ", companyId),
-					portalException);
-			}
-		}
-
-		return false;
 	}
 
 	private static final String _GROUP_BY_CLAUSE = " GROUP BY ";
