@@ -103,8 +103,11 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			return null;
 		}
 
+		long[] viewableGroupIds = objectValuePair.getValue();
+
 		return _getPermissionWherePredicate(
-			permissionChecker, modelClassName, classPKColumn, groupIds);
+			permissionChecker, modelClassName, classPKColumn, groupIds,
+			viewableGroupIds);
 	}
 
 	@Override
@@ -227,12 +230,14 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			return sql;
 		}
 
+		long[] viewableGroupIds = objectValuePair.getValue();
+
 		String resourcePermissionSQL = _getResourcePermissionSQL(
 			permissionChecker, className, groupIds);
 
 		return _insertResourcePermissionSQL(
 			sql, className, classPKField, groupIdField, groupIds,
-			resourcePermissionSQL);
+			resourcePermissionSQL, viewableGroupIds);
 	}
 
 	@Activate
@@ -258,7 +263,8 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 
 	private void _appendPermissionSQL(
 		StringBundler sb, String className, String classPKField,
-		String groupIdField, long[] groupIds, String permissionSQL) {
+		String groupIdField, long[] groupIds, String permissionSQL,
+		long[] viewableGroupIds) {
 
 		List<PermissionSQLContributor> permissionSQLContributors =
 			_serviceTrackerMap.getService(className);
@@ -290,18 +296,16 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 
 		StringBundler groupAdminResourcePermissionSB = null;
 
-		for (long groupId : groupIds) {
-			if (!isEnabled(groupId)) {
-				if (groupAdminResourcePermissionSB == null) {
-					groupAdminResourcePermissionSB = new StringBundler(
-						(groupIds.length * 2) - 1);
-				}
-				else {
-					groupAdminResourcePermissionSB.append(", ");
-				}
-
-				groupAdminResourcePermissionSB.append(groupId);
+		for (long groupId : viewableGroupIds) {
+			if (groupAdminResourcePermissionSB == null) {
+				groupAdminResourcePermissionSB = new StringBundler(
+					(viewableGroupIds.length * 2) - 1);
 			}
+			else {
+				groupAdminResourcePermissionSB.append(", ");
+			}
+
+			groupAdminResourcePermissionSB.append(groupId);
 		}
 
 		if ((permissionSQLContributorsSQLSB != null) ||
@@ -337,7 +341,8 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 
 	private <T extends Table<T>> Predicate _getPermissionWherePredicate(
 		PermissionChecker permissionChecker, String modelClassName,
-		Column<T, Long> classPKColumn, long[] groupIds) {
+		Column<T, Long> classPKColumn, long[] groupIds,
+		long[] viewableGroupIds) {
 
 		DSLQuery resourcePermissionDSLQuery = _getResourcePermissionQuery(
 			permissionChecker, modelClassName, groupIds);
@@ -374,14 +379,12 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 
 		Set<Long> groupIdSet = null;
 
-		for (long groupId : groupIds) {
-			if (!isEnabled(groupId)) {
-				if (groupIdSet == null) {
-					groupIdSet = new LinkedHashSet<>();
-				}
-
-				groupIdSet.add(groupId);
+		for (long groupId : viewableGroupIds) {
+			if (groupIdSet == null) {
+				groupIdSet = new LinkedHashSet<>();
 			}
+
+			groupIdSet.add(groupId);
 		}
 
 		if (groupIdSet != null) {
@@ -702,7 +705,7 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 
 	private String _insertResourcePermissionSQL(
 		String sql, String className, String classPKField, String groupIdField,
-		long[] groupIds, String permissionSQL) {
+		long[] groupIds, String permissionSQL, long[] viewableGroupIds) {
 
 		StringBundler sb = new StringBundler(11);
 
@@ -726,7 +729,7 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 
 			_appendPermissionSQL(
 				sb, className, classPKField, groupIdField, groupIds,
-				permissionSQL);
+				permissionSQL, viewableGroupIds);
 
 			if (pos != -1) {
 				sb.append(sql.substring(pos));
@@ -739,7 +742,7 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 
 			_appendPermissionSQL(
 				sb, className, classPKField, groupIdField, groupIds,
-				permissionSQL);
+				permissionSQL, viewableGroupIds);
 
 			sb.append("AND ");
 
