@@ -648,7 +648,7 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		PermissionChecker permissionChecker, String className,
 		Object classPKField, long[] groupIds) {
 
-		if (!isEnabled(groupIds)) {
+		if (!_inlinePermissionConfiguration.sqlCheckEnabled()) {
 			return true;
 		}
 
@@ -678,6 +678,11 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 				throw new IllegalArgumentException(
 					"Permission queries across multiple portal instances are " +
 						"not supported");
+			}
+			else if (!isEnabled(groupId)) {
+				viewableGroupIds.add(groupId);
+
+				continue;
 			}
 
 			long[] roleIds = _getRoleIds(groupId);
