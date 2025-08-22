@@ -5,6 +5,7 @@
 
 package com.liferay.portal.tools.service.builder.test.service.impl;
 
+import com.liferay.portal.tools.service.builder.test.model.PermissionCheckFinderEntry;
 import com.liferay.portal.tools.service.builder.test.service.base.PermissionCheckFinderEntryLocalServiceBaseImpl;
 
 /**
@@ -12,4 +13,41 @@ import com.liferay.portal.tools.service.builder.test.service.base.PermissionChec
  */
 public class PermissionCheckFinderEntryLocalServiceImpl
 	extends PermissionCheckFinderEntryLocalServiceBaseImpl {
+
+	public PermissionCheckFinderEntry addPermissionCheckFinderEntry(
+		long groupId, int integer, String name, String type) {
+
+		PermissionCheckFinderEntry permissionCheckFinderEntry =
+			permissionCheckFinderEntryPersistence.create(
+				counterLocalService.increment());
+
+		permissionCheckFinderEntry.setGroupId(groupId);
+
+		permissionCheckFinderEntry.setInteger(integer);
+
+		permissionCheckFinderEntry.setName(name);
+
+		permissionCheckFinderEntry.setType(type);
+
+		permissionCheckFinderEntry =
+			permissionCheckFinderEntryPersistence.update(
+				permissionCheckFinderEntry);
+
+		return permissionCheckFinderEntry;
+	}
+
+	public java.util.List<PermissionCheckFinderEntry> filterFindByGroupId(
+		long groupId) {
+
+		return permissionCheckFinderEntryPersistence.filterFindByGroupId(
+			groupId);
+	}
+
+	public java.util.List<PermissionCheckFinderEntry> filterFindByGroupId(
+		long[] groupIds) {
+
+		return permissionCheckFinderEntryPersistence.filterFindByGroupId(
+			groupIds);
+	}
+
 }

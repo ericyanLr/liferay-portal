@@ -31,6 +31,15 @@ public class PermissionCheckFinderEntryLocalServiceWrapper
 			permissionCheckFinderEntryLocalService;
 	}
 
+	@Override
+	public com.liferay.portal.tools.service.builder.test.model.
+		PermissionCheckFinderEntry addPermissionCheckFinderEntry(
+			long groupId, int integer, String name, String type) {
+
+		return _permissionCheckFinderEntryLocalService.
+			addPermissionCheckFinderEntry(groupId, integer, name, type);
+	}
+
 	/**
 	 * Adds the permission check finder entry to the database. Also notifies the appropriate model listeners.
 	 *
@@ -243,6 +252,24 @@ public class PermissionCheckFinderEntryLocalServiceWrapper
 
 		return _permissionCheckFinderEntryLocalService.
 			fetchPermissionCheckFinderEntry(permissionCheckFinderEntryId);
+	}
+
+	@Override
+	public java.util.List
+		<com.liferay.portal.tools.service.builder.test.model.
+			PermissionCheckFinderEntry> filterFindByGroupId(long groupId) {
+
+		return _permissionCheckFinderEntryLocalService.filterFindByGroupId(
+			groupId);
+	}
+
+	@Override
+	public java.util.List
+		<com.liferay.portal.tools.service.builder.test.model.
+			PermissionCheckFinderEntry> filterFindByGroupId(long[] groupIds) {
+
+		return _permissionCheckFinderEntryLocalService.filterFindByGroupId(
+			groupIds);
 	}
 
 	@Override
