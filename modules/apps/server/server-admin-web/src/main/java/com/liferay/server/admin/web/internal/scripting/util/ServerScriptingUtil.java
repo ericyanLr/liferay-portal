@@ -89,7 +89,7 @@ public class ServerScriptingUtil {
 	private static String _getErrorMessage(
 		String exceptionMessage, String script) {
 
-		String errorMessage = exceptionMessage.concat(StringPool.NEW_LINE);
+		String errorMessage = exceptionMessage + StringPool.NEW_LINE;
 
 		try {
 			LineNumberReader lineNumberReader = new LineNumberReader(
