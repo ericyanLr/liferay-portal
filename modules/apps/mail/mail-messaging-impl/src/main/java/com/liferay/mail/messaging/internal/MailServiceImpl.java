@@ -10,6 +10,8 @@ import com.liferay.mail.kernel.auth.token.provider.MailAuthTokenProviderRegistry
 import com.liferay.mail.kernel.model.Account;
 import com.liferay.mail.kernel.model.MailMessage;
 import com.liferay.mail.kernel.service.MailService;
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.lang.ThreadContextClassLoaderUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
@@ -357,7 +359,10 @@ public class MailServiceImpl
 		String jndiName = properties.getProperty("jndi.name");
 
 		if (Validator.isNotNull(jndiName)) {
-			try {
+			try (SafeCloseable safeCloseable =
+					 ThreadContextClassLoaderUtil.swap(
+						MailServiceImpl.class.getClassLoader())) {
+
 				Properties jndiEnvironmentProperties = PropsUtil.getProperties(
 					PropsKeys.JNDI_ENVIRONMENT, true);
 
