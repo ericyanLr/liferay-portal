@@ -16,6 +16,10 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
+import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
@@ -24,6 +28,10 @@ import jakarta.mail.Session;
 
 import jakarta.portlet.ActionRequest;
 import jakarta.portlet.PortletPreferences;
+
+import java.util.List;
+
+import javax.naming.NameNotFoundException;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -67,6 +75,44 @@ public class MailServiceTest {
 		Assert.assertEquals(
 			PropsValues.MAIL_SESSION_MAIL_SMTP_HOST,
 			session.getProperty("mail.smtp.host"));
+	}
+
+	@Test
+	public void testGetSessionWithJNDINonexistentMailSession() {
+		long companyId = RandomTestUtil.randomLong();
+		String originalJNDIName = PropsUtil.get("mail.session.jndi.name");
+
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.mail.messaging.internal.MailServiceImpl",
+				LoggerTestUtil.ERROR)) {
+
+			PropsUtil.set("mail.session.jndi.name", "mail/TestMailSession");
+
+			_mailService.getSession(companyId);
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			Assert.assertEquals(logEntries.toString(), 1, logEntries.size());
+
+			LogEntry logEntry = logEntries.get(0);
+
+			Assert.assertEquals(
+				"Unable to lookup mail/TestMailSession", logEntry.getMessage());
+
+			Throwable throwable = logEntry.getThrowable();
+
+			Assert.assertEquals(
+				NameNotFoundException.class, throwable.getClass());
+
+			Assert.assertEquals(
+				"Name [java:comp/env/mail/TestMailSession] is not bound in " +
+					"this Context. Unable to find [java:comp].",
+				throwable.getMessage());
+		}
+		finally {
+			_mailService.clearSession(companyId);
+			PropsUtil.set("mail.session.jndi.name", originalJNDIName);
+		}
 	}
 
 	@Inject
