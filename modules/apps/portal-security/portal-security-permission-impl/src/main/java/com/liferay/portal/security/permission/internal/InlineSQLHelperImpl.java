@@ -777,51 +777,51 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		}
 
 		long companyId = permissionChecker.getCompanyId();
+		Set<Long> resourceViewableGroupIds = new HashSet<>();
 
-		if (groupIds.length == 1) {
-			long groupId = groupIds[0];
-
+		for (long groupId : groupIds) {
 			Group group = _groupLocalService.fetchGroup(groupId);
 
-			if (group != null) {
-				long[] roleIds = _getRoleIds(groupId);
+			if (group == null) {
+				continue;
+			}
+			else if (group.getCompanyId() != companyId) {
+				throw new IllegalArgumentException(
+					"Permission queries across multiple portal instances are " +
+						"not supported");
+			}
 
-				try {
-					if (_resourcePermissionLocalService.hasResourcePermission(
-							companyId, className, ResourceConstants.SCOPE_GROUP,
-							String.valueOf(groupId), roleIds,
-							ActionKeys.VIEW) ||
-						_resourcePermissionLocalService.hasResourcePermission(
-							companyId, className,
-							ResourceConstants.SCOPE_GROUP_TEMPLATE,
-							String.valueOf(
-								GroupConstants.DEFAULT_PARENT_GROUP_ID),
-							roleIds, ActionKeys.VIEW)) {
+			long[] roleIds = _getRoleIds(groupId);
 
-						return true;
-					}
+			try {
+				if (_resourcePermissionLocalService.hasResourcePermission(
+						companyId, className, ResourceConstants.SCOPE_GROUP,
+						String.valueOf(groupId), roleIds, ActionKeys.VIEW) ||
+					_resourcePermissionLocalService.hasResourcePermission(
+						companyId, className,
+						ResourceConstants.SCOPE_GROUP_TEMPLATE,
+						String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID),
+						roleIds, ActionKeys.VIEW)) {
+
+					resourceViewableGroupIds.add(groupId);
 				}
-				catch (PortalException portalException) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(
-							StringBundler.concat(
-								"Unable to get resource permissions for ",
-								className, " with group ", groupId),
-							portalException);
-					}
+			}
+			catch (PortalException portalException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						StringBundler.concat(
+							"Unable to get resource permissions for ",
+							className, " with group ", groupId),
+						portalException);
 				}
 			}
 		}
-		else {
-			for (long groupId : groupIds) {
-				Group group = _groupLocalService.fetchGroup(groupId);
 
-				if ((group != null) && (group.getCompanyId() != companyId)) {
-					throw new IllegalArgumentException(
-						"Permission queries across multiple portal instances " +
-							"are not supported");
-				}
-			}
+		long[] resourceViewableGroupIdsArray = ArrayUtil.toLongArray(
+			resourceViewableGroupIds);
+
+		if (ArrayUtil.containsAll(resourceViewableGroupIdsArray, groupIds)) {
+			return true;
 		}
 
 		try {
