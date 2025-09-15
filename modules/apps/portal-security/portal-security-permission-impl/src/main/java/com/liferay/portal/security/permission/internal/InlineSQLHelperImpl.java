@@ -426,6 +426,57 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		}
 	}
 
+	private long[] _filterResourceViewableGroupIds(
+		String className, long companyId, long[] groupIds) {
+
+		Set<Long> resourceViewableGroupIds = new HashSet<>();
+
+		for (long groupId : groupIds) {
+			Group group = _groupLocalService.fetchGroup(groupId);
+
+			if (group == null) {
+				continue;
+			}
+			else if (group.getCompanyId() != companyId) {
+				throw new IllegalArgumentException(
+					"Permission queries across multiple portal instances are " +
+						"not supported");
+			}
+			else if (!isEnabled(groupId)) {
+				resourceViewableGroupIds.add(groupId);
+
+				continue;
+			}
+
+			long[] roleIds = _getRoleIds(groupId);
+
+			try {
+				if (_resourcePermissionLocalService.hasResourcePermission(
+						companyId, className, ResourceConstants.SCOPE_GROUP,
+						String.valueOf(groupId), roleIds, ActionKeys.VIEW) ||
+					_resourcePermissionLocalService.hasResourcePermission(
+						companyId, className,
+						ResourceConstants.SCOPE_GROUP_TEMPLATE,
+						String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID),
+						roleIds, ActionKeys.VIEW)) {
+
+					resourceViewableGroupIds.add(groupId);
+				}
+			}
+			catch (PortalException portalException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						StringBundler.concat(
+							"Unable to get resource permissions for ",
+							className, " with group ", groupId),
+						portalException);
+				}
+			}
+		}
+
+		return ArrayUtil.toLongArray(resourceViewableGroupIds);
+	}
+
 	private <T extends Table<T>> Predicate _getPermissionWherePredicate(
 		PermissionChecker permissionChecker, String modelClassName,
 		Column<T, Long> classPKColumn, long[] groupIds) {
@@ -777,55 +828,11 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		}
 
 		long companyId = permissionChecker.getCompanyId();
-		Set<Long> resourceViewableGroupIds = new HashSet<>();
 
-		for (long groupId : groupIds) {
-			Group group = _groupLocalService.fetchGroup(groupId);
+		long[] resourceViewableGroupIds = _filterResourceViewableGroupIds(
+			className, companyId, groupIds);
 
-			if (group == null) {
-				continue;
-			}
-			else if (group.getCompanyId() != companyId) {
-				throw new IllegalArgumentException(
-					"Permission queries across multiple portal instances are " +
-						"not supported");
-			}
-			else if (!isEnabled(groupId)) {
-				viewableGroupIds.add(groupId);
-
-				continue;
-			}
-
-			long[] roleIds = _getRoleIds(groupId);
-
-			try {
-				if (_resourcePermissionLocalService.hasResourcePermission(
-						companyId, className, ResourceConstants.SCOPE_GROUP,
-						String.valueOf(groupId), roleIds, ActionKeys.VIEW) ||
-					_resourcePermissionLocalService.hasResourcePermission(
-						companyId, className,
-						ResourceConstants.SCOPE_GROUP_TEMPLATE,
-						String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID),
-						roleIds, ActionKeys.VIEW)) {
-
-					resourceViewableGroupIds.add(groupId);
-				}
-			}
-			catch (PortalException portalException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						StringBundler.concat(
-							"Unable to get resource permissions for ",
-							className, " with group ", groupId),
-						portalException);
-				}
-			}
-		}
-
-		long[] resourceViewableGroupIdsArray = ArrayUtil.toLongArray(
-			resourceViewableGroupIds);
-
-		if (ArrayUtil.containsAll(resourceViewableGroupIdsArray, groupIds)) {
+		if (ArrayUtil.containsAll(resourceViewableGroupIds, groupIds)) {
 			return true;
 		}
 
