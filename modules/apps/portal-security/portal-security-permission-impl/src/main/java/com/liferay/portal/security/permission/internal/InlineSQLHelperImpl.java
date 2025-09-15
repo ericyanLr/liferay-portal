@@ -100,6 +100,14 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			return list;
 		}
 
+		long[] resourceViewableGroupIds = _filterResourceViewableGroupIds(
+			baseModel.getModelClassName(), permissionChecker.getCompanyId(),
+			groupIds);
+
+		if (ArrayUtil.containsAll(resourceViewableGroupIds, groupIds)) {
+			return list;
+		}
+
 		Set<Long> permittedClassPKs = new HashSet<>();
 
 		Set<Long> roleIdsSet = _getRoleIdsSet(groupIds);
@@ -176,6 +184,13 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		}
 
 		if (_isSkipReplace(permissionChecker, modelClassName, groupIds)) {
+			return null;
+		}
+
+		long[] resourceViewableGroupIds = _filterResourceViewableGroupIds(
+			modelClassName, permissionChecker.getCompanyId(), groupIds);
+
+		if (ArrayUtil.containsAll(resourceViewableGroupIds, groupIds)) {
 			return null;
 		}
 
@@ -291,6 +306,13 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		if ((sql == null) ||
 			_isSkipReplace(permissionChecker, className, groupIds)) {
 
+			return sql;
+		}
+
+		long[] resourceViewableGroupIds = _filterResourceViewableGroupIds(
+			className, permissionChecker.getCompanyId(), groupIds);
+
+		if (ArrayUtil.containsAll(resourceViewableGroupIds, groupIds)) {
 			return sql;
 		}
 
@@ -828,13 +850,6 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 		}
 
 		long companyId = permissionChecker.getCompanyId();
-
-		long[] resourceViewableGroupIds = _filterResourceViewableGroupIds(
-			className, companyId, groupIds);
-
-		if (ArrayUtil.containsAll(resourceViewableGroupIds, groupIds)) {
-			return true;
-		}
 
 		try {
 			if (_resourcePermissionLocalService.hasResourcePermission(
