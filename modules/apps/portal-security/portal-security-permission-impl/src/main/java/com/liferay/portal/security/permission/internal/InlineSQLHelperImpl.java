@@ -790,6 +790,11 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 					"Permission queries across multiple portal instances are " +
 						"not supported");
 			}
+			else if (!isEnabled(groupId)) {
+				viewableGroupIds.add(groupId);
+
+				continue;
+			}
 
 			long[] roleIds = _getRoleIds(groupId);
 
