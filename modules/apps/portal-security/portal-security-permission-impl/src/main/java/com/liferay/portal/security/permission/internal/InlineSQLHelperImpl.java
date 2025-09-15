@@ -132,7 +132,7 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			baseModel.getModelClassName(), permissionChecker.getUserId(),
 			groupIds, permittedClassPKs);
 
-		if ((baseModel instanceof GroupedModel) && (groupIds.length > 0)) {
+		if (groupIds.length > 0) {
 			Set<Long> disabledGroupIds = new HashSet<>();
 
 			for (long groupId : groupIds) {
@@ -151,10 +151,25 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 							return true;
 						}
 
-						GroupedModel groupedModel = (GroupedModel)t;
+						if (t instanceof GroupedModel) {
+							GroupedModel groupedModel = (GroupedModel)t;
 
-						return disabledGroupIds.contains(
-							groupedModel.getGroupId());
+							return disabledGroupIds.contains(
+								groupedModel.getGroupId());
+						}
+
+						Map<String, Object> modelAttributes =
+							t.getModelAttributes();
+
+						if (modelAttributes.containsKey("groupId")) {
+							Object groupId = modelAttributes.get("groupId");
+
+							if (groupId instanceof Long) {
+								return disabledGroupIds.contains(groupId);
+							}
+						}
+
+						return false;
 					});
 			}
 		}
