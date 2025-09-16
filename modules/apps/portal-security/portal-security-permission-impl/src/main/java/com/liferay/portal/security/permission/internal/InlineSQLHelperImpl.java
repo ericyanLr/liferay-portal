@@ -398,22 +398,22 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			}
 		}
 
-		StringBundler groupAdminResourcePermissionSB = null;
+		StringBundler groupResourcePermissionSB = null;
 
 		for (long groupId : resourceViewableGroupIds) {
-			if (groupAdminResourcePermissionSB == null) {
-				groupAdminResourcePermissionSB = new StringBundler(
+			if (groupResourcePermissionSB == null) {
+				groupResourcePermissionSB = new StringBundler(
 					(resourceViewableGroupIds.length * 2) - 1);
 			}
 			else {
-				groupAdminResourcePermissionSB.append(", ");
+				groupResourcePermissionSB.append(", ");
 			}
 
-			groupAdminResourcePermissionSB.append(groupId);
+			groupResourcePermissionSB.append(groupId);
 		}
 
 		if ((permissionSQLContributorsSQLSB != null) ||
-			(groupAdminResourcePermissionSB != null)) {
+			(groupResourcePermissionSB != null)) {
 
 			sb.append("(");
 		}
@@ -428,16 +428,16 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			sb.append(permissionSQLContributorsSQLSB);
 		}
 
-		if (groupAdminResourcePermissionSB != null) {
+		if (groupResourcePermissionSB != null) {
 			sb.append(" OR (");
 			sb.append(groupIdField);
 			sb.append(" IN (");
-			sb.append(groupAdminResourcePermissionSB);
+			sb.append(groupResourcePermissionSB);
 			sb.append(")) ");
 		}
 
 		if ((permissionSQLContributorsSQLSB != null) ||
-			(groupAdminResourcePermissionSB != null)) {
+			(groupResourcePermissionSB != null)) {
 
 			sb.append(") ");
 		}
