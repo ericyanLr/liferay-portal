@@ -107,6 +107,13 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 			return list;
 		}
 
+		if (ArrayUtil.isNotEmpty(resourceViewableGroupIds)) {
+			groupIds = ArrayUtil.filter(
+				groupIds,
+				groupId -> !ArrayUtil.contains(
+					resourceViewableGroupIds, groupId));
+		}
+
 		Set<Long> permittedClassPKs = new HashSet<>();
 
 		Set<Long> roleIdsSet = _getRoleIdsSet(groupIds);
@@ -185,6 +192,13 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 
 		if (ArrayUtil.containsAll(resourceViewableGroupIds, groupIds)) {
 			return null;
+		}
+
+		if (ArrayUtil.isNotEmpty(resourceViewableGroupIds)) {
+			groupIds = ArrayUtil.filter(
+				groupIds,
+				groupId -> !ArrayUtil.contains(
+					resourceViewableGroupIds, groupId));
 		}
 
 		return _getPermissionWherePredicate(
@@ -308,6 +322,13 @@ public class InlineSQLHelperImpl implements InlineSQLHelper {
 
 		if (ArrayUtil.containsAll(resourceViewableGroupIds, groupIds)) {
 			return sql;
+		}
+
+		if (ArrayUtil.isNotEmpty(resourceViewableGroupIds)) {
+			groupIds = ArrayUtil.filter(
+				groupIds,
+				groupId -> !ArrayUtil.contains(
+					resourceViewableGroupIds, groupId));
 		}
 
 		String groupIdField = classPKField.substring(
