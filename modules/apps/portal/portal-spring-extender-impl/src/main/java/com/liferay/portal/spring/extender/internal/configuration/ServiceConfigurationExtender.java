@@ -16,6 +16,8 @@ import com.liferay.portal.kernel.module.util.ServiceLatch;
 import com.liferay.portal.kernel.service.ServiceComponentLocalService;
 
 import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -117,6 +119,8 @@ public class ServiceConfigurationExtender
 
 		serviceLatch.openOn(serviceConfigurationInitializer::start);
 
+		_serviceLatchMap.put(bundle.getSymbolicName(), serviceLatch);
+
 		return serviceConfigurationInitializer;
 	}
 
@@ -130,6 +134,13 @@ public class ServiceConfigurationExtender
 	public void removedBundle(
 		Bundle bundle, BundleEvent bundleEvent,
 		ServiceConfigurationInitializer serviceConfigurationInitializer) {
+
+		ServiceLatch serviceLatch = _serviceLatchMap.remove(
+			bundle.getSymbolicName());
+
+		if (serviceLatch != null) {
+			serviceLatch.close();
+		}
 
 		serviceConfigurationInitializer.stop();
 	}
@@ -156,6 +167,9 @@ public class ServiceConfigurationExtender
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ServiceConfigurationExtender.class);
+
+	private static final Map<String, ServiceLatch> _serviceLatchMap =
+		new HashMap<>();
 
 	private BundleTracker<?> _bundleTracker;
 
