@@ -9,6 +9,7 @@ import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -27,11 +28,23 @@ public class ServiceLatch {
 		_bundleContext = bundleContext;
 	}
 
+	public void close() {
+		if (!_closed.compareAndSet(false, true)) {
+			return;
+		}
+
+		for (ServiceTracker<?, ?> serviceTracker : _serviceTrackers) {
+			serviceTracker.close();
+		}
+	}
+
 	public void openOn(Consumer<BundleContext> consumer) {
 		openOn(() -> consumer.accept(_bundleContext));
 	}
 
 	public void openOn(Runnable runnable) {
+		_checkClosed();
+
 		_openRunnable = runnable;
 
 		for (ServiceTracker<?, ?> serviceTracker : _serviceTrackers) {
@@ -48,6 +61,8 @@ public class ServiceLatch {
 
 	public <S> ServiceLatch waitFor(
 		Class<S> serviceClass, Consumer<S> serviceConsumer) {
+
+		_checkClosed();
 
 		CapturingServiceTrackerCustomizer<S> capturingServiceTrackerCustomizer =
 			new CapturingServiceTrackerCustomizer<>(serviceConsumer);
@@ -74,6 +89,8 @@ public class ServiceLatch {
 	public <S> ServiceLatch waitFor(
 		String filterString, Consumer<S> serviceConsumer) {
 
+		_checkClosed();
+
 		CapturingServiceTrackerCustomizer<S> capturingServiceTrackerCustomizer =
 			new CapturingServiceTrackerCustomizer<>(serviceConsumer);
 
@@ -95,7 +112,14 @@ public class ServiceLatch {
 		return this;
 	}
 
+	private void _checkClosed() {
+		if (_closed.get()) {
+			throw new IllegalStateException("ServiceLatch is closed");
+		}
+	}
+
 	private final BundleContext _bundleContext;
+	private final AtomicBoolean _closed = new AtomicBoolean();
 	private Runnable _openRunnable;
 	private final Queue<ServiceTracker<?, ?>> _serviceTrackers =
 		new ConcurrentLinkedQueue<>();
@@ -115,10 +139,12 @@ public class ServiceLatch {
 
 				DependencyManagerSyncUtil.registerSyncCallable(
 					() -> {
-						for (ServiceTracker<?, ?> serviceTracker :
-								_serviceTrackers) {
+						if (!_closed.get()) {
+							for (ServiceTracker<?, ?> serviceTracker :
+									_serviceTrackers) {
 
-							serviceTracker.close();
+								serviceTracker.close();
+							}
 						}
 
 						return null;
