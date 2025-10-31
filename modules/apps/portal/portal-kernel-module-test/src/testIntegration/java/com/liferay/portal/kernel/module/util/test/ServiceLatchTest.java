@@ -84,6 +84,8 @@ public class ServiceLatchTest {
 					MapUtil.singletonDictionary(
 						"test.bundle.symbolic.name",
 						testBundle.getSymbolicName()));
+
+				serviceLatch.close();
 			},
 			bundleContext, _createBundle());
 	}
