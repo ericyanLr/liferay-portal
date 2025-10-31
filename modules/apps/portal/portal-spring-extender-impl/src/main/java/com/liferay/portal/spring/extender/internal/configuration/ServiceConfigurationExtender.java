@@ -136,6 +136,10 @@ public class ServiceConfigurationExtender
 		ObjectValuePair<ServiceConfigurationInitializer, ServiceLatch>
 			objectValuePair) {
 
+		ServiceLatch serviceLatch = objectValuePair.getValue();
+
+		serviceLatch.close();
+
 		ServiceConfigurationInitializer serviceConfigurationInitializer =
 			objectValuePair.getKey();
 
