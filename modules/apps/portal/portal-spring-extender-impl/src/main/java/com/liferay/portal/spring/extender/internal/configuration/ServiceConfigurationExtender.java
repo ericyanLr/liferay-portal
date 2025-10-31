@@ -14,6 +14,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.module.util.ServiceLatch;
 import com.liferay.portal.kernel.service.ServiceComponentLocalService;
+import com.liferay.portal.kernel.util.ObjectValuePair;
 
 import java.util.Dictionary;
 
@@ -35,11 +36,12 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
  */
 @Component(service = {})
 public class ServiceConfigurationExtender
-	implements BundleTrackerCustomizer<ServiceConfigurationInitializer> {
+	implements BundleTrackerCustomizer
+		<ObjectValuePair<ServiceConfigurationInitializer, ServiceLatch>> {
 
 	@Override
-	public ServiceConfigurationInitializer addingBundle(
-		Bundle bundle, BundleEvent bundleEvent) {
+	public ObjectValuePair<ServiceConfigurationInitializer, ServiceLatch>
+		addingBundle(Bundle bundle, BundleEvent bundleEvent) {
 
 		Dictionary<String, String> headers = bundle.getHeaders(
 			StringPool.BLANK);
@@ -117,19 +119,25 @@ public class ServiceConfigurationExtender
 
 		serviceLatch.openOn(serviceConfigurationInitializer::start);
 
-		return serviceConfigurationInitializer;
+		return new ObjectValuePair<>(
+			serviceConfigurationInitializer, serviceLatch);
 	}
 
 	@Override
 	public void modifiedBundle(
 		Bundle bundle, BundleEvent bundleEvent,
-		ServiceConfigurationInitializer serviceConfigurationInitializer) {
+		ObjectValuePair<ServiceConfigurationInitializer, ServiceLatch>
+			objectValuePair) {
 	}
 
 	@Override
 	public void removedBundle(
 		Bundle bundle, BundleEvent bundleEvent,
-		ServiceConfigurationInitializer serviceConfigurationInitializer) {
+		ObjectValuePair<ServiceConfigurationInitializer, ServiceLatch>
+			objectValuePair) {
+
+		ServiceConfigurationInitializer serviceConfigurationInitializer =
+			objectValuePair.getKey();
 
 		serviceConfigurationInitializer.stop();
 	}
