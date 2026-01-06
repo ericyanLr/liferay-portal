@@ -55,9 +55,9 @@ public class LanguageServlet extends HttpServlet {
 			_log.error(
 				"Invalid authentication token received", portalException);
 
-			PortalUtil.sendError(
-				HttpServletResponse.SC_UNAUTHORIZED, portalException,
-				httpServletRequest, httpServletResponse);
+			httpServletResponse.sendError(
+				HttpServletResponse.SC_NOT_FOUND,
+				httpServletRequest.getRequestURI());
 
 			return;
 		}
