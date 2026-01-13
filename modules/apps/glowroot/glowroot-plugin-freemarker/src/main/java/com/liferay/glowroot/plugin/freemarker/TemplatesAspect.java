@@ -48,14 +48,26 @@ public class TemplatesAspect {
 
 			TraceEntry traceEntry = null;
 
+			String companyId = "?";
+			String fragmentEntryLinkId = "?";
+			String groupId = "?";
+
+			if (fragmentEntryLinkShim != null) {
+				companyId = String.valueOf(
+					fragmentEntryLinkShim.getCompanyId());
+				fragmentEntryLinkId = String.valueOf(
+					fragmentEntryLinkShim.getFragmentEntryLinkId());
+				groupId = String.valueOf(fragmentEntryLinkShim.getGroupId());
+			}
+
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("Fragment Entry Link FreeMarker Template (Company ID ");
-			sb.append(fragmentEntryLinkShim.getCompanyId());
+			sb.append(companyId);
 			sb.append(", Fragment Entry Link ID ");
-			sb.append(fragmentEntryLinkShim.getFragmentEntryLinkId());
+			sb.append(fragmentEntryLinkId);
 			sb.append(", and Group ID ");
-			sb.append(fragmentEntryLinkShim.getGroupId());
+			sb.append(groupId);
 			sb.append(")");
 
 			if (_INSTRUMENTATION_LEVEL_TRACE.equals(
@@ -128,22 +140,32 @@ public class TemplatesAspect {
 
 			TraceEntry traceEntry = null;
 
+			DDMTemplateShim dDMTemplateShim = (DDMTemplateShim)parameters[1];
+			ThemeDisplayShim themeDisplayShim = (ThemeDisplayShim)parameters[9];
+
+			String companyId = "?";
+			String ddmScript = "?";
+			String ddmTemplateId = "?";
+			String siteGroupId = "?";
+
+			if (dDMTemplateShim != null) {
+				ddmScript = dDMTemplateShim.getScript();
+				ddmTemplateId = String.valueOf(dDMTemplateShim.getTemplateId());
+			}
+
+			if (themeDisplayShim != null) {
+				companyId = String.valueOf(themeDisplayShim.getCompanyId());
+				siteGroupId = String.valueOf(themeDisplayShim.getSiteGroupId());
+			}
+
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("Journal Article FreeMarker Template (Company ID ");
-
-			ThemeDisplayShim themeDisplayShim = (ThemeDisplayShim)parameters[9];
-
-			sb.append(themeDisplayShim.getCompanyId());
-
+			sb.append(companyId);
 			sb.append(", Site Group ID ");
-			sb.append(themeDisplayShim.getSiteGroupId());
-			sb.append(", and Template ID ");
-
-			DDMTemplateShim dDMTemplateShim = (DDMTemplateShim)parameters[1];
-
-			sb.append(dDMTemplateShim.getTemplateId());
-
+			sb.append(siteGroupId);
+			sb.append(", and DDMTemplate ID ");
+			sb.append(ddmTemplateId);
 			sb.append(")");
 
 			if (_INSTRUMENTATION_LEVEL_TRACE.equals(
@@ -156,7 +178,7 @@ public class TemplatesAspect {
 				optionalThreadContext.setTransactionOuter();
 
 				optionalThreadContext.addTransactionAttribute(
-					"Script", dDMTemplateShim.getScript());
+					"Script", ddmScript);
 			}
 			else if (_INSTRUMENTATION_LEVEL_DEBUG.equals(
 						TemplatesPluginProperties.instrumentationLevel())) {
@@ -216,14 +238,28 @@ public class TemplatesAspect {
 
 			TraceEntry traceEntry = null;
 
+			String companyId = "?";
+			String ddmTemplateId = "?";
+			String siteGroupId = "?";
+
+			if (contextObjects != null) {
+				ddmTemplateId = String.valueOf(
+					contextObjects.get("template_id"));
+			}
+
+			if (themeDisplayShim != null) {
+				companyId = String.valueOf(themeDisplayShim.getCompanyId());
+				siteGroupId = String.valueOf(themeDisplayShim.getSiteGroupId());
+			}
+
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("Transformer FreeMarker Template (Company ID ");
-			sb.append(themeDisplayShim.getCompanyId());
+			sb.append(companyId);
 			sb.append(", Site Group ID ");
-			sb.append(themeDisplayShim.getSiteGroupId());
-			sb.append(", and Template ID ");
-			sb.append(contextObjects.get("template_id"));
+			sb.append(siteGroupId);
+			sb.append(", and DDMTemplate ID ");
+			sb.append(ddmTemplateId);
 			sb.append(")");
 
 			if (_INSTRUMENTATION_LEVEL_TRACE.equals(
