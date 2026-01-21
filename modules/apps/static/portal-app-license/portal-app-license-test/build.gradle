@@ -1,5 +1,5 @@
 dependencies {
 	testIntegrationImplementation group: "org.osgi", name: "osgi.core", version: "6.0.0"
-	testIntegrationImplementation project(":core:portal-app-license-api")
+	testIntegrationImplementation project(":apps:static:portal-app-license:portal-app-license-api")
 	testIntegrationImplementation project(":test:arquillian-extension-junit-bridge")
 }
