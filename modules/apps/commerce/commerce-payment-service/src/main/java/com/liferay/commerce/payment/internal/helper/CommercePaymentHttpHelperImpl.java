@@ -10,7 +10,7 @@ import com.liferay.commerce.payment.helper.CommercePaymentHttpHelper;
 import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.encryptor.Encryptor;
+import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -89,7 +89,7 @@ public class CommercePaymentHttpHelperImpl
 
 		Key key = company.getKeyObj();
 
-		return _encryptor.encrypt(key, String.valueOf(commerceOrderId));
+		return EncryptorUtil.encrypt(key, String.valueOf(commerceOrderId));
 	}
 
 	@Reference
@@ -97,9 +97,6 @@ public class CommercePaymentHttpHelperImpl
 
 	@Reference
 	private CommerceOrderService _commerceOrderService;
-
-	@Reference
-	private Encryptor _encryptor;
 
 	@Reference
 	private Portal _portal;

@@ -176,7 +176,7 @@ import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
-import com.liferay.portal.kernel.encryptor.Encryptor;
+import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
@@ -5252,7 +5252,8 @@ public class ObjectEntryLocalServiceImpl
 						ObjectFieldConstants.BUSINESS_TYPE_ENCRYPTED)) {
 
 					try {
-						object = _encryptor.decrypt(_getKey(), (String)object);
+						object = EncryptorUtil.decrypt(
+							_getKey(), (String)object);
 					}
 					catch (IllegalArgumentException illegalArgumentException) {
 						throw new IllegalArgumentException(
@@ -6085,7 +6086,7 @@ public class ObjectEntryLocalServiceImpl
 			_setColumn(
 				columnNames, index, insertedValues, preparedStatement,
 				column.getSQLType(),
-				_encryptor.encrypt(_getKey(), (String)value));
+				EncryptorUtil.encrypt(_getKey(), (String)value));
 		}
 		else if (objectField.compareBusinessType(
 					ObjectFieldConstants.BUSINESS_TYPE_MULTISELECT_PICKLIST)) {
@@ -8051,9 +8052,6 @@ public class ObjectEntryLocalServiceImpl
 
 	@Reference
 	private EmptyModelManager _emptyModelManager;
-
-	@Reference
-	private Encryptor _encryptor;
 
 	@Reference(
 		target = "(filter.factory.key=" + ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT + ")"

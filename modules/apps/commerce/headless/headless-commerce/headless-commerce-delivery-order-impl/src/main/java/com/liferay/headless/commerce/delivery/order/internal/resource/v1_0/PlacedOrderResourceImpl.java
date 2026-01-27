@@ -35,7 +35,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.events.ServicePreAction;
 import com.liferay.portal.events.ThemeServicePreAction;
-import com.liferay.portal.kernel.encryptor.Encryptor;
+import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
@@ -289,7 +289,7 @@ public class PlacedOrderResourceImpl extends BasePlacedOrderResourceImpl {
 			Key key = contextCompany.getKeyObj();
 
 			sb.append(
-				_encryptor.encrypt(
+				EncryptorUtil.encrypt(
 					key, String.valueOf(commerceOrder.getCommerceOrderId())));
 
 			sb.append(StringPool.AMPERSAND);
@@ -511,9 +511,6 @@ public class PlacedOrderResourceImpl extends BasePlacedOrderResourceImpl {
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
-
-	@Reference
-	private Encryptor _encryptor;
 
 	@Reference
 	private ExpandoColumnLocalService _expandoColumnLocalService;

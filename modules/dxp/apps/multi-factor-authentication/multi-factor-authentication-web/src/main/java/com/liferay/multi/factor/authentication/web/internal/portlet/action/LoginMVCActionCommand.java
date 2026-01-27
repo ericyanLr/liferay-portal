@@ -9,7 +9,7 @@ import com.liferay.login.web.constants.LoginPortletKeys;
 import com.liferay.multi.factor.authentication.web.internal.constants.MFAPortletKeys;
 import com.liferay.multi.factor.authentication.web.internal.constants.MFAWebKeys;
 import com.liferay.multi.factor.authentication.web.internal.policy.MFAPolicy;
-import com.liferay.portal.kernel.encryptor.Encryptor;
+import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.exception.CompanyMaxUsersException;
 import com.liferay.portal.kernel.exception.CookieNotSupportedException;
 import com.liferay.portal.kernel.exception.NoSuchUserException;
@@ -199,11 +199,11 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 			throw new PrincipalException("User sent unverified state");
 		}
 
-		Key mfaWebKey = _encryptor.deserializeKey(
+		Key mfaWebKey = EncryptorUtil.deserializeKey(
 			(String)httpSession.getAttribute(MFAWebKeys.MFA_WEB_KEY));
 
 		Map<String, Object> stateMap = _jsonFactory.looseDeserialize(
-			_encryptor.decrypt(mfaWebKey, state), Map.class);
+			EncryptorUtil.decrypt(mfaWebKey, state), Map.class);
 
 		Map<String, Object> requestParameters =
 			(Map<String, Object>)stateMap.get("requestParameters");
@@ -290,9 +290,9 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 	private void _redirectToVerify(ActionRequest actionRequest, long userId)
 		throws Exception {
 
-		Key key = _encryptor.generateKey();
+		Key key = EncryptorUtil.generateKey();
 
-		String encryptedStateMapJSON = _encryptor.encrypt(
+		String encryptedStateMapJSON = EncryptorUtil.encrypt(
 			key,
 			_jsonFactory.looseSerializeDeep(
 				HashMapBuilder.<String, Object>put(
@@ -352,7 +352,7 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 			MFAWebKeys.MFA_WEB_DIGEST,
 			DigesterUtil.digest(encryptedStateMapJSON));
 		httpSession.setAttribute(
-			MFAWebKeys.MFA_WEB_KEY, _encryptor.serializeKey(key));
+			MFAWebKeys.MFA_WEB_KEY, EncryptorUtil.serializeKey(key));
 	}
 
 	private static final Accessor<Object, String> _STRING_ACCESSOR =
@@ -377,9 +377,6 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		LoginMVCActionCommand.class);
-
-	@Reference
-	private Encryptor _encryptor;
 
 	@Reference
 	private JSONFactory _jsonFactory;

@@ -25,7 +25,7 @@ import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.encryptor.Encryptor;
+import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.util.Portal;
@@ -193,7 +193,7 @@ public class CommercePaymentHelperImpl implements CommercePaymentHelper {
 
 			Key key = company.getKeyObj();
 
-			String token = _encryptor.encrypt(
+			String token = EncryptorUtil.encrypt(
 				key, String.valueOf(commerceOrder.getCommerceOrderId()));
 
 			sb.append("&guestToken=");
@@ -264,9 +264,6 @@ public class CommercePaymentHelperImpl implements CommercePaymentHelper {
 	@Reference
 	private CommercePaymentRequestProviderRegistry
 		_commercePaymentRequestProviderRegistry;
-
-	@Reference
-	private Encryptor _encryptor;
 
 	@Reference
 	private Portal _portal;

@@ -15,8 +15,8 @@ import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.encryptor.Encryptor;
 import com.liferay.portal.kernel.encryptor.EncryptorException;
+import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.exception.LayoutPermissionException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
@@ -492,7 +492,7 @@ public class FriendlyURLServlet extends HttpServlet {
 
 					doAsUserId = StringUtil.bytesToHexString(
 						ChecksumUtil.appendChecksum(
-							encryptor.encryptUnencoded(
+							EncryptorUtil.encryptUnencoded(
 								company.getKeyObj(), doAsUserIdBytes)));
 				}
 				catch (EncryptorException encryptorException) {
@@ -748,9 +748,6 @@ public class FriendlyURLServlet extends HttpServlet {
 
 	@Reference
 	protected DepotEntryLocalService depotEntryLocalService;
-
-	@Reference
-	protected Encryptor encryptor;
 
 	@Reference
 	protected FriendlyURLNormalizer friendlyURLNormalizer;
