@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.portal.encryptor;
+package com.liferay.portal.kernel.encryptor;
 
-import com.liferay.portal.kernel.encryptor.Encryptor;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import java.security.Key;
@@ -18,7 +17,7 @@ import org.junit.Test;
 /**
  * @author Mika Koivisto
  */
-public class EncryptorImplTest {
+public class EncryptorUtilTest {
 
 	@ClassRule
 	@Rule
@@ -27,18 +26,16 @@ public class EncryptorImplTest {
 
 	@Test
 	public void testKeySerialization() throws Exception {
-		Encryptor encryptor = new EncryptorImpl();
+		Key key = EncryptorUtil.generateKey();
 
-		Key key = encryptor.generateKey();
+		String encryptedString = EncryptorUtil.encrypt(key, "Hello World!");
 
-		String encryptedString = encryptor.encrypt(key, "Hello World!");
+		String serializedKey = EncryptorUtil.serializeKey(key);
 
-		String serializedKey = encryptor.serializeKey(key);
-
-		key = encryptor.deserializeKey(serializedKey);
+		key = EncryptorUtil.deserializeKey(serializedKey);
 
 		Assert.assertEquals(
-			"Hello World!", encryptor.decrypt(key, encryptedString));
+			"Hello World!", EncryptorUtil.decrypt(key, encryptedString));
 	}
 
 }
