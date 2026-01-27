@@ -5,74 +5,180 @@
 
 package com.liferay.portal.kernel.encryptor;
 
-import com.liferay.portal.kernel.module.service.Snapshot;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.Base64;
+import com.liferay.portal.kernel.util.DigesterUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.security.Key;
+import java.security.SecureRandom;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * @author Julius Lee
  */
 public class EncryptorUtil {
 
+	public static final String ENCODING = DigesterUtil.ENCODING;
+
+	public static final String KEY_ALGORITHM = StringUtil.toUpperCase(
+		GetterUtil.getString(
+			PropsUtil.get(PropsKeys.COMPANY_ENCRYPTION_ALGORITHM)));
+
+	public static final int KEY_SIZE = GetterUtil.getInteger(
+		PropsUtil.get(PropsKeys.COMPANY_ENCRYPTION_KEY_SIZE));
+
 	public static String decrypt(Key key, String encryptedString)
 		throws EncryptorException {
 
-		Encryptor encryptor = _encryptorSnapshot.get();
+		byte[] encryptedBytes = Base64.decode(encryptedString);
 
-		return encryptor.decrypt(key, encryptedString);
+		return _decryptUnencodedAsString(key, encryptedBytes);
 	}
 
 	public static byte[] decryptUnencodedAsBytes(Key key, byte[] encryptedBytes)
 		throws EncryptorException {
 
-		Encryptor encryptor = _encryptorSnapshot.get();
+		String algorithm = key.getAlgorithm();
 
-		return encryptor.decryptUnencodedAsBytes(key, encryptedBytes);
+		String cacheKey = algorithm + StringPool.POUND + key.toString();
+
+		Cipher cipher = _decryptCipherMap.get(cacheKey);
+
+		try {
+			if (cipher == null) {
+				cipher = Cipher.getInstance(algorithm);
+
+				cipher.init(Cipher.DECRYPT_MODE, key);
+
+				_decryptCipherMap.put(cacheKey, cipher);
+			}
+
+			synchronized (cipher) {
+				return cipher.doFinal(encryptedBytes);
+			}
+		}
+		catch (Exception exception) {
+			throw new EncryptorException(exception);
+		}
 	}
 
 	public static Key deserializeKey(String base64String) {
-		Encryptor encryptor = _encryptorSnapshot.get();
+		byte[] bytes = Base64.decode(base64String);
 
-		return encryptor.deserializeKey(base64String);
+		return new SecretKeySpec(bytes, KEY_ALGORITHM);
 	}
 
 	public static String encrypt(Key key, String plainText)
 		throws EncryptorException {
 
-		Encryptor encryptor = _encryptorSnapshot.get();
+		if (key == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Skip encrypting based on a null key");
+			}
 
-		return encryptor.encrypt(key, plainText);
+			return plainText;
+		}
+
+		byte[] encryptedBytes = encryptUnencoded(key, plainText);
+
+		return Base64.encode(encryptedBytes);
 	}
 
 	public static byte[] encryptUnencoded(Key key, byte[] plainBytes)
 		throws EncryptorException {
 
-		Encryptor encryptor = _encryptorSnapshot.get();
+		String algorithm = key.getAlgorithm();
 
-		return encryptor.encryptUnencoded(key, plainBytes);
+		String cacheKey = algorithm + StringPool.POUND + key.toString();
+
+		Cipher cipher = _encryptCipherMap.get(cacheKey);
+
+		try {
+			if (cipher == null) {
+				cipher = Cipher.getInstance(algorithm);
+
+				cipher.init(Cipher.ENCRYPT_MODE, key);
+
+				_encryptCipherMap.put(cacheKey, cipher);
+			}
+
+			synchronized (cipher) {
+				return cipher.doFinal(plainBytes);
+			}
+		}
+		catch (Exception exception) {
+			throw new EncryptorException(exception);
+		}
 	}
 
 	public static byte[] encryptUnencoded(Key key, String plainText)
 		throws EncryptorException {
 
-		Encryptor encryptor = _encryptorSnapshot.get();
+		try {
+			byte[] decryptedBytes = plainText.getBytes(ENCODING);
 
-		return encryptor.encryptUnencoded(key, plainText);
+			return encryptUnencoded(key, decryptedBytes);
+		}
+		catch (Exception exception) {
+			throw new EncryptorException(exception);
+		}
 	}
 
 	public static Key generateKey() throws EncryptorException {
-		Encryptor encryptor = _encryptorSnapshot.get();
-
-		return encryptor.generateKey();
+		return _generateKey(KEY_ALGORITHM);
 	}
 
 	public static String serializeKey(Key key) {
-		Encryptor encryptor = _encryptorSnapshot.get();
-
-		return encryptor.serializeKey(key);
+		return Base64.encode(key.getEncoded());
 	}
 
-	private static final Snapshot<Encryptor> _encryptorSnapshot =
-		new Snapshot<>(EncryptorUtil.class, Encryptor.class);
+	private static String _decryptUnencodedAsString(
+			Key key, byte[] encryptedBytes)
+		throws EncryptorException {
+
+		try {
+			byte[] decryptedBytes = decryptUnencodedAsBytes(
+				key, encryptedBytes);
+
+			return new String(decryptedBytes, ENCODING);
+		}
+		catch (Exception exception) {
+			throw new EncryptorException(exception);
+		}
+	}
+
+	private static Key _generateKey(String algorithm)
+		throws EncryptorException {
+
+		try {
+			KeyGenerator keyGenerator = KeyGenerator.getInstance(algorithm);
+
+			keyGenerator.init(KEY_SIZE, new SecureRandom());
+
+			return keyGenerator.generateKey();
+		}
+		catch (Exception exception) {
+			throw new EncryptorException(exception);
+		}
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(EncryptorUtil.class);
+
+	private static final Map<String, Cipher> _decryptCipherMap =
+		new ConcurrentHashMap<>(1, 1F, 1);
+	private static final Map<String, Cipher> _encryptCipherMap =
+		new ConcurrentHashMap<>(1, 1F, 1);
 
 }
