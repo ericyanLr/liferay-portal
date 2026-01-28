@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Filter;
@@ -39,12 +40,14 @@ public class AppResolverHook implements ResolverHook {
 
 	public AppResolverHook(
 		ServiceTracker<AppLicenseVerifier, AppLicenseVerifier> serviceTracker,
-		Set<String> filteredBundleSymbolicNames,
-		Set<String> filteredProductIds) {
+		Set<String> filteredBundleSymbolicNames, Set<String> filteredProductIds,
+		AtomicBoolean readyToResolve, Set<Bundle> resolveBundles) {
 
 		_serviceTracker = serviceTracker;
 		_filteredBundleSymbolicNames = filteredBundleSymbolicNames;
 		_filteredProductIds = filteredProductIds;
+		_readyToResolve = readyToResolve;
+		_resolveBundles = resolveBundles;
 	}
 
 	@Override
@@ -88,6 +91,13 @@ public class AppResolverHook implements ResolverHook {
 			String productId = (String)properties.get("product-id");
 
 			if (productId == null) {
+				continue;
+			}
+
+			if (!_readyToResolve.get()) {
+				_resolveBundles.add(bundle);
+				iterator.remove();
+
 				continue;
 			}
 
@@ -197,6 +207,8 @@ public class AppResolverHook implements ResolverHook {
 
 	private final Set<String> _filteredBundleSymbolicNames;
 	private final Set<String> _filteredProductIds;
+	private final AtomicBoolean _readyToResolve;
+	private final Set<Bundle> _resolveBundles;
 	private final ServiceTracker<AppLicenseVerifier, AppLicenseVerifier>
 		_serviceTracker;
 
