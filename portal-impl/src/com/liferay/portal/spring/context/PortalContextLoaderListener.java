@@ -22,6 +22,8 @@ import com.liferay.portal.kernel.concurrent.SystemExecutorServiceUtil;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
+import com.liferay.portal.kernel.deploy.auto.AutoDeployDir;
+import com.liferay.portal.kernel.deploy.auto.AutoDeployUtil;
 import com.liferay.portal.kernel.deploy.hot.HotDeployUtil;
 import com.liferay.portal.kernel.exception.LoggedExceptionInInitializerError;
 import com.liferay.portal.kernel.log.Log;
@@ -117,6 +119,8 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent servletContextEvent) {
+		AutoDeployUtil.unregisterDir(AutoDeployDir.DEFAULT_NAME);
+
 		ApplicationContext applicationContext =
 			ContextLoader.getCurrentWebApplicationContext();
 
@@ -352,6 +356,30 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			catch (IOException ioException) {
 				_log.error("Unable to create " + tempDirPath, ioException);
 			}
+		}
+
+		try {
+			File deployDir = new File(PropsValues.AUTO_DEPLOY_DEPLOY_DIR);
+			long interval = PropsValues.AUTO_DEPLOY_INTERVAL;
+
+			AutoDeployDir autoDeployDir = new AutoDeployDir(
+				AutoDeployDir.DEFAULT_NAME, deployDir, interval);
+
+			if (PropsValues.AUTO_DEPLOY_ENABLED) {
+				if (_log.isInfoEnabled()) {
+					_log.info("Registering auto deploy directories");
+				}
+
+				AutoDeployUtil.registerDir(autoDeployDir);
+			}
+			else {
+				if (_log.isInfoEnabled()) {
+					_log.info("Not registering auto deploy directories");
+				}
+			}
+		}
+		catch (Exception exception) {
+			_log.error("Unable to register auto deploy directories", exception);
 		}
 
 		ModuleFrameworkUtil.createFramework();
