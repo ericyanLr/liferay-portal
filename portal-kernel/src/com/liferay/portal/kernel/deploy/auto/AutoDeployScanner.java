@@ -35,25 +35,7 @@ public class AutoDeployScanner extends Thread {
 
 	@Override
 	public void run() {
-		try {
-			sleep(1000 * 10);
-		}
-		catch (InterruptedException interruptedException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(interruptedException);
-			}
-		}
-
 		while (_started) {
-			try {
-				sleep(_autoDeployDir.getInterval());
-			}
-			catch (InterruptedException interruptedException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(interruptedException);
-				}
-			}
-
 			try {
 				_autoDeployDir.scanDirectory();
 			}
@@ -61,6 +43,15 @@ public class AutoDeployScanner extends Thread {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to scan the auto deploy directory", exception);
+				}
+			}
+
+			try {
+				sleep(_autoDeployDir.getInterval());
+			}
+			catch (InterruptedException interruptedException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedException);
 				}
 			}
 		}
