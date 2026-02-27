@@ -355,9 +355,7 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			}
 		}
 
-		AutoDeployDir autoDeployDir = new AutoDeployDir(
-			AutoDeployDir.DEFAULT_NAME,
-			new File(PropsValues.AUTO_DEPLOY_DEPLOY_DIR), 0);
+		AutoDeployDir autoDeployDir = AutoDeployDir.getDefault();
 
 		autoDeployDir.scanDirectory();
 
