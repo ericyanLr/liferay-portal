@@ -506,8 +506,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 		if (portlet != null) {
 			String finalPortletId = portletId;
-			boolean finalStatic = portlet.isStatic();
-			boolean finalStaticPortletStart = portlet.isStaticStart();
 
 			portlet = new PortletWrapper(portlet) {
 
@@ -546,8 +544,8 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 					_staticPortletStart = staticPortletStart;
 				}
 
-				private boolean _staticPortlet = finalStatic;
-				private boolean _staticPortletStart = finalStaticPortletStart;
+				private boolean _staticPortlet;
+				private boolean _staticPortletStart;
 
 			};
 		}
