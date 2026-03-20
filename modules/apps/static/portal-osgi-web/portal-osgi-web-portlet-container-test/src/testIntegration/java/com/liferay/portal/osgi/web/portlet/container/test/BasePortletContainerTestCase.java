@@ -107,6 +107,7 @@ public abstract class BasePortletContainerTestCase {
 			String portletName, boolean addToLayout)
 		throws Exception {
 
+		properties.put("com.liferay.portlet.deploy.parallel", "false");
 		properties.put("jakarta.portlet.name", portletName);
 
 		registerService(Portlet.class, portlet, properties);

@@ -152,6 +152,8 @@ public class UpdateLayoutStrutsActionTest {
 			bundleContext.registerService(
 				Portlet.class, new MVCPortlet(),
 				HashMapDictionaryBuilder.<String, Object>put(
+					"com.liferay.portlet.deploy.parallel", "false"
+				).put(
 					"com.liferay.portlet.display-category",
 					"root//category.sample//category.nested"
 				).put(
