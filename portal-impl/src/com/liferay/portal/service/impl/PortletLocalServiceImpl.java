@@ -2964,20 +2964,19 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		portletCategory.separate(portlet.getPortletId());
 
 		for (String categoryName : portlet.getCategoryNames()) {
+			PortletCategory rootPortletCategory = new PortletCategory();
+
 			PortletCategory newPortletCategory = new PortletCategory(
 				categoryName);
 
-			if (newPortletCategory.getParentCategory() == null) {
-				PortletCategory rootPortletCategory = new PortletCategory();
-
-				rootPortletCategory.addCategory(newPortletCategory);
-			}
+			rootPortletCategory.addCategory(
+				newPortletCategory.getRootCategory());
 
 			Set<String> portletIds = newPortletCategory.getPortletIds();
 
 			portletIds.add(portlet.getPortletId());
 
-			portletCategory.merge(newPortletCategory.getRootCategory());
+			portletCategory.merge(rootPortletCategory);
 		}
 	}
 
