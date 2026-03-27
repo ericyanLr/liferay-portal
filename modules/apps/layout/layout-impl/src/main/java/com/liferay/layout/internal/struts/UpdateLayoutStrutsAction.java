@@ -446,11 +446,20 @@ public class UpdateLayoutStrutsAction implements StrutsAction {
 	private boolean _containsPortletCategoryPermission(
 		Set<String> categoryNames, PortletCategory portletCategory) {
 
-		if (!portletCategory.isHidden() &&
-			(categoryNames.contains(portletCategory.getName()) ||
-			 categoryNames.contains(portletCategory.getPath()))) {
+		if (!portletCategory.isHidden()) {
+			if (categoryNames.contains(portletCategory.getName())) {
+				return true;
+			}
 
-			return true;
+			String path = portletCategory.getPath();
+
+			if (path.startsWith("root//")) {
+				path = path.substring(6);
+			}
+
+			if (categoryNames.contains(path)) {
+				return true;
+			}
 		}
 
 		for (PortletCategory childPortletCategory :
