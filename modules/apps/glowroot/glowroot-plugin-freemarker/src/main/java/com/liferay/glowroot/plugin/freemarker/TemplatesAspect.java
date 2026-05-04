@@ -138,13 +138,17 @@ public class TemplatesAspect {
 
 			sb.append(", Site Group ID ");
 			sb.append(themeDisplayShim.getSiteGroupId());
+			sb.append(", and Dynamic Data Mapping Template ID ");
 
 			DDMTemplateShim dDMTemplateShim = (DDMTemplateShim)parameters[1];
 
+			String dDMTemplateId = _NULL_PLACEHOLDER;
+
 			if (dDMTemplateShim != null) {
-				sb.append(", and Dynamic Data Mapping Template ID ");
-				sb.append(dDMTemplateShim.getTemplateId());
+				dDMTemplateId = String.valueOf(dDMTemplateShim.getTemplateId());
 			}
+
+			sb.append(dDMTemplateId);
 
 			sb.append(")");
 
@@ -319,5 +323,7 @@ public class TemplatesAspect {
 	private static final String _INSTRUMENTATION_LEVEL_DEBUG = "DEBUG";
 
 	private static final String _INSTRUMENTATION_LEVEL_TRACE = "TRACE";
+
+	private static final String _NULL_PLACEHOLDER = "?";
 
 }
