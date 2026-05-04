@@ -134,10 +134,17 @@ public class TemplatesAspect {
 
 			ThemeDisplayShim themeDisplayShim = (ThemeDisplayShim)parameters[9];
 
-			sb.append(themeDisplayShim.getCompanyId());
+			String companyId = _NULL_PLACEHOLDER;
+			String siteGroupId = _NULL_PLACEHOLDER;
 
+			if (themeDisplayShim != null) {
+				companyId = String.valueOf(themeDisplayShim.getCompanyId());
+				siteGroupId = String.valueOf(themeDisplayShim.getSiteGroupId());
+			}
+
+			sb.append(companyId);
 			sb.append(", Site Group ID ");
-			sb.append(themeDisplayShim.getSiteGroupId());
+			sb.append(siteGroupId);
 			sb.append(", and Dynamic Data Mapping Template ID ");
 
 			DDMTemplateShim dDMTemplateShim = (DDMTemplateShim)parameters[1];
@@ -225,9 +232,18 @@ public class TemplatesAspect {
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("Transformer FreeMarker Template (Company ID ");
-			sb.append(themeDisplayShim.getCompanyId());
+
+			String companyId = _NULL_PLACEHOLDER;
+			String siteGroupId = _NULL_PLACEHOLDER;
+
+			if (themeDisplayShim != null) {
+				companyId = String.valueOf(themeDisplayShim.getCompanyId());
+				siteGroupId = String.valueOf(themeDisplayShim.getSiteGroupId());
+			}
+
+			sb.append(companyId);
 			sb.append(", Site Group ID ");
-			sb.append(themeDisplayShim.getSiteGroupId());
+			sb.append(siteGroupId);
 			sb.append(", and Template ID ");
 			sb.append(contextObjects.get("template_id"));
 			sb.append(")");
