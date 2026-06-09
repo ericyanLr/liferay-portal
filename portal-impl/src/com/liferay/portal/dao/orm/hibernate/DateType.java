@@ -10,41 +10,40 @@ import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 
 import java.util.Date;
 
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.type.StandardBasicTypes;
+import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.usertype.UserType;
 
 /**
  * @author Tina Tian
  */
-public class DateType implements Serializable, UserType {
+public class DateType implements Serializable, UserType<Date> {
 
 	@Override
-	public Object assemble(Serializable cached, Object owner) {
-		return deepCopy(cached);
+	public Date assemble(Serializable cached, Object owner) {
+		return deepCopy((Date)cached);
 	}
 
 	@Override
-	public Object deepCopy(Object object) {
+	public Date deepCopy(Date object) {
 		if (object == null) {
 			return null;
 		}
 
-		Date date = (Date)object;
-
-		return new Date(date.getTime());
+		return new Date(object.getTime());
 	}
 
 	@Override
-	public Serializable disassemble(Object value) {
-		return (Serializable)deepCopy(value);
+	public Serializable disassemble(Date value) {
+		return deepCopy(value);
 	}
 
 	@Override
-	public boolean equals(Object x, Object y) {
+	public boolean equals(Date x, Date y) {
 		if (x == y) {
 			return true;
 		}
@@ -52,10 +51,7 @@ public class DateType implements Serializable, UserType {
 			return false;
 		}
 
-		Date dateX = (Date)x;
-		Date dateY = (Date)y;
-
-		if (dateX.getTime() == dateY.getTime()) {
+		if (x.getTime() == y.getTime()) {
 			return true;
 		}
 
@@ -63,7 +59,12 @@ public class DateType implements Serializable, UserType {
 	}
 
 	@Override
-	public int hashCode(Object x) {
+	public int getSqlType() {
+		return Types.TIMESTAMP;
+	}
+
+	@Override
+	public int hashCode(Date x) {
 		return x.hashCode();
 	}
 
@@ -73,41 +74,43 @@ public class DateType implements Serializable, UserType {
 	}
 
 	@Override
-	public Object nullSafeGet(
-			ResultSet resultSet, String[] names,
-			SharedSessionContractImplementor sharedSessionContractImplementor,
-			Object owner)
+	public Date nullSafeGet(
+			ResultSet resultSet, int index, WrapperOptions wrapperOptions)
 		throws SQLException {
 
-		Object value = StandardBasicTypes.TIMESTAMP.nullSafeGet(
-			resultSet, names[0], sharedSessionContractImplementor);
+		Timestamp timestamp = resultSet.getTimestamp(index);
 
-		return deepCopy(value);
+		if (resultSet.wasNull()) {
+			return null;
+		}
+
+		return new Date(timestamp.getTime());
 	}
 
 	@Override
 	public void nullSafeSet(
-			PreparedStatement preparedStatement, Object target, int index,
-			SharedSessionContractImplementor sharedSessionContractImplementor)
+			PreparedStatement preparedStatement, Date target, int index,
+			WrapperOptions wrapperOptions)
 		throws SQLException {
 
-		StandardBasicTypes.TIMESTAMP.nullSafeSet(
-			preparedStatement, target, index, sharedSessionContractImplementor);
+		if (target == null) {
+			preparedStatement.setTimestamp(index, null);
+		}
+		else {
+			Timestamp timestamp = new Timestamp(target.getTime());
+
+			preparedStatement.setTimestamp(index, timestamp);
+		}
 	}
 
 	@Override
-	public Object replace(Object original, Object target, Object owner) {
+	public Date replace(Date original, Date target, Object owner) {
 		return deepCopy(original);
 	}
 
 	@Override
 	public Class<Date> returnedClass() {
 		return Date.class;
-	}
-
-	@Override
-	public int[] sqlTypes() {
-		return new int[] {StandardBasicTypes.TIMESTAMP.sqlType()};
 	}
 
 }
