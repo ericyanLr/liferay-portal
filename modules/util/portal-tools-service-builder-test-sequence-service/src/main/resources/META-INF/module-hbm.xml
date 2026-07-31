@@ -6,6 +6,7 @@
 	<class dynamic-update="true" name="com.liferay.portal.tools.service.builder.test.sequence.model.impl.SequenceEntryImpl" table="SequenceEntry">
 		<id access="com.liferay.portal.dao.orm.hibernate.MethodPropertyAccessor" name="sequenceEntryId" type="long">
 			<generator class="sequence">
+				<param name="increment_size">1</param>
 				<param name="sequence_name">id_sequence</param>
 			</generator>
 		</id>
