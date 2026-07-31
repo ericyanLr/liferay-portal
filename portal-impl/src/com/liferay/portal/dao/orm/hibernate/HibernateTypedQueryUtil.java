@@ -179,6 +179,46 @@ public class HibernateTypedQueryUtil {
 		_select(abstractQuery, selection);
 	}
 
+	private static From<?, ?> _getAliasedFrom(
+		AbstractQuery<?> abstractQuery, From<?, ?> from, String parsedAlias) {
+
+		String alias = from.getAlias();
+
+		if (Objects.equals(parsedAlias, alias) ||
+			((alias == null) && parsedAlias.equals("this"))) {
+
+			return from;
+		}
+
+		AbstractQuery<?> currentQuery = abstractQuery;
+
+		while (currentQuery instanceof Subquery) {
+			Subquery<?> subquery = (Subquery<?>)currentQuery;
+
+			currentQuery = (AbstractQuery<?>)subquery.getParent();
+
+			List<Root<?>> roots = ListUtil.fromCollection(
+				currentQuery.getRoots());
+
+			if (roots.size() != 1) {
+				throw new IllegalStateException(
+					"Unable to resolve alias " + parsedAlias);
+			}
+
+			Root<?> root = roots.get(0);
+
+			String rootAlias = root.getAlias();
+
+			if (Objects.equals(parsedAlias, rootAlias) ||
+				((rootAlias == null) && parsedAlias.equals("this"))) {
+
+				return root;
+			}
+		}
+
+		return null;
+	}
+
 	private static List<String> _getColumnSqls(String sql) {
 		List<String> parts = new ArrayList<>();
 
@@ -215,46 +255,21 @@ public class HibernateTypedQueryUtil {
 			return from.get(name);
 		}
 
-		String parsedAlias = parts[0];
-		String columnName = parts[1];
+		From<?, ?> aliasedFrom = _getAliasedFrom(abstractQuery, from, parts[0]);
 
-		String alias = from.getAlias();
-
-		if (Objects.equals(parsedAlias, alias) ||
-			((alias == null) && parsedAlias.equals("this"))) {
-
-			return from.get(columnName);
+		if (aliasedFrom != null) {
+			return _getPath(aliasedFrom, parts, 1);
 		}
 
-		AbstractQuery<?> currentQuery = abstractQuery;
+		return _getPath(from, parts, 0);
+	}
 
-		while (currentQuery instanceof Subquery) {
-			Subquery<?> subquery = (Subquery<?>)currentQuery;
-
-			currentQuery = (AbstractQuery<?>)subquery.getParent();
-
-			List<Root<?>> roots = ListUtil.fromCollection(
-				currentQuery.getRoots());
-
-			if (roots.size() != 1) {
-				throw new IllegalStateException(
-					"Unable to resolve alias " + parsedAlias);
-			}
-
-			Root<?> root = roots.get(0);
-
-			String rootAlias = root.getAlias();
-
-			if (Objects.equals(parsedAlias, rootAlias) ||
-				((rootAlias == null) && parsedAlias.equals("this"))) {
-
-				return root.get(columnName);
-			}
+	private static Path<?> _getPath(Path<?> path, String[] parts, int index) {
+		for (int i = index; i < parts.length; i++) {
+			path = path.get(parts[i]);
 		}
 
-		throw new IllegalArgumentException(
-			StringBundler.concat(
-				"Unable to resolve alias ", parsedAlias, " in ", name));
+		return path;
 	}
 
 	private static String _resolveSQL(
