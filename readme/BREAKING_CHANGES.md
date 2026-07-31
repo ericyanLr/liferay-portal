@@ -1884,3 +1884,25 @@ User.getRemotePreference(String) and User.getRemotePreferences() were just a con
 ### Why was this change made?
 
 RemotePreference API has never been used. But the api supporting logic has to collect and hold cookies in User object, causing unnecessary CPU and memory overhead.
+
+---------------------------------------
+
+## Removed the Legacy id Pseudo-Path for Composite Identifiers in DynamicQuery
+- **Date:** 2026-Jul-31
+- **JIRA Ticket:** [LPD-94036](https://liferay.atlassian.net/browse/LPD-94036)
+
+### What changed?
+
+A `DynamicQuery` restriction, projection, or order on a column of a composite primary key must name the mapped identifier attribute, which Service Builder maps as `primaryKey`. The legacy `id` pseudo-path is no longer resolved.
+
+### Who is affected?
+
+This affects anyone building a `DynamicQuery` against an entity whose primary key spans more than one column, such as `ViewCountEntry`.
+
+### How should I update my code?
+
+Replace the `id` prefix with `primaryKey`. For example, `RestrictionsFactoryUtil.eq("id.companyId", companyId)` becomes `RestrictionsFactoryUtil.eq("primaryKey.companyId", companyId)`.
+
+### Why was this change made?
+
+Hibernate 7 removed the legacy Criteria API, so `DynamicQuery` is now translated to a JPA typed query. A JPA path must name a mapped attribute, and `id` is not one. Hibernate 5 accepted it because its Criteria implementation treated `id` as a synonym for the identifier regardless of the mapped attribute name.
