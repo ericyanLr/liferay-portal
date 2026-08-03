@@ -10,6 +10,9 @@ import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.BaseModelListener;
 import com.liferay.portal.kernel.model.ModelListener;
+import com.liferay.portal.kernel.security.auth.CompanyInheritableThreadLocalCallable;
+import com.liferay.portal.kernel.test.randomizerbumpers.UniqueStringRandomizerBumper;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.lock.exception.DuplicateLockException;
@@ -270,6 +273,147 @@ public class LockLocalServiceTest {
 			Assert.assertSame(
 				ConstraintViolationException.class, throwable2.getClass());
 		}
+	}
+
+	@ExpectedMultipleLogs(
+		expectedMultipleLogs = {
+			@ExpectedLogs(
+				expectedLogs = {
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.DB2,
+						expectedLog = "Error for batch element",
+						expectedType = ExpectedType.PREFIX
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.DB2,
+						expectedLog = "Batch failure.",
+						expectedType = ExpectedType.CONTAINS
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.HYPERSONIC,
+						expectedLog = "integrity constraint violation: unique constraint or index violation: IX_228562AD",
+						expectedType = ExpectedType.EXACT
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.MARIADB,
+						expectedLog = "Deadlock found when trying to get lock; try restarting transaction",
+						expectedType = ExpectedType.CONTAINS
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.MARIADB,
+						expectedLog = "Duplicate entry",
+						expectedType = ExpectedType.CONTAINS
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.MYSQL,
+						expectedLog = "Deadlock found when trying to get lock; try restarting transaction",
+						expectedType = ExpectedType.EXACT
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.MYSQL,
+						expectedLog = "Duplicate entry",
+						expectedType = ExpectedType.PREFIX
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.ORACLE,
+						expectedLog = "ORA-00001: unique constraint",
+						expectedType = ExpectedType.PREFIX
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.POSTGRESQL,
+						expectedLog = "Batch entry 0 insert into Lock_ ",
+						expectedType = ExpectedType.PREFIX
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.POSTGRESQL,
+						expectedLog = "ERROR: duplicate key value violates unique constraint ",
+						expectedType = ExpectedType.PREFIX
+					),
+					@ExpectedLog(
+						expectedDBType = ExpectedDBType.SQLSERVER,
+						expectedLog = "Cannot insert duplicate key row in object",
+						expectedType = ExpectedType.PREFIX
+					)
+				},
+				level = "ERROR", loggerClass = SqlExceptionHelper.class
+			)
+		}
+	)
+	@Test
+	public void testLockRetriesOnConcurrentInsert() throws Exception {
+		String className = RandomTestUtil.randomString(
+			UniqueStringRandomizerBumper.INSTANCE);
+		String key = RandomTestUtil.randomString(
+			UniqueStringRandomizerBumper.INSTANCE);
+
+		Bundle bundle = FrameworkUtil.getBundle(LockLocalServiceTest.class);
+
+		BundleContext bundleContext = bundle.getBundleContext();
+
+		final Thread testThread = Thread.currentThread();
+
+		final CountDownLatch createdCountDownLatch = new CountDownLatch(1);
+		final CountDownLatch continueCountDownLatch = new CountDownLatch(1);
+
+		ServiceRegistration<ModelListener<Lock>> serviceRegistration =
+			bundleContext.registerService(
+				(Class<ModelListener<Lock>>)(Class<?>)ModelListener.class,
+				new BaseModelListener<Lock>() {
+
+					@Override
+					public void onAfterCreate(Lock model) {
+						if (Thread.currentThread() == testThread) {
+							return;
+						}
+
+						createdCountDownLatch.countDown();
+
+						try {
+							continueCountDownLatch.await();
+						}
+						catch (InterruptedException interruptedException) {
+							ReflectionUtil.throwException(interruptedException);
+						}
+					}
+
+				},
+				null);
+
+		String owner1 = "owner1";
+
+		FutureTask<Lock> futureTask = new FutureTask<>(
+			new CompanyInheritableThreadLocalCallable<>(
+				() -> LockLocalServiceUtil.lock(className, key, owner1)));
+
+		Thread lockCreateThread = new Thread(futureTask, "Lock Create Thread");
+
+		lockCreateThread.start();
+
+		createdCountDownLatch.await();
+
+		serviceRegistration.unregister();
+
+		String owner2 = "owner2";
+
+		Lock lock2 = LockLocalServiceUtil.lock(className, key, owner2);
+
+		Assert.assertTrue(lock2.isNew());
+
+		continueCountDownLatch.countDown();
+
+		try {
+			Lock lock1 = futureTask.get();
+
+			Assert.assertFalse(lock1.isNew());
+			Assert.assertEquals(owner2, lock1.getOwner());
+		}
+		catch (ExecutionException executionException) {
+			throw new AssertionError(
+				"Lock contention was not retried",
+				executionException.getCause());
+		}
+
+		LockLocalServiceUtil.unlock(className, key);
 	}
 
 	@ExpectedMultipleLogs(
