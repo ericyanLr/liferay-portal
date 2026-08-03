@@ -11,7 +11,6 @@ import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.change.tracking.CTAware;
-import com.liferay.portal.kernel.dao.orm.ORMException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.LockListener;
 import com.liferay.portal.kernel.log.Log;
@@ -26,8 +25,6 @@ import com.liferay.portal.lock.exception.ExpiredLockException;
 import com.liferay.portal.lock.exception.NoSuchLockException;
 import com.liferay.portal.lock.model.Lock;
 import com.liferay.portal.lock.service.base.LockLocalServiceBaseImpl;
-
-import jakarta.persistence.PersistenceException;
 
 import java.util.Date;
 import java.util.List;
@@ -291,17 +288,7 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 					});
 			}
 			catch (Throwable throwable) {
-				Throwable causeThrowable = throwable;
-
-				if (throwable instanceof ORMException ||
-					throwable instanceof PersistenceException) {
-
-					causeThrowable = throwable.getCause();
-				}
-
-				if (causeThrowable instanceof ConstraintViolationException ||
-					causeThrowable instanceof LockAcquisitionException) {
-
+				if (_isRetryable(throwable)) {
 					if (_log.isInfoEnabled()) {
 						_log.info("Unable to acquire lock, retrying");
 					}
@@ -396,15 +383,7 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 				return;
 			}
 			catch (Throwable throwable) {
-				Throwable causeThrowable = throwable;
-
-				if (throwable instanceof ORMException) {
-					causeThrowable = throwable.getCause();
-				}
-
-				if (causeThrowable instanceof ConstraintViolationException ||
-					causeThrowable instanceof LockAcquisitionException) {
-
+				if (_isRetryable(throwable)) {
 					if (_log.isInfoEnabled()) {
 						_log.info("Unable to remove lock, retrying");
 					}
@@ -479,6 +458,20 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 		}
 
 		return _serviceTrackerMap.getService(className);
+	}
+
+	private boolean _isRetryable(Throwable throwable) {
+		while (throwable != null) {
+			if (throwable instanceof ConstraintViolationException ||
+				throwable instanceof LockAcquisitionException) {
+
+				return true;
+			}
+
+			throwable = throwable.getCause();
+		}
+
+		return false;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
