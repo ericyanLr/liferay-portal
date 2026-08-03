@@ -56,9 +56,11 @@ import org.hibernate.boot.registry.BootstrapServiceRegistryBuilder;
 import org.hibernate.boot.spi.XmlMappingBinderAccess;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.function.SQLFunctionTemplate;
+import org.hibernate.query.sqm.function.SqmFunctionRegistry;
 import org.hibernate.resource.jdbc.spi.PhysicalConnectionHandlingMode;
+import org.hibernate.type.BasicTypeRegistry;
 import org.hibernate.type.StandardBasicTypes;
+import org.hibernate.type.spi.TypeConfiguration;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -130,12 +132,23 @@ public class PortalHibernateConfiguration
 		Configuration configuration = new Configuration(
 			new MetadataSources(bootstrapServiceRegistryBuilder.build()));
 
-		configuration.addSqlFunction(
-			HibernateSQLFunctions.CAST_CLOB_TEXT,
-			new SQLFunctionTemplate(
-				StandardBasicTypes.STRING,
-				HibernateSQLFunctions.getCastClobTextSQL(
-					DBManagerUtil.getDBType(dialect))));
+		configuration.registerFunctionContributor(
+			functionContributions -> {
+				TypeConfiguration typeConfiguration =
+					functionContributions.getTypeConfiguration();
+
+				BasicTypeRegistry basicTypeRegistry =
+					typeConfiguration.getBasicTypeRegistry();
+
+				SqmFunctionRegistry sqmFunctionRegistry =
+					functionContributions.getFunctionRegistry();
+
+				sqmFunctionRegistry.registerPattern(
+					HibernateSQLFunctions.CAST_CLOB_TEXT,
+					HibernateSQLFunctions.getCastClobTextSQL(
+						DBManagerUtil.getDBType(dialect)),
+					basicTypeRegistry.resolve(StandardBasicTypes.STRING));
+			});
 
 		if (_mvccEnabled) {
 			configuration.setStatementInspector(new CTSQLInterceptor());
