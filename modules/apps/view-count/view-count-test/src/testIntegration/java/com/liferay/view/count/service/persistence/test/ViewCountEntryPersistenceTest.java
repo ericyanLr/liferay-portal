@@ -416,4 +416,4 @@ public class ViewCountEntryPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:613515760
+// LIFERAY-SERVICE-BUILDER-HASH:35935340
