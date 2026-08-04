@@ -370,19 +370,41 @@ public class ${entity.name}PersistenceTest {
 
 				${entity.name} draft${entity.name} = _persistence.create(pk);
 
+				<#assign hasBlob = false />
+
 				<#list entity.regularEntityColumns as entityColumn>
 					<#if !entityColumn.primary && (validator.isNull(parentPKColumn) || (parentPKColumn.name != entityColumn.name)) && !(serviceBuilder.isVersionGTE_7_4_0() && stringUtil.equals(entityColumn.name, "mvccVersion"))>
-						draft${entity.name}.set${entityColumn.methodName}(
+						<#if stringUtil.equals(entityColumn.type, "Blob")>
+							<#assign hasBlob = true />
 
-						<#if stringUtil.equals(entityColumn.name, "headId")>
-							-
+							String draft${entityColumn.methodName}String = RandomTestUtil.randomString();
+
+							byte[] draft${entityColumn.methodName}Bytes = draft${entityColumn.methodName}String.getBytes("UTF-8");
+
+							draft${entity.name}.set${entityColumn.methodName}(new OutputBlob(new ByteArrayInputStream(draft${entityColumn.methodName}Bytes), draft${entityColumn.methodName}Bytes.length));
+						<#else>
+							draft${entity.name}.set${entityColumn.methodName}(
+
+							<#if stringUtil.equals(entityColumn.name, "headId")>
+								-
+							</#if>
+
+							${entity.variableName}.get${entityColumn.methodName}());
 						</#if>
-
-						${entity.variableName}.get${entityColumn.methodName}());
 					</#if>
 				</#list>
 
 				_${entity.pluralVariableName}.add(_persistence.update(draft${entity.name}));
+
+				<#if hasBlob>
+					Session session = _persistence.openSession();
+
+					session.flush();
+
+					session.clear();
+
+					${entity.name} persistedDraft${entity.name} = _persistence.findByPrimaryKey(pk);
+				</#if>
 
 				<#list entity.regularEntityColumns as entityColumn>
 					<#if !entityColumn.primary && (validator.isNull(parentPKColumn) || (parentPKColumn.name != entityColumn.name))>
@@ -391,10 +413,9 @@ public class ${entity.name}PersistenceTest {
 						<#elseif stringUtil.equals(entityColumn.name, "status")>
 							Assert.assertEquals(2, draft${entity.name}.get${entityColumn.methodName}());
 						<#elseif stringUtil.equals(entityColumn.type, "Blob")>
-							Blob ${entityColumn.methodName} = ${entity.variableName}.get${entityColumn.methodName}();
-							Blob draft${entityColumn.methodName} = draft${entity.name}.get${entityColumn.methodName}();
+							Blob persistedDraft${entityColumn.methodName} = persistedDraft${entity.name}.get${entityColumn.methodName}();
 
-							Assert.assertArrayEquals(${entityColumn.methodName}.getBytes(1, (int)${entityColumn.methodName}.length()), draft${entityColumn.methodName}.getBytes(1, (int)draft${entityColumn.methodName}.length()));
+							Assert.assertArrayEquals(persistedDraft${entityColumn.methodName}.getBytes(1, (int)persistedDraft${entityColumn.methodName}.length()), draft${entityColumn.methodName}Bytes);
 						<#elseif stringUtil.equals(entityColumn.type, "boolean")>
 							Assert.assertEquals(${entity.variableName}.is${entityColumn.methodName}(), draft${entity.name}.is${entityColumn.methodName}());
 						<#elseif stringUtil.equals(entityColumn.type, "Date")>
@@ -1346,9 +1367,13 @@ public class ${entity.name}PersistenceTest {
 
 		${entity.name} ${entity.variableName} = _persistence.create(pk);
 
+		<#assign hasBlob = false />
+
 		<#list entity.regularEntityColumns as entityColumn>
 			<#if !entityColumn.primary && (validator.isNull(parentPKColumn) || (parentPKColumn.name != entityColumn.name)) && !(serviceBuilder.isVersionGTE_7_4_0() && stringUtil.equals(entityColumn.name, "mvccVersion"))>
 				<#if stringUtil.equals(entityColumn.type, "Blob")>
+					<#assign hasBlob = true />
+
 					String ${entityColumn.name}String = RandomTestUtil.randomString();
 
 					byte[] ${entityColumn.name}Bytes = ${entityColumn.name}String.getBytes("UTF-8");
@@ -1391,6 +1416,16 @@ public class ${entity.name}PersistenceTest {
 		</#list>
 
 		_${entity.pluralVariableName}.add(_persistence.update(${entity.variableName}));
+
+		<#if hasBlob>
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+
+			${entity.variableName} = _persistence.findByPrimaryKey(pk);
+		</#if>
 
 		return ${entity.variableName};
 	}
@@ -1612,12 +1647,16 @@ public class ${entity.name}PersistenceTest {
 
 			${entity.name} ${entity.variableName} = _persistence.create(pk);
 
+			<#assign hasBlob = false />
+
 			<#list entity.regularEntityColumns as entityColumn>
 				<#if !entityColumn.primary && (validator.isNull(parentPKColumn) || (parentPKColumn.name != entityColumn.name)) && !(serviceBuilder.isVersionGTE_7_4_0() && stringUtil.equals(entityColumn.name, "mvccVersion"))>
 					<#if entityColumn.name ="${scopeEntityColumn.name}">
 						${entity.variableName}.set${entityColumn.methodName}(${scopeEntityColumn.name});
 					<#else>
 						<#if stringUtil.equals(entityColumn.type, "Blob")>
+							<#assign hasBlob = true />
+
 							String ${entityColumn.name}String = RandomTestUtil.randomString();
 
 							byte[] ${entityColumn.name}Bytes = ${entityColumn.name}String.getBytes("UTF-8");
@@ -1661,6 +1700,16 @@ public class ${entity.name}PersistenceTest {
 			}
 
 			_${entity.pluralVariableName}.add(_persistence.update(${entity.variableName}));
+
+			<#if hasBlob>
+				Session session = _persistence.openSession();
+
+				session.flush();
+
+				session.clear();
+
+				${entity.variableName} = _persistence.findByPrimaryKey(pk);
+			</#if>
 
 			return ${entity.variableName};
 		}
