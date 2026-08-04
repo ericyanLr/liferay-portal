@@ -488,6 +488,7 @@ public class EagerBlobEntryPersistenceTest {
 		eagerBlobEntry.setUuid(RandomTestUtil.randomString());
 
 		eagerBlobEntry.setGroupId(RandomTestUtil.nextLong());
+
 		String blobString = RandomTestUtil.randomString();
 
 		byte[] blobBytes = blobString.getBytes("UTF-8");
@@ -499,6 +500,14 @@ public class EagerBlobEntryPersistenceTest {
 
 		_eagerBlobEntries.add(_persistence.update(eagerBlobEntry));
 
+		Session session = _persistence.openSession();
+
+		session.flush();
+
+		session.clear();
+
+		eagerBlobEntry = _persistence.findByPrimaryKey(pk);
+
 		return eagerBlobEntry;
 	}
 
@@ -508,4 +517,4 @@ public class EagerBlobEntryPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:363374027
+// LIFERAY-SERVICE-BUILDER-HASH:-1818033449

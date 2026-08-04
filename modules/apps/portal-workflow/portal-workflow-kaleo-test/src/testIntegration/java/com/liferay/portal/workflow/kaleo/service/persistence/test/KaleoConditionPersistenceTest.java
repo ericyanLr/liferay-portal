@@ -562,4 +562,4 @@ public class KaleoConditionPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-842860846
+// LIFERAY-SERVICE-BUILDER-HASH:-705964990

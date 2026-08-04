@@ -607,6 +607,7 @@ public class ERCVersionedEntryVersionPersistenceTest {
 		ercVersionedEntryVersion.setGroupId(RandomTestUtil.nextLong());
 
 		ercVersionedEntryVersion.setCompanyId(RandomTestUtil.nextLong());
+
 		String blobString = RandomTestUtil.randomString();
 
 		byte[] blobBytes = blobString.getBytes("UTF-8");
@@ -619,6 +620,14 @@ public class ERCVersionedEntryVersionPersistenceTest {
 		_ercVersionedEntryVersions.add(
 			_persistence.update(ercVersionedEntryVersion));
 
+		Session session = _persistence.openSession();
+
+		session.flush();
+
+		session.clear();
+
+		ercVersionedEntryVersion = _persistence.findByPrimaryKey(pk);
+
 		return ercVersionedEntryVersion;
 	}
 
@@ -628,4 +637,4 @@ public class ERCVersionedEntryVersionPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-300602437
+// LIFERAY-SERVICE-BUILDER-HASH:1742481393

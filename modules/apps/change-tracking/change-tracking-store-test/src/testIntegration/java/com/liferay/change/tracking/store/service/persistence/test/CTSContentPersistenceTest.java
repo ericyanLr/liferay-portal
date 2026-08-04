@@ -555,6 +555,7 @@ public class CTSContentPersistenceTest {
 		ctsContent.setPath(RandomTestUtil.randomString());
 
 		ctsContent.setVersion(RandomTestUtil.randomString());
+
 		String dataString = RandomTestUtil.randomString();
 
 		byte[] dataBytes = dataString.getBytes("UTF-8");
@@ -570,6 +571,14 @@ public class CTSContentPersistenceTest {
 
 		_ctsContents.add(_persistence.update(ctsContent));
 
+		Session session = _persistence.openSession();
+
+		session.flush();
+
+		session.clear();
+
+		ctsContent = _persistence.findByPrimaryKey(pk);
+
 		return ctsContent;
 	}
 
@@ -578,4 +587,4 @@ public class CTSContentPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1473486047
+// LIFERAY-SERVICE-BUILDER-HASH:-320330849

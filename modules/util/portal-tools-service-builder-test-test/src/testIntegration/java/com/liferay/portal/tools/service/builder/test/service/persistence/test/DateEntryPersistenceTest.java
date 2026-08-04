@@ -382,4 +382,4 @@ public class DateEntryPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1600528083
+// LIFERAY-SERVICE-BUILDER-HASH:-339208389

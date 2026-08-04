@@ -535,6 +535,7 @@ public class DLContentPersistenceTest {
 		dlContent.setPath(RandomTestUtil.randomString());
 
 		dlContent.setVersion(RandomTestUtil.randomString());
+
 		String dataString = RandomTestUtil.randomString();
 
 		byte[] dataBytes = dataString.getBytes("UTF-8");
@@ -548,6 +549,14 @@ public class DLContentPersistenceTest {
 
 		_dlContents.add(_persistence.update(dlContent));
 
+		Session session = _persistence.openSession();
+
+		session.flush();
+
+		session.clear();
+
+		dlContent = _persistence.findByPrimaryKey(pk);
+
 		return dlContent;
 	}
 
@@ -556,4 +565,4 @@ public class DLContentPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1728301549
+// LIFERAY-SERVICE-BUILDER-HASH:1178074315

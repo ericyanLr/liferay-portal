@@ -868,4 +868,4 @@ public class CPAttachmentFileEntryPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-275561754
+// LIFERAY-SERVICE-BUILDER-HASH:-1936696036

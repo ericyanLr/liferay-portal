@@ -513,4 +513,4 @@ public class PatcherTicketHintPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:937301059
+// LIFERAY-SERVICE-BUILDER-HASH:725441107

@@ -462,4 +462,4 @@ public class CSDiagramPinPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-145339814
+// LIFERAY-SERVICE-BUILDER-HASH:217290092
