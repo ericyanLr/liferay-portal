@@ -10,7 +10,7 @@ import com.liferay.petra.io.Serializer;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.lang.ThreadContextClassLoaderUtil;
 import com.liferay.petra.string.CharPool;
-import com.liferay.portal.dao.sql.transformer.HibernateSQLFunctions;
+import com.liferay.portal.dao.orm.common.SQLTransformer;
 import com.liferay.portal.internal.change.tracking.hibernate.CTSQLInterceptor;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
@@ -56,9 +56,7 @@ import org.hibernate.boot.registry.BootstrapServiceRegistryBuilder;
 import org.hibernate.boot.spi.XmlMappingBinderAccess;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.resource.jdbc.spi.PhysicalConnectionHandlingMode;
-import org.hibernate.type.StandardBasicTypes;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -130,12 +128,7 @@ public class PortalHibernateConfiguration
 		Configuration configuration = new Configuration(
 			new MetadataSources(bootstrapServiceRegistryBuilder.build()));
 
-		configuration.addSqlFunction(
-			HibernateSQLFunctions.CAST_CLOB_TEXT,
-			new SQLFunctionTemplate(
-				StandardBasicTypes.STRING,
-				HibernateSQLFunctions.getCastClobTextSQL(
-					DBManagerUtil.getDBType(dialect))));
+		SQLTransformer.populateSqlFunctions(configuration);
 
 		if (_mvccEnabled) {
 			configuration.setStatementInspector(new CTSQLInterceptor());
