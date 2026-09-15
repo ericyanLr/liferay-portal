@@ -14,6 +14,9 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.events.StartupHelperUtil;
 import com.liferay.portal.kernel.concurrent.SystemExecutorServiceUtil;
+import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
@@ -27,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 import java.util.function.Supplier;
@@ -64,6 +69,29 @@ public class AopServiceManager {
 				Bundle bundle = serviceReference.getBundle();
 
 				emitter.emit(bundle.getBundleId());
+			});
+
+		_futureTask = new FutureTask<>(
+			() -> {
+				Supplier<AopServiceRegistrar> supplier = null;
+
+				while ((supplier = _suppliers.poll()) != null) {
+					try {
+						supplier.get();
+					}
+					catch (Exception exception) {
+						_log.error(exception);
+					}
+				}
+
+				return null;
+			});
+
+		DependencyManagerSyncUtil.registerSyncCallable(
+			() -> {
+				_futureTask.run();
+
+				return null;
 			});
 
 		_aopServiceServiceTracker = new ServiceTracker<>(
@@ -138,9 +166,13 @@ public class AopServiceManager {
 		return unsyncStringWriter.toString();
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		AopServiceManager.class);
+
 	private ServiceTracker<AopService, Supplier<AopServiceRegistrar>>
 		_aopServiceServiceTracker;
 	private BundleContext _bundleContext;
+	private FutureTask<Void> _futureTask;
 	private volatile boolean _parallel;
 
 	@Reference(target = "(&(bean.id=transactionExecutor)(original.bean=true))")
@@ -149,6 +181,8 @@ public class AopServiceManager {
 	private final List<ServiceRegistration<?>> _serviceRegistrations =
 		new ArrayList<>();
 	private ServiceTrackerMap<Long, TransactionExecutor> _serviceTrackerMap;
+	private final Queue<Supplier<AopServiceRegistrar>> _suppliers =
+		new ConcurrentLinkedQueue<>();
 
 	private static class TransactionExecutorServiceTracker
 		extends ServiceTracker<TransactionExecutor, TransactionExecutor> {
@@ -283,17 +317,7 @@ public class AopServiceManager {
 					return aopServiceRegistrar;
 				});
 
-			if (_parallel) {
-				ExecutorService executorService =
-					SystemExecutorServiceUtil.getExecutorService();
-
-				executorService.submit(futureTask);
-			}
-			else {
-				futureTask.run();
-			}
-
-			return () -> {
+			Supplier<AopServiceRegistrar> supplier = () -> {
 				try {
 					return futureTask.get();
 				}
@@ -301,6 +325,22 @@ public class AopServiceManager {
 					return ReflectionUtil.throwException(exception);
 				}
 			};
+
+			if (_parallel) {
+				ExecutorService executorService =
+					SystemExecutorServiceUtil.getExecutorService();
+
+				executorService.submit(futureTask);
+
+				if (!_futureTask.isDone()) {
+					_suppliers.add(supplier);
+				}
+			}
+			else {
+				futureTask.run();
+			}
+
+			return supplier;
 		}
 
 		@Override
