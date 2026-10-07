@@ -13,6 +13,7 @@ import com.liferay.portal.events.ServicePreAction;
 import com.liferay.portal.kernel.events.ActionException;
 import com.liferay.portal.kernel.events.LifecycleAction;
 import com.liferay.portal.kernel.events.LifecycleEvent;
+import com.liferay.portal.kernel.exception.LayoutPermissionException;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -32,6 +33,7 @@ import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -395,6 +397,34 @@ public class ServicePreActionTest {
 		_testInitThemeDisplayPortalImpersonationEnable(true);
 	}
 
+	@Test
+	@TestInfo("LPD-107079")
+	public void testInitThemeDisplayWhenVirtualHostLayoutsAreNotViewable()
+		throws Exception {
+
+		Role role = _roleLocalService.getRole(
+			_group.getCompanyId(), RoleConstants.GUEST);
+
+		for (Layout layout :
+				_layoutLocalService.getLayouts(_group.getGroupId(), false)) {
+
+			_resourcePermissionLocalService.removeResourcePermission(
+				layout.getCompanyId(), Layout.class.getName(),
+				ResourceConstants.SCOPE_INDIVIDUAL,
+				String.valueOf(layout.getPlid()), role.getRoleId(),
+				ActionKeys.VIEW);
+		}
+
+		_user = _portal.initUser(_mockHttpServletRequest);
+
+		_mockHttpServletRequest.setAttribute(WebKeys.USER, _user);
+
+		_testInitThemeDisplayWhenVirtualHostLayoutsAreNotViewable(
+			"/portal/captcha/get_image");
+		_testInitThemeDisplayWhenVirtualHostLayoutsAreNotViewable(
+			"/portal/layout");
+	}
+
 	private Layout _getLayout(Object layoutComposite) {
 		return ReflectionTestUtil.invoke(
 			layoutComposite, "getLayout", null, null);
@@ -559,6 +589,32 @@ public class ServicePreActionTest {
 					StringPool.BLANK, themeDisplay.getDoAsUserId());
 			}
 		}
+	}
+
+	private void _testInitThemeDisplayWhenVirtualHostLayoutsAreNotViewable(
+			String path)
+		throws Exception {
+
+		_mockHttpServletRequest.setPathInfo(path);
+		_mockHttpServletRequest.setRequestURI(_portal.getPathMain() + path);
+
+		_servicePreAction.run(
+			_mockHttpServletRequest, _mockHttpServletResponse);
+
+		Layout layout = _getLayout(
+			ReflectionTestUtil.invoke(
+				_servicePreAction, "_getGuestSiteLayoutComposite",
+				new Class<?>[] {User.class}, _user));
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)_mockHttpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		Assert.assertEquals(layout.getPlid(), themeDisplay.getPlid());
+
+		Assert.assertFalse(
+			SessionErrors.contains(
+				_mockHttpServletRequest,
+				LayoutPermissionException.class.getName()));
 	}
 
 	private static final String _DO_AS_USER_ID =
