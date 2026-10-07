@@ -574,16 +574,27 @@ public class ServicePreAction extends Action {
 				defaultLayoutComposite.getLayouts(), ignoreHiddenLayouts);
 
 			if (ListUtil.isNotEmpty(defaultLayoutComposite.getLayouts())) {
+				SessionErrors.remove(
+					httpServletRequest,
+					LayoutPermissionException.class.getName());
+
 				return defaultLayoutComposite;
 			}
 		}
 
 		defaultLayoutComposite = _getGuestSiteLayoutComposite(user);
 
-		return _getViewableLayoutComposite(
+		defaultLayoutComposite = _getViewableLayoutComposite(
 			httpServletRequest, user, permissionChecker,
 			defaultLayoutComposite.getLayout(),
 			defaultLayoutComposite.getLayouts(), ignoreHiddenLayouts);
+
+		if (ListUtil.isNotEmpty(defaultLayoutComposite.getLayouts())) {
+			SessionErrors.remove(
+				httpServletRequest, LayoutPermissionException.class.getName());
+		}
+
+		return defaultLayoutComposite;
 	}
 
 	private LayoutComposite _getDefaultVirtualHostLayoutComposite(
