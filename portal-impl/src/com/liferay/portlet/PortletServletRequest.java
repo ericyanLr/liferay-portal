@@ -207,13 +207,7 @@ public class PortletServletRequest extends HttpServletRequestWrapper {
 
 	@Override
 	public int getIntHeader(String name) {
-		String header = getHeader(name);
-
-		if (header == null) {
-			return -1;
-		}
-
-		return GetterUtil.getIntegerStrict(header);
+		return _httpServletRequest.getIntHeader(name);
 	}
 
 	@Override
