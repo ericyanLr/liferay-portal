@@ -172,26 +172,6 @@ public class PortletServletRequest extends HttpServletRequestWrapper {
 	}
 
 	@Override
-	public long getDateHeader(String name) {
-		return _httpServletRequest.getDateHeader(name);
-	}
-
-	@Override
-	public String getHeader(String name) {
-		return _httpServletRequest.getHeader(name);
-	}
-
-	@Override
-	public Enumeration<String> getHeaderNames() {
-		return _httpServletRequest.getHeaderNames();
-	}
-
-	@Override
-	public Enumeration<String> getHeaders(String name) {
-		return _httpServletRequest.getHeaders(name);
-	}
-
-	@Override
 	public ServletInputStream getInputStream() throws IOException {
 		if (_lifecycle.equals(PortletRequest.ACTION_PHASE) ||
 			_lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
@@ -203,11 +183,6 @@ public class PortletServletRequest extends HttpServletRequestWrapper {
 		}
 
 		return null;
-	}
-
-	@Override
-	public int getIntHeader(String name) {
-		return _httpServletRequest.getIntHeader(name);
 	}
 
 	@Override
