@@ -10,6 +10,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServlet;
@@ -158,25 +159,27 @@ public class ResourceServlet extends HttpServlet {
 				StringPool.QUOTE);
 		}
 
-		String ifNoneMatch = httpServletRequest.getHeader(_IF_NONE_MATCH);
+		if (httpServletRequest.getDispatcherType() != DispatcherType.INCLUDE) {
+			String ifNoneMatch = httpServletRequest.getHeader(_IF_NONE_MATCH);
 
-		if ((ifNoneMatch != null) && (etag != null) &&
-			(ifNoneMatch.indexOf(etag) != -1)) {
+			if ((ifNoneMatch != null) && (etag != null) &&
+				(ifNoneMatch.indexOf(etag) != -1)) {
 
-			httpServletResponse.setStatus(304);
+				httpServletResponse.setStatus(304);
 
-			return;
-		}
+				return;
+			}
 
-		long ifModifiedSince = httpServletRequest.getDateHeader(
-			_IF_MODIFIED_SINCE);
+			long ifModifiedSince = httpServletRequest.getDateHeader(
+				_IF_MODIFIED_SINCE);
 
-		if ((ifModifiedSince > -1L) && (lastModified > 0L) &&
-			(lastModified <= (ifModifiedSince + 999L))) {
+			if ((ifModifiedSince > -1L) && (lastModified > 0L) &&
+				(lastModified <= (ifModifiedSince + 999L))) {
 
-			httpServletResponse.setStatus(304);
+				httpServletResponse.setStatus(304);
 
-			return;
+				return;
+			}
 		}
 
 		if (contentLength != -1) {
