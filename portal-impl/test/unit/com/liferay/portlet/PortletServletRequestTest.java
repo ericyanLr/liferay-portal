@@ -67,6 +67,26 @@ public class PortletServletRequestTest {
 		}
 	}
 
+	@Test
+	public void testGetIntHeader() {
+		int contentLength = RandomTestUtil.randomInt();
+
+		Assert.assertEquals(
+			String.valueOf(Arrays.asList(contentLength, -1)),
+			String.valueOf(
+				Arrays.asList(
+					_getIntHeader(String.valueOf(contentLength)),
+					_getIntHeader(null))));
+
+		try {
+			_getIntHeader(String.valueOf(RandomTestUtil.randomDouble()));
+
+			Assert.fail();
+		}
+		catch (NumberFormatException numberFormatException) {
+		}
+	}
+
 	private long _getDateHeader(String ifModifiedSince) {
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
@@ -82,6 +102,22 @@ public class PortletServletRequestTest {
 
 		return portletServletRequest.getDateHeader(
 			HttpHeaders.IF_MODIFIED_SINCE);
+	}
+
+	private int _getIntHeader(String contentLength) {
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		if (contentLength != null) {
+			mockHttpServletRequest.addHeader(
+				HttpHeaders.CONTENT_LENGTH, contentLength);
+		}
+
+		PortletServletRequest portletServletRequest = new PortletServletRequest(
+			mockHttpServletRequest, new RenderRequestImpl(), null, null, null,
+			null, false, true);
+
+		return portletServletRequest.getIntHeader(HttpHeaders.CONTENT_LENGTH);
 	}
 
 }
