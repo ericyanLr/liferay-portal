@@ -55,7 +55,7 @@ public class PermissionCheckFinderEntryCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(15);
+		StringBundler sb = new StringBundler(17);
 
 		sb.append("{permissionCheckFinderEntryId=");
 		sb.append(permissionCheckFinderEntryId);
@@ -65,6 +65,8 @@ public class PermissionCheckFinderEntryCacheModel
 		sb.append(companyId);
 		sb.append(", userId=");
 		sb.append(userId);
+		sb.append(", content=");
+		sb.append(content);
 		sb.append(", integer=");
 		sb.append(integer);
 		sb.append(", name=");
@@ -86,6 +88,14 @@ public class PermissionCheckFinderEntryCacheModel
 		permissionCheckFinderEntryImpl.setGroupId(groupId);
 		permissionCheckFinderEntryImpl.setCompanyId(companyId);
 		permissionCheckFinderEntryImpl.setUserId(userId);
+
+		if (content == null) {
+			permissionCheckFinderEntryImpl.setContent("");
+		}
+		else {
+			permissionCheckFinderEntryImpl.setContent(content);
+		}
+
 		permissionCheckFinderEntryImpl.setInteger(integer);
 
 		if (name == null) {
@@ -108,7 +118,9 @@ public class PermissionCheckFinderEntryCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		permissionCheckFinderEntryId = objectInput.readLong();
 
 		groupId = objectInput.readLong();
@@ -116,6 +128,7 @@ public class PermissionCheckFinderEntryCacheModel
 		companyId = objectInput.readLong();
 
 		userId = objectInput.readLong();
+		content = (String)objectInput.readObject();
 
 		integer = objectInput.readInt();
 		name = objectInput.readUTF();
@@ -131,6 +144,13 @@ public class PermissionCheckFinderEntryCacheModel
 		objectOutput.writeLong(companyId);
 
 		objectOutput.writeLong(userId);
+
+		if (content == null) {
+			objectOutput.writeObject("");
+		}
+		else {
+			objectOutput.writeObject(content);
+		}
 
 		objectOutput.writeInt(integer);
 
@@ -153,9 +173,10 @@ public class PermissionCheckFinderEntryCacheModel
 	public long groupId;
 	public long companyId;
 	public long userId;
+	public String content;
 	public int integer;
 	public String name;
 	public String type;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:141145897
+// LIFERAY-SERVICE-BUILDER-HASH:-748054242

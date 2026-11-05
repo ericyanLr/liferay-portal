@@ -126,6 +126,8 @@ public class PermissionCheckFinderEntryPersistenceTest {
 
 		newPermissionCheckFinderEntry.setUserId(RandomTestUtil.nextLong());
 
+		newPermissionCheckFinderEntry.setContent(RandomTestUtil.randomString());
+
 		newPermissionCheckFinderEntry.setInteger(RandomTestUtil.nextInt());
 
 		newPermissionCheckFinderEntry.setName(RandomTestUtil.randomString());
@@ -154,6 +156,9 @@ public class PermissionCheckFinderEntryPersistenceTest {
 		Assert.assertEquals(
 			existingPermissionCheckFinderEntry.getUserId(),
 			newPermissionCheckFinderEntry.getUserId());
+		Assert.assertEquals(
+			existingPermissionCheckFinderEntry.getContent(),
+			newPermissionCheckFinderEntry.getContent());
 		Assert.assertEquals(
 			existingPermissionCheckFinderEntry.getInteger(),
 			newPermissionCheckFinderEntry.getInteger());
@@ -495,6 +500,8 @@ public class PermissionCheckFinderEntryPersistenceTest {
 
 		permissionCheckFinderEntry.setUserId(RandomTestUtil.nextLong());
 
+		permissionCheckFinderEntry.setContent(RandomTestUtil.randomString());
+
 		permissionCheckFinderEntry.setInteger(RandomTestUtil.nextInt());
 
 		permissionCheckFinderEntry.setName(RandomTestUtil.randomString());
@@ -513,4 +520,4 @@ public class PermissionCheckFinderEntryPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1548496291
+// LIFERAY-SERVICE-BUILDER-HASH:1024942413

@@ -8,6 +8,7 @@ package com.liferay.portal.tools.service.builder.test.model;
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.base.BaseTable;
 
+import java.sql.Clob;
 import java.sql.Types;
 
 /**
@@ -34,6 +35,8 @@ public class PermissionCheckFinderEntryTable
 			"companyId", Long.class, Types.BIGINT, Column.FLAG_DEFAULT);
 	public final Column<PermissionCheckFinderEntryTable, Long> userId =
 		createColumn("userId", Long.class, Types.BIGINT, Column.FLAG_DEFAULT);
+	public final Column<PermissionCheckFinderEntryTable, Clob> content =
+		createColumn("content", Clob.class, Types.CLOB, Column.FLAG_DEFAULT);
 	public final Column<PermissionCheckFinderEntryTable, Integer> integer =
 		createColumn(
 			"integer_", Integer.class, Types.INTEGER, Column.FLAG_DEFAULT);
@@ -48,4 +51,4 @@ public class PermissionCheckFinderEntryTable
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-754287770
+// LIFERAY-SERVICE-BUILDER-HASH:462696288

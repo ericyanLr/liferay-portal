@@ -63,8 +63,9 @@ public class PermissionCheckFinderEntryModelImpl
 	public static final Object[][] TABLE_COLUMNS = {
 		{"permissionCheckFinderEntryId", Types.BIGINT},
 		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
-		{"userId", Types.BIGINT}, {"integer_", Types.INTEGER},
-		{"name", Types.VARCHAR}, {"type_", Types.VARCHAR}
+		{"userId", Types.BIGINT}, {"content", Types.CLOB},
+		{"integer_", Types.INTEGER}, {"name", Types.VARCHAR},
+		{"type_", Types.VARCHAR}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
@@ -75,13 +76,14 @@ public class PermissionCheckFinderEntryModelImpl
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("companyId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("userId", Types.BIGINT);
+		TABLE_COLUMNS_MAP.put("content", Types.CLOB);
 		TABLE_COLUMNS_MAP.put("integer_", Types.INTEGER);
 		TABLE_COLUMNS_MAP.put("name", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("type_", Types.VARCHAR);
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table PermissionCheckFinderEntry (permissionCheckFinderEntryId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,integer_ INTEGER,name VARCHAR(75) null,type_ VARCHAR(75) null)";
+		"create table PermissionCheckFinderEntry (permissionCheckFinderEntryId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,content TEXT null,integer_ INTEGER,name VARCHAR(75) null,type_ VARCHAR(75) null)";
 
 	public static final String TABLE_SQL_DROP =
 		"drop table PermissionCheckFinderEntry";
@@ -92,13 +94,13 @@ public class PermissionCheckFinderEntryModelImpl
 		"permissionCheckFinderEntryId";
 
 	public static final String ORDER_BY_JPQL =
-		" ORDER BY permissionCheckFinderEntry.integer ASC, permissionCheckFinderEntry.type ASC";
+		" ORDER BY permissionCheckFinderEntry.integer ASC, permissionCheckFinderEntry.type ASC, permissionCheckFinderEntry.content ASC";
 
 	public static final String ORDER_BY_SQL =
-		" ORDER BY PermissionCheckFinderEntry.integer_ ASC, PermissionCheckFinderEntry.type_ ASC";
+		" ORDER BY PermissionCheckFinderEntry.integer_ ASC, PermissionCheckFinderEntry.type_ ASC, PermissionCheckFinderEntry.content ASC";
 
 	public static final String ORDER_BY_SQL_INLINE_DISTINCT =
-		" ORDER BY permissionCheckFinderEntry.integer_ ASC, permissionCheckFinderEntry.type_ ASC";
+		" ORDER BY permissionCheckFinderEntry.integer_ ASC, permissionCheckFinderEntry.type_ ASC, permissionCheckFinderEntry.content ASC";
 
 	public static final String DATA_SOURCE = "liferayDataSource";
 
@@ -143,6 +145,13 @@ public class PermissionCheckFinderEntryModelImpl
 	 */
 	@Deprecated
 	public static final long TYPE_COLUMN_BITMASK = 4L;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *		#getColumnBitmask(String)}
+	 */
+	@Deprecated
+	public static final long CONTENT_COLUMN_BITMASK = 8L;
 
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
 		com.liferay.portal.tools.service.builder.test.service.util.ServiceProps.
@@ -259,6 +268,8 @@ public class PermissionCheckFinderEntryModelImpl
 			attributeGetterFunctions.put(
 				"userId", PermissionCheckFinderEntry::getUserId);
 			attributeGetterFunctions.put(
+				"content", PermissionCheckFinderEntry::getContent);
+			attributeGetterFunctions.put(
 				"integer", PermissionCheckFinderEntry::getInteger);
 			attributeGetterFunctions.put(
 				"name", PermissionCheckFinderEntry::getName);
@@ -300,6 +311,10 @@ public class PermissionCheckFinderEntryModelImpl
 				"userId",
 				(BiConsumer<PermissionCheckFinderEntry, Long>)
 					PermissionCheckFinderEntry::setUserId);
+			attributeSetterBiConsumers.put(
+				"content",
+				(BiConsumer<PermissionCheckFinderEntry, String>)
+					PermissionCheckFinderEntry::setContent);
 			attributeSetterBiConsumers.put(
 				"integer",
 				(BiConsumer<PermissionCheckFinderEntry, Integer>)
@@ -400,6 +415,25 @@ public class PermissionCheckFinderEntryModelImpl
 
 	@Override
 	public void setUserUuid(String userUuid) {
+	}
+
+	@Override
+	public String getContent() {
+		if (_content == null) {
+			return "";
+		}
+		else {
+			return _content;
+		}
+	}
+
+	@Override
+	public void setContent(String content) {
+		if (_columnOriginalValues == Collections.EMPTY_MAP) {
+			_setColumnOriginalValues();
+		}
+
+		_content = content;
 	}
 
 	@Override
@@ -517,6 +551,7 @@ public class PermissionCheckFinderEntryModelImpl
 		permissionCheckFinderEntryImpl.setGroupId(getGroupId());
 		permissionCheckFinderEntryImpl.setCompanyId(getCompanyId());
 		permissionCheckFinderEntryImpl.setUserId(getUserId());
+		permissionCheckFinderEntryImpl.setContent(getContent());
 		permissionCheckFinderEntryImpl.setInteger(getInteger());
 		permissionCheckFinderEntryImpl.setName(getName());
 		permissionCheckFinderEntryImpl.setType(getType());
@@ -539,6 +574,8 @@ public class PermissionCheckFinderEntryModelImpl
 			this.<Long>getColumnOriginalValue("companyId"));
 		permissionCheckFinderEntryImpl.setUserId(
 			this.<Long>getColumnOriginalValue("userId"));
+		permissionCheckFinderEntryImpl.setContent(
+			this.<String>getColumnOriginalValue("content"));
 		permissionCheckFinderEntryImpl.setInteger(
 			this.<Integer>getColumnOriginalValue("integer_"));
 		permissionCheckFinderEntryImpl.setName(
@@ -570,6 +607,12 @@ public class PermissionCheckFinderEntryModelImpl
 		}
 
 		value = getType().compareTo(permissionCheckFinderEntry.getType());
+
+		if (value != 0) {
+			return value;
+		}
+
+		value = getContent().compareTo(permissionCheckFinderEntry.getContent());
 
 		if (value != 0) {
 			return value;
@@ -645,6 +688,14 @@ public class PermissionCheckFinderEntryModelImpl
 		permissionCheckFinderEntryCacheModel.companyId = getCompanyId();
 
 		permissionCheckFinderEntryCacheModel.userId = getUserId();
+
+		permissionCheckFinderEntryCacheModel.content = getContent();
+
+		String content = permissionCheckFinderEntryCacheModel.content;
+
+		if ((content != null) && (content.length() == 0)) {
+			permissionCheckFinderEntryCacheModel.content = null;
+		}
 
 		permissionCheckFinderEntryCacheModel.integer = getInteger();
 
@@ -731,6 +782,7 @@ public class PermissionCheckFinderEntryModelImpl
 	private long _groupId;
 	private long _companyId;
 	private long _userId;
+	private String _content;
 	private int _integer;
 	private String _name;
 	private String _type;
@@ -770,6 +822,7 @@ public class PermissionCheckFinderEntryModelImpl
 		_columnOriginalValues.put("groupId", _groupId);
 		_columnOriginalValues.put("companyId", _companyId);
 		_columnOriginalValues.put("userId", _userId);
+		_columnOriginalValues.put("content", _content);
 		_columnOriginalValues.put("integer_", _integer);
 		_columnOriginalValues.put("name", _name);
 		_columnOriginalValues.put("type_", _type);
@@ -805,11 +858,13 @@ public class PermissionCheckFinderEntryModelImpl
 
 		columnBitmasks.put("userId", 8L);
 
-		columnBitmasks.put("integer_", 16L);
+		columnBitmasks.put("content", 16L);
 
-		columnBitmasks.put("name", 32L);
+		columnBitmasks.put("integer_", 32L);
 
-		columnBitmasks.put("type_", 64L);
+		columnBitmasks.put("name", 64L);
+
+		columnBitmasks.put("type_", 128L);
 
 		_columnBitmasks = Collections.unmodifiableMap(columnBitmasks);
 	}
@@ -818,4 +873,4 @@ public class PermissionCheckFinderEntryModelImpl
 	private PermissionCheckFinderEntry _escapedModel;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:597711262
+// LIFERAY-SERVICE-BUILDER-HASH:1930108390

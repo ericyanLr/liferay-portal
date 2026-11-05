@@ -76,10 +76,9 @@ public class ClobEntryModelImpl
 	public static final String ENTITY_ALIAS = "clobEntry";
 
 	public static final String ORDER_BY_JPQL =
-		" ORDER BY clobEntry.clobEntryId ASC";
+		" ORDER BY clobEntry.content ASC";
 
-	public static final String ORDER_BY_SQL =
-		" ORDER BY ClobEntry.clobEntryId ASC";
+	public static final String ORDER_BY_SQL = " ORDER BY ClobEntry.content ASC";
 
 	public static final String DATA_SOURCE = "liferayDataSource";
 
@@ -110,7 +109,7 @@ public class ClobEntryModelImpl
 	 *		#getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long CLOBENTRYID_COLUMN_BITMASK = 1L;
+	public static final long CONTENT_COLUMN_BITMASK = 1L;
 
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
 		com.liferay.portal.tools.service.builder.test.service.util.ServiceProps.
@@ -353,17 +352,15 @@ public class ClobEntryModelImpl
 
 	@Override
 	public int compareTo(ClobEntry clobEntry) {
-		long primaryKey = clobEntry.getPrimaryKey();
+		int value = 0;
 
-		if (getPrimaryKey() < primaryKey) {
-			return -1;
+		value = getContent().compareTo(clobEntry.getContent());
+
+		if (value != 0) {
+			return value;
 		}
-		else if (getPrimaryKey() > primaryKey) {
-			return 1;
-		}
-		else {
-			return 0;
-		}
+
+		return 0;
 	}
 
 	@Override
@@ -550,4 +547,4 @@ public class ClobEntryModelImpl
 	private ClobEntry _escapedModel;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:42633753
+// LIFERAY-SERVICE-BUILDER-HASH:-467413646

@@ -341,6 +341,7 @@ create table PermissionCheckFinderEntry (
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
+	content TEXT null,
 	integer_ INTEGER,
 	name VARCHAR(75) null,
 	type_ VARCHAR(75) null

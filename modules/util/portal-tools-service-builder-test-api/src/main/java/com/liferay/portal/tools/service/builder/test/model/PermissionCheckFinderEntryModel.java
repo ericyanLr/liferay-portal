@@ -120,6 +120,21 @@ public interface PermissionCheckFinderEntryModel
 	public void setUserUuid(String userUuid);
 
 	/**
+	 * Returns the content of this permission check finder entry.
+	 *
+	 * @return the content of this permission check finder entry
+	 */
+	@AutoEscape
+	public String getContent();
+
+	/**
+	 * Sets the content of this permission check finder entry.
+	 *
+	 * @param content the content of this permission check finder entry
+	 */
+	public void setContent(String content);
+
+	/**
 	 * Returns the integer of this permission check finder entry.
 	 *
 	 * @return the integer of this permission check finder entry
@@ -171,4 +186,4 @@ public interface PermissionCheckFinderEntryModel
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:308110582
+// LIFERAY-SERVICE-BUILDER-HASH:576683986

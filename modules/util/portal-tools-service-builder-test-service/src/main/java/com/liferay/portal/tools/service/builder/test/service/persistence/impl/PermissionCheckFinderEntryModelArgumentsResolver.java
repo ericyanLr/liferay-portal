@@ -142,9 +142,11 @@ public class PermissionCheckFinderEntryModelArgumentsResolver
 			PermissionCheckFinderEntryModelImpl.getColumnBitmask("integer_");
 		orderByColumnsBitmask |=
 			PermissionCheckFinderEntryModelImpl.getColumnBitmask("type_");
+		orderByColumnsBitmask |=
+			PermissionCheckFinderEntryModelImpl.getColumnBitmask("content");
 
 		_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-383010236
+// LIFERAY-SERVICE-BUILDER-HASH:-1842665676

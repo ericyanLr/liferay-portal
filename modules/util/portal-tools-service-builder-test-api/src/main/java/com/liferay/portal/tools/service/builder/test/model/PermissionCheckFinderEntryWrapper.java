@@ -40,6 +40,7 @@ public class PermissionCheckFinderEntryWrapper
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
+		attributes.put("content", getContent());
 		attributes.put("integer", getInteger());
 		attributes.put("name", getName());
 		attributes.put("type", getType());
@@ -74,6 +75,12 @@ public class PermissionCheckFinderEntryWrapper
 			setUserId(userId);
 		}
 
+		String content = (String)attributes.get("content");
+
+		if (content != null) {
+			setContent(content);
+		}
+
 		Integer integer = (Integer)attributes.get("integer");
 
 		if (integer != null) {
@@ -106,6 +113,16 @@ public class PermissionCheckFinderEntryWrapper
 	@Override
 	public long getCompanyId() {
 		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the content of this permission check finder entry.
+	 *
+	 * @return the content of this permission check finder entry
+	 */
+	@Override
+	public String getContent() {
+		return model.getContent();
 	}
 
 	/**
@@ -204,6 +221,16 @@ public class PermissionCheckFinderEntryWrapper
 	}
 
 	/**
+	 * Sets the content of this permission check finder entry.
+	 *
+	 * @param content the content of this permission check finder entry
+	 */
+	@Override
+	public void setContent(String content) {
+		model.setContent(content);
+	}
+
+	/**
 	 * Sets the group ID of this permission check finder entry.
 	 *
 	 * @param groupId the group ID of this permission check finder entry
@@ -299,4 +326,4 @@ public class PermissionCheckFinderEntryWrapper
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:783406413
+// LIFERAY-SERVICE-BUILDER-HASH:2105846513
