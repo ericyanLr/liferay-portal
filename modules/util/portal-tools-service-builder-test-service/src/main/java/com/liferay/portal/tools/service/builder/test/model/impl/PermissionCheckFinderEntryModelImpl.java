@@ -94,13 +94,13 @@ public class PermissionCheckFinderEntryModelImpl
 		"permissionCheckFinderEntryId";
 
 	public static final String ORDER_BY_JPQL =
-		" ORDER BY permissionCheckFinderEntry.integer ASC, permissionCheckFinderEntry.type ASC, permissionCheckFinderEntry.content ASC";
+		" ORDER BY permissionCheckFinderEntry.integer ASC, permissionCheckFinderEntry.type ASC, CAST_CLOB_TEXT(permissionCheckFinderEntry.content) ASC";
 
 	public static final String ORDER_BY_SQL =
-		" ORDER BY PermissionCheckFinderEntry.integer_ ASC, PermissionCheckFinderEntry.type_ ASC, PermissionCheckFinderEntry.content ASC";
+		" ORDER BY PermissionCheckFinderEntry.integer_ ASC, PermissionCheckFinderEntry.type_ ASC, CAST_CLOB_TEXT(PermissionCheckFinderEntry.content) ASC";
 
 	public static final String ORDER_BY_SQL_INLINE_DISTINCT =
-		" ORDER BY permissionCheckFinderEntry.integer_ ASC, permissionCheckFinderEntry.type_ ASC, permissionCheckFinderEntry.content ASC";
+		" ORDER BY permissionCheckFinderEntry.integer_ ASC, permissionCheckFinderEntry.type_ ASC, CAST_CLOB_TEXT(permissionCheckFinderEntry.content) ASC";
 
 	public static final String DATA_SOURCE = "liferayDataSource";
 
@@ -873,4 +873,4 @@ public class PermissionCheckFinderEntryModelImpl
 	private PermissionCheckFinderEntry _escapedModel;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1930108390
+// LIFERAY-SERVICE-BUILDER-HASH:-423900581

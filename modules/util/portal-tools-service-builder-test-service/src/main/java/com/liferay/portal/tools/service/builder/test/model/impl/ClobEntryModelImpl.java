@@ -76,9 +76,10 @@ public class ClobEntryModelImpl
 	public static final String ENTITY_ALIAS = "clobEntry";
 
 	public static final String ORDER_BY_JPQL =
-		" ORDER BY clobEntry.content ASC";
+		" ORDER BY CAST_CLOB_TEXT(clobEntry.content) ASC";
 
-	public static final String ORDER_BY_SQL = " ORDER BY ClobEntry.content ASC";
+	public static final String ORDER_BY_SQL =
+		" ORDER BY CAST_CLOB_TEXT(ClobEntry.content) ASC";
 
 	public static final String DATA_SOURCE = "liferayDataSource";
 
@@ -547,4 +548,4 @@ public class ClobEntryModelImpl
 	private ClobEntry _escapedModel;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-467413646
+// LIFERAY-SERVICE-BUILDER-HASH:525364114
