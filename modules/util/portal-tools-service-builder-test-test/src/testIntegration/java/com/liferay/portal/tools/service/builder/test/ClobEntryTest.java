@@ -51,6 +51,9 @@ public class ClobEntryTest {
 			clobEntry2 = _addClobEntry("bbb");
 
 			Assert.assertEquals(
+				Arrays.asList(clobEntry1, clobEntry2),
+				_clobEntryPersistence.findAll());
+			Assert.assertEquals(
 				Arrays.asList(clobEntry2, clobEntry1),
 				_clobEntryPersistence.findAll(
 					QueryUtil.ALL_POS, QueryUtil.ALL_POS,

@@ -128,6 +128,12 @@
 		<!-- Other fields -->
 
 		<column name="content" type="String" />
+
+		<!-- Order -->
+
+		<order by="asc">
+			<order-column name="content" />
+		</order>
 	</entity>
 	<entity local-service="false" name="ColumnNameEntry" remote-service="false">
 
@@ -648,6 +654,7 @@
 
 		<!-- Other fields -->
 
+		<column name="content" type="String" />
 		<column name="integer" type="int" />
 		<column name="name" type="String" />
 		<column name="type" type="String" />
@@ -657,6 +664,7 @@
 		<order by="asc">
 			<order-column name="integer" />
 			<order-column name="type" />
+			<order-column name="content" />
 		</order>
 
 		<!-- Finder methods -->
