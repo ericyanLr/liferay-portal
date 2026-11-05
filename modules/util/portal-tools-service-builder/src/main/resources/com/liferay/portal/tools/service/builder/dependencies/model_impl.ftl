@@ -177,10 +177,14 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 
 	<#list orderList as order>
 		<#if entity.hasCompoundPK() && order.isPrimary()>
-			<#assign orderByJPQL = orderByJPQL + entity.alias + ".id." + order.name />
+			<#assign orderByField = entity.alias + ".id." + order.name />
 		<#else>
-			<#assign orderByJPQL = orderByJPQL + entity.alias + "." + order.name />
+			<#assign orderByField = entity.alias + "." + order.name />
 		</#if>
+		<#if serviceBuilder.getSqlType(entity.getName(), order) == "CLOB">
+			<#assign orderByField = "CAST_CLOB_TEXT(" + orderByField + ")" />
+		</#if>
+		<#assign orderByJPQL = orderByJPQL + orderByField />
 
 		<#if order.isOrderByAscending()>
 			<#assign orderByJPQL = orderByJPQL + " ASC" />
@@ -204,7 +208,11 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 	<#assign orderBySQL = "" />
 
 	<#list orderList as order>
-		<#assign orderBySQL = orderBySQL + entity.table + "." + order.DBName />
+		<#assign orderByField = entity.table + "." + order.DBName />
+		<#if serviceBuilder.getSqlType(entity.getName(), order) == "CLOB">
+			<#assign orderByField = "CAST_CLOB_TEXT(" + orderByField + ")" />
+		</#if>
+		<#assign orderBySQL = orderBySQL + orderByField />
 
 		<#if order.isOrderByAscending()>
 			<#assign orderBySQL = orderBySQL + " ASC" />
@@ -223,7 +231,11 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 		<#assign orderBySQLInlineDistinct = "" />
 
 		<#list orderList as order>
-			<#assign orderBySQLInlineDistinct = orderBySQLInlineDistinct + entity.alias + "." + order.DBName />
+			<#assign orderByField = entity.alias + "." + order.DBName />
+			<#if serviceBuilder.getSqlType(entity.getName(), order) == "CLOB">
+				<#assign orderByField = "CAST_CLOB_TEXT(" + orderByField + ")" />
+			</#if>
+			<#assign orderBySQLInlineDistinct = orderBySQLInlineDistinct + orderByField />
 
 			<#if order.isOrderByAscending()>
 				<#assign orderBySQLInlineDistinct = orderBySQLInlineDistinct + " ASC" />
