@@ -43,9 +43,16 @@ public class PortletURLEncryptionUtil {
 
 		List<KeyValuePair> encryptedParameters = TransformUtil.transform(
 			parameters,
-			keyValuePair -> new KeyValuePair(
-				keyValuePair.getKey(),
-				_encryptValue(key, keyValuePair.getValue())));
+			keyValuePair -> {
+				String name = keyValuePair.getKey();
+				String value = keyValuePair.getValue();
+
+				if (!_isExcludedParameter(name)) {
+					value = _encryptValue(key, value);
+				}
+
+				return new KeyValuePair(name, value);
+			});
 
 		encryptedParameters.add(new KeyValuePair(WebKeys.ENCRYPT, "1"));
 
@@ -115,7 +122,7 @@ public class PortletURLEncryptionUtil {
 		PortletURLEncryptionUtil.class);
 
 	private static final Set<String> _excludedParameterNames =
-		SetUtil.fromArray(WebKeys.ENCRYPT);
+		SetUtil.fromArray("p_auth", WebKeys.ENCRYPT);
 
 	private static class DecryptedHttpServletRequest
 		extends HttpServletRequestWrapper {
