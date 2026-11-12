@@ -1165,9 +1165,10 @@ public class PortletURLImpl
 				continue;
 			}
 
-			for (String value : values) {
-				_appendNamespaceAndEncode(sb, name);
+			String namespacedName = _getNamespacedName(name);
 
+			for (String value : values) {
+				sb.append(URLCodec.encodeURL(namespacedName));
 				sb.append(StringPool.EQUAL);
 
 				if (value == null) {
@@ -1345,23 +1346,6 @@ public class PortletURLImpl
 		if (layout != null) {
 			_plid = layout.getPlid();
 		}
-	}
-
-	private void _appendNamespaceAndEncode(StringBundler sb, String name) {
-		String namespace = getNamespace();
-
-		if (!name.startsWith(PortletQName.PUBLIC_RENDER_PARAMETER_NAMESPACE) &&
-			!name.startsWith(namespace) &&
-			!PortalUtil.isReservedParameter(name)) {
-
-			if (_encodedNamespace == null) {
-				_encodedNamespace = URLCodec.encodeURL(namespace);
-			}
-
-			sb.append(_encodedNamespace);
-		}
-
-		sb.append(URLCodec.encodeURL(name));
 	}
 
 	private void _callPortletURLGenerationListener() {
@@ -1578,6 +1562,19 @@ public class PortletURLImpl
 		return _mutableRenderParametersImpl;
 	}
 
+	private String _getNamespacedName(String name) {
+		String namespace = getNamespace();
+
+		if (name.startsWith(PortletQName.PUBLIC_RENDER_PARAMETER_NAMESPACE) ||
+			name.startsWith(namespace) ||
+			PortalUtil.isReservedParameter(name)) {
+
+			return name;
+		}
+
+		return namespace.concat(name);
+	}
+
 	private void _initMutableRenderParameters() {
 		Set<String> publicRenderParameterNames;
 		Map<String, String[]> mutableRenderParameterMap = null;
@@ -1771,7 +1768,6 @@ public class PortletURLImpl
 	private long _doAsGroupId;
 	private long _doAsUserId;
 	private String _doAsUserLanguageId;
-	private String _encodedNamespace;
 	private boolean _encrypt;
 	private boolean _escapeXml = PropsValues.PORTLET_URL_ESCAPE_XML;
 	private final HttpServletRequest _httpServletRequest;
