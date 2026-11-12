@@ -14,9 +14,11 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -72,8 +74,13 @@ public class PortletURLEncryptionUtil {
 		try {
 			Company company = CompanyLocalServiceUtil.getCompanyById(companyId);
 
+			Map<String, String[]> parameterMap =
+				HttpComponentsUtil.getParameterMap(
+					HttpComponentsUtil.getQueryString(httpServletRequest));
+
 			httpServletRequest = new DecryptedHttpServletRequest(
-				httpServletRequest, company.getKeyObj());
+				httpServletRequest,
+				_getDecryptedValuesMap(company.getKeyObj(), parameterMap));
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
@@ -99,6 +106,57 @@ public class PortletURLEncryptionUtil {
 
 			return value;
 		}
+	}
+
+	private static Map<String, Map<String, String>> _getDecryptedValuesMap(
+		Key key, Map<String, String[]> parameterMap) {
+
+		Map<String, Map<String, String>> decryptedValuesMap = new HashMap<>();
+
+		for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
+			String name = null;
+
+			try {
+				name = URLCodec.decodeURL(entry.getKey());
+			}
+			catch (IllegalArgumentException illegalArgumentException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(illegalArgumentException);
+				}
+
+				continue;
+			}
+
+			if (_isExcludedParameter(name)) {
+				continue;
+			}
+
+			Map<String, String> decryptedValues =
+				decryptedValuesMap.computeIfAbsent(
+					name, parameterName -> new HashMap<>());
+
+			for (String value : entry.getValue()) {
+				if (Validator.isNull(value) ||
+					decryptedValues.containsKey(value)) {
+
+					continue;
+				}
+
+				try {
+					decryptedValues.put(
+						value, EncryptorUtil.decrypt(key, value));
+				}
+				catch (EncryptorException encryptorException) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(encryptorException);
+					}
+
+					decryptedValues.put(value, StringPool.BLANK);
+				}
+			}
+		}
+
+		return decryptedValuesMap;
 	}
 
 	private static Key _getKey(long companyId) {
@@ -149,7 +207,8 @@ public class PortletURLEncryptionUtil {
 		}
 
 		private DecryptedHttpServletRequest(
-			HttpServletRequest httpServletRequest, Key key) {
+			HttpServletRequest httpServletRequest,
+			Map<String, Map<String, String>> decryptedValuesMap) {
 
 			super(httpServletRequest);
 
@@ -161,22 +220,13 @@ public class PortletURLEncryptionUtil {
 
 				String[] values = entry.getValue();
 
-				for (int i = 0; i < values.length; i++) {
-					if (_isExcludedParameter(name) ||
-						Validator.isNull(values[i])) {
+				Map<String, String> decryptedValues = decryptedValuesMap.get(
+					name);
 
-						continue;
-					}
-
-					try {
-						values[i] = EncryptorUtil.decrypt(key, values[i]);
-					}
-					catch (EncryptorException encryptorException) {
-						if (_log.isDebugEnabled()) {
-							_log.debug(encryptorException);
-						}
-
-						values[i] = StringPool.BLANK;
+				if (decryptedValues != null) {
+					for (int i = 0; i < values.length; i++) {
+						values[i] = decryptedValues.getOrDefault(
+							values[i], values[i]);
 					}
 				}
 
