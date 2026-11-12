@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.portlet.PortletQNameUtil;
 import com.liferay.portal.kernel.portlet.WindowStateFactory;
 import com.liferay.portal.kernel.security.ChecksumUtil;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -1531,7 +1532,8 @@ public class PortletURLImpl
 	private Key _getKey() {
 		try {
 			if (_encrypt) {
-				Company company = PortalUtil.getCompany(_httpServletRequest);
+				Company company = CompanyLocalServiceUtil.getCompanyById(
+					PortalUtil.getCompanyId(_httpServletRequest));
 
 				return company.getKeyObj();
 			}
