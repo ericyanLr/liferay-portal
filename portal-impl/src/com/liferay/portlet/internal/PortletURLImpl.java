@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
+import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
@@ -81,11 +82,13 @@ import java.io.Writer;
 import java.security.Key;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -971,14 +974,14 @@ public class PortletURLImpl
 
 		StringBundler sb = new StringBundler(64);
 
-		Key key = _getKey();
+		List<KeyValuePair> parameters = new ArrayList<>();
 
 		if (Validator.isNull(_layoutFriendlyURL)) {
 			sb.append(PortalUtil.getPortalURL(_httpServletRequest, _secure));
 			sb.append(themeDisplay.getPathMain());
-			sb.append("/portal/layout?p_l_id=");
-			sb.append(processValue(key, _plid));
-			sb.append(StringPool.AMPERSAND);
+			sb.append("/portal/layout?");
+
+			parameters.add(new KeyValuePair("p_l_id", String.valueOf(_plid)));
 		}
 		else {
 
@@ -1011,10 +1014,7 @@ public class PortletURLImpl
 		visitReservedParameters(
 			(name, value) -> {
 				if (!isParameterIncludedInPath(name)) {
-					sb.append(name);
-					sb.append(StringPool.EQUAL);
-					sb.append(processValue(key, value));
-					sb.append(StringPool.AMPERSAND);
+					parameters.add(new KeyValuePair(name, value));
 				}
 			});
 
@@ -1031,9 +1031,8 @@ public class PortletURLImpl
 						EncryptorUtil.encryptUnencoded(
 							company.getKeyObj(), doAsUserIdBytes)));
 
-				sb.append("doAsUserId=");
-				sb.append(processValue(key, doAsUserIdString));
-				sb.append(StringPool.AMPERSAND);
+				parameters.add(
+					new KeyValuePair("doAsUserId", doAsUserIdString));
 			}
 			catch (EncryptorException | PortalException exception) {
 				if (_log.isDebugEnabled()) {
@@ -1045,9 +1044,7 @@ public class PortletURLImpl
 			String doAsUserId = themeDisplay.getDoAsUserId();
 
 			if (Validator.isNotNull(doAsUserId)) {
-				sb.append("doAsUserId=");
-				sb.append(processValue(key, doAsUserId));
-				sb.append(StringPool.AMPERSAND);
+				parameters.add(new KeyValuePair("doAsUserId", doAsUserId));
 			}
 		}
 
@@ -1058,9 +1055,8 @@ public class PortletURLImpl
 		}
 
 		if (Validator.isNotNull(doAsUserLanguageId)) {
-			sb.append("doAsUserLanguageId=");
-			sb.append(processValue(key, doAsUserLanguageId));
-			sb.append(StringPool.AMPERSAND);
+			parameters.add(
+				new KeyValuePair("doAsUserLanguageId", doAsUserLanguageId));
 		}
 
 		long doAsGroupId = _doAsGroupId;
@@ -1070,9 +1066,8 @@ public class PortletURLImpl
 		}
 
 		if (doAsGroupId > 0) {
-			sb.append("doAsGroupId=");
-			sb.append(processValue(key, doAsGroupId));
-			sb.append(StringPool.AMPERSAND);
+			parameters.add(
+				new KeyValuePair("doAsGroupId", String.valueOf(doAsGroupId)));
 		}
 
 		long refererGroupId = _refererGroupId;
@@ -1082,9 +1077,9 @@ public class PortletURLImpl
 		}
 
 		if (refererGroupId > 0) {
-			sb.append("refererGroupId=");
-			sb.append(processValue(key, refererGroupId));
-			sb.append(StringPool.AMPERSAND);
+			parameters.add(
+				new KeyValuePair(
+					"refererGroupId", String.valueOf(refererGroupId)));
 		}
 
 		long refererPlid = _refererPlid;
@@ -1094,16 +1089,13 @@ public class PortletURLImpl
 		}
 
 		if (refererPlid > 0) {
-			sb.append("refererPlid=");
-			sb.append(processValue(key, refererPlid));
-			sb.append(StringPool.AMPERSAND);
+			parameters.add(
+				new KeyValuePair("refererPlid", String.valueOf(refererPlid)));
 		}
 
 		for (String removedPublicParameter : _removePublicRenderParameters) {
-			sb.append(URLCodec.encodeURL(removedPublicParameter));
-			sb.append(StringPool.EQUAL);
-			sb.append(processValue(key, StringPool.BLANK));
-			sb.append(StringPool.AMPERSAND);
+			parameters.add(
+				new KeyValuePair(removedPublicParameter, StringPool.BLANK));
 		}
 
 		Object layoutAssetEntry = _httpServletRequest.getAttribute(
@@ -1115,9 +1107,10 @@ public class PortletURLImpl
 			if ((_layout != null) && _layout.isTypeAssetDisplay() &&
 				(assetEntry != null)) {
 
-				sb.append("assetEntryId=");
-				sb.append(processValue(key, assetEntry.getEntryId()));
-				sb.append(StringPool.AMPERSAND);
+				parameters.add(
+					new KeyValuePair(
+						"assetEntryId",
+						String.valueOf(assetEntry.getEntryId())));
 			}
 		}
 
@@ -1168,30 +1161,15 @@ public class PortletURLImpl
 			String namespacedName = _getNamespacedName(name);
 
 			for (String value : values) {
-				sb.append(URLCodec.encodeURL(namespacedName));
-				sb.append(StringPool.EQUAL);
-
 				if (value == null) {
-					sb.append(
-						processValue(
-							key,
-							LiferayMutablePortletParameters.NULL_PARAM_VALUE));
-				}
-				else {
-					sb.append(processValue(key, value));
+					value = LiferayMutablePortletParameters.NULL_PARAM_VALUE;
 				}
 
-				sb.append(StringPool.AMPERSAND);
+				parameters.add(new KeyValuePair(namespacedName, value));
 			}
 		}
 
-		if (_encrypt) {
-			sb.append(WebKeys.ENCRYPT);
-			sb.append("=1");
-		}
-		else {
-			sb.setIndex(sb.index() - 1);
-		}
+		_appendQueryString(sb, parameters);
 
 		String result = sb.toString();
 
@@ -1345,6 +1323,27 @@ public class PortletURLImpl
 
 		if (layout != null) {
 			_plid = layout.getPlid();
+		}
+	}
+
+	private void _appendQueryString(
+		StringBundler sb, List<KeyValuePair> parameters) {
+
+		Key key = _getKey();
+
+		for (KeyValuePair keyValuePair : parameters) {
+			sb.append(URLCodec.encodeURL(keyValuePair.getKey()));
+			sb.append(StringPool.EQUAL);
+			sb.append(processValue(key, keyValuePair.getValue()));
+			sb.append(StringPool.AMPERSAND);
+		}
+
+		if (_encrypt) {
+			sb.append(WebKeys.ENCRYPT);
+			sb.append("=1");
+		}
+		else {
+			sb.setIndex(sb.index() - 1);
 		}
 	}
 
