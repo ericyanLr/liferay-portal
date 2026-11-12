@@ -6,22 +6,28 @@
 package com.liferay.portlet.internal;
 
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.encryptor.EncryptorException;
 import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.servlet.EncryptedServletRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import java.security.Key;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Eric Yan
@@ -57,7 +63,7 @@ public class PortletURLEncryptionUtil {
 		try {
 			Company company = CompanyLocalServiceUtil.getCompanyById(companyId);
 
-			httpServletRequest = new EncryptedServletRequest(
+			httpServletRequest = new DecryptedHttpServletRequest(
 				httpServletRequest, company.getKeyObj());
 		}
 		catch (Exception exception) {
@@ -101,5 +107,67 @@ public class PortletURLEncryptionUtil {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortletURLEncryptionUtil.class);
+
+	private static class DecryptedHttpServletRequest
+		extends HttpServletRequestWrapper {
+
+		@Override
+		public String getParameter(String name) {
+			String[] values = _params.get(name);
+
+			if (ArrayUtil.isNotEmpty(values)) {
+				return values[0];
+			}
+
+			return null;
+		}
+
+		@Override
+		public Map<String, String[]> getParameterMap() {
+			return Collections.unmodifiableMap(_params);
+		}
+
+		@Override
+		public String[] getParameterValues(String name) {
+			return _params.get(name);
+		}
+
+		private DecryptedHttpServletRequest(
+			HttpServletRequest httpServletRequest, Key key) {
+
+			super(httpServletRequest);
+
+			Map<String, String[]> parameters =
+				httpServletRequest.getParameterMap();
+
+			for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
+				String name = entry.getKey();
+
+				String[] values = entry.getValue();
+
+				for (int i = 0; i < values.length; i++) {
+					if (Validator.isNull(values[i])) {
+						continue;
+					}
+
+					try {
+						values[i] = EncryptorUtil.decrypt(key, values[i]);
+					}
+					catch (EncryptorException encryptorException) {
+						if (_log.isDebugEnabled()) {
+							_log.debug(encryptorException);
+						}
+
+						values[i] = StringPool.BLANK;
+					}
+				}
+
+				_params.put(name, values);
+			}
+		}
+
+		private final Map<String, String[]> _params = new HashMap<>();
+
+	}
 
 }
