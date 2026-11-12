@@ -1114,6 +1114,7 @@ public class PortletURLImpl
 
 				sb.append(URLCodec.encodeURL(removedPublicParameter));
 				sb.append(StringPool.EQUAL);
+				sb.append(processValue(key, StringPool.BLANK));
 				sb.append(StringPool.AMPERSAND);
 			}
 		}
@@ -1128,7 +1129,7 @@ public class PortletURLImpl
 				(assetEntry != null)) {
 
 				sb.append("assetEntryId=");
-				sb.append(assetEntry.getEntryId());
+				sb.append(processValue(key, assetEntry.getEntryId()));
 				sb.append(StringPool.AMPERSAND);
 			}
 		}
