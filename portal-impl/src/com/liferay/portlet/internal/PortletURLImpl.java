@@ -7,7 +7,6 @@ package com.liferay.portlet.internal;
 
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.petra.io.BigEndianCodec;
-import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cookies.CookiesManagerUtil;
@@ -1100,23 +1099,11 @@ public class PortletURLImpl
 			sb.append(StringPool.AMPERSAND);
 		}
 
-		if (!_removePublicRenderParameters.isEmpty()) {
-			String lastString = sb.stringAt(sb.index() - 1);
-
-			if (lastString.charAt(lastString.length() - 1) !=
-					CharPool.AMPERSAND) {
-
-				sb.append(StringPool.AMPERSAND);
-			}
-
-			for (String removedPublicParameter :
-					_removePublicRenderParameters) {
-
-				sb.append(URLCodec.encodeURL(removedPublicParameter));
-				sb.append(StringPool.EQUAL);
-				sb.append(processValue(key, StringPool.BLANK));
-				sb.append(StringPool.AMPERSAND);
-			}
+		for (String removedPublicParameter : _removePublicRenderParameters) {
+			sb.append(URLCodec.encodeURL(removedPublicParameter));
+			sb.append(StringPool.EQUAL);
+			sb.append(processValue(key, StringPool.BLANK));
+			sb.append(StringPool.AMPERSAND);
 		}
 
 		Object layoutAssetEntry = _httpServletRequest.getAttribute(
