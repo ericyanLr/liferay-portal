@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.portlet.PortletQNameUtil;
 import com.liferay.portal.kernel.portlet.WindowStateFactory;
 import com.liferay.portal.kernel.security.ChecksumUtil;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
-import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -79,8 +78,6 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
-
-import java.security.Key;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -1170,7 +1167,15 @@ public class PortletURLImpl
 			}
 		}
 
-		_appendQueryString(sb, parameters);
+		if (_encrypt) {
+			_appendQueryString(
+				sb,
+				PortletURLEncryptionUtil.encryptParameters(
+					PortalUtil.getCompanyId(_httpServletRequest), parameters));
+		}
+		else {
+			_appendQueryString(sb, parameters);
+		}
 
 		String result = sb.toString();
 
@@ -1225,27 +1230,6 @@ public class PortletURLImpl
 		}
 
 		return publicRenderParameterName;
-	}
-
-	protected String processValue(Key key, long value) {
-		return processValue(key, String.valueOf(value));
-	}
-
-	protected String processValue(Key key, String value) {
-		if (key == null) {
-			return URLCodec.encodeURL(value);
-		}
-
-		try {
-			return URLCodec.encodeURL(EncryptorUtil.encrypt(key, value));
-		}
-		catch (EncryptorException encryptorException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(encryptorException);
-			}
-
-			return URLCodec.encodeURL(value);
-		}
 	}
 
 	private PortletURLImpl(
@@ -1330,22 +1314,14 @@ public class PortletURLImpl
 	private void _appendQueryString(
 		StringBundler sb, List<KeyValuePair> parameters) {
 
-		Key key = _getKey();
-
 		for (KeyValuePair keyValuePair : parameters) {
 			sb.append(URLCodec.encodeURL(keyValuePair.getKey()));
 			sb.append(StringPool.EQUAL);
-			sb.append(processValue(key, keyValuePair.getValue()));
+			sb.append(URLCodec.encodeURL(keyValuePair.getValue()));
 			sb.append(StringPool.AMPERSAND);
 		}
 
-		if (_encrypt) {
-			sb.append(WebKeys.ENCRYPT);
-			sb.append("=1");
-		}
-		else {
-			sb.setIndex(sb.index() - 1);
-		}
+		sb.setIndex(sb.index() - 1);
 	}
 
 	private void _callPortletURLGenerationListener() {
@@ -1527,22 +1503,6 @@ public class PortletURLImpl
 		}
 
 		return portletURLParams;
-	}
-
-	private Key _getKey() {
-		try {
-			if (_encrypt) {
-				Company company = CompanyLocalServiceUtil.getCompanyById(
-					PortalUtil.getCompanyId(_httpServletRequest));
-
-				return company.getKeyObj();
-			}
-		}
-		catch (Exception exception) {
-			_log.error("Unable to get company key", exception);
-		}
-
-		return null;
 	}
 
 	private LiferayMutablePortletParameters _getMutablePortletParameters(

@@ -78,7 +78,6 @@ import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.plugin.PluginPackageUtil;
 import com.liferay.portal.security.jaas.JAASHelper;
 import com.liferay.portal.service.impl.LayoutTemplateLocalServiceImpl;
-import com.liferay.portal.servlet.EncryptedServletRequest;
 import com.liferay.portal.servlet.I18nServlet;
 import com.liferay.portal.servlet.filters.absoluteredirects.AbsoluteRedirectsResponse;
 import com.liferay.portal.setup.SetupWizardSampleDataUtil;
@@ -97,6 +96,7 @@ import com.liferay.portal.util.ShutdownUtil;
 import com.liferay.portlet.PortletBagFactory;
 import com.liferay.portlet.PortletFilterFactory;
 import com.liferay.portlet.PortletURLListenerFactory;
+import com.liferay.portlet.internal.PortletURLEncryptionUtil;
 import com.liferay.social.kernel.util.SocialConfigurationUtil;
 
 import jakarta.portlet.PortletConfig;
@@ -507,7 +507,9 @@ public class MainServlet extends HttpServlet {
 			_log.debug("Encrypt request");
 		}
 
-		httpServletRequest = _encryptRequest(httpServletRequest, companyId);
+		httpServletRequest =
+			PortletURLEncryptionUtil.getDecryptedHttpServletRequest(
+				companyId, httpServletRequest);
 
 		long userId = PortalUtil.getUserId(httpServletRequest);
 
@@ -707,31 +709,6 @@ public class MainServlet extends HttpServlet {
 				PortletFilterFactory.destroy(portletFilter);
 			}
 		}
-	}
-
-	private HttpServletRequest _encryptRequest(
-		HttpServletRequest httpServletRequest, long companyId) {
-
-		boolean encryptRequest = ParamUtil.getBoolean(
-			httpServletRequest, WebKeys.ENCRYPT);
-
-		if (!encryptRequest) {
-			return httpServletRequest;
-		}
-
-		try {
-			Company company = CompanyLocalServiceUtil.getCompanyById(companyId);
-
-			httpServletRequest = new EncryptedServletRequest(
-				httpServletRequest, company.getKeyObj());
-		}
-		catch (Exception exception) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(exception);
-			}
-		}
-
-		return httpServletRequest;
 	}
 
 	private String _getRemoteUser(
