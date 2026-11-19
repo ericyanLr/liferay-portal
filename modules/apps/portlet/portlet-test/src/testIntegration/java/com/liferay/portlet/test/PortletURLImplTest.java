@@ -6,6 +6,8 @@
 package com.liferay.portlet.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.io.BigEndianCodec;
 import com.liferay.petra.string.StringBundler;
@@ -13,6 +15,7 @@ import com.liferay.portal.kernel.encryptor.Encryptor;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletURLFactory;
 import com.liferay.portal.kernel.security.ChecksumUtil;
@@ -21,8 +24,11 @@ import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HttpComponentsUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -53,6 +59,59 @@ public class PortletURLImplTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
+
+	@Test
+	public void testAssetEntryId() throws Exception {
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		AssetEntry assetEntry = _assetEntryLocalService.createAssetEntry(
+			RandomTestUtil.randomLong());
+
+		mockHttpServletRequest.setAttribute(
+			WebKeys.LAYOUT_ASSET_ENTRY, assetEntry);
+
+		Company company = CompanyLocalServiceUtil.getCompany(
+			TestPropsValues.getCompanyId());
+
+		mockHttpServletRequest.setAttribute(
+			WebKeys.COMPANY_ID, company.getCompanyId());
+
+		_group = GroupTestUtil.addGroup();
+
+		Layout layout = LayoutTestUtil.addTypePortletLayout(_group);
+
+		layout.setType(LayoutConstants.TYPE_ASSET_DISPLAY);
+
+		ThemeDisplay themeDisplay = new ThemeDisplay();
+
+		themeDisplay.setLayout(layout);
+		themeDisplay.setPlid(layout.getPlid());
+		themeDisplay.setPortalURL(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false));
+		themeDisplay.setScopeGroupId(_group.getGroupId());
+		themeDisplay.setSiteGroupId(_group.getGroupId());
+
+		mockHttpServletRequest.setAttribute(
+			WebKeys.THEME_DISPLAY, themeDisplay);
+
+		LiferayPortletURL liferayPortletURL = _portletURLFactory.create(
+			mockHttpServletRequest, PortletKeys.LOGIN, layout,
+			PortletRequest.RENDER_PHASE);
+
+		liferayPortletURL.setEncrypt(true);
+
+		String value = MapUtil.getString(
+			HttpComponentsUtil.getParameterMap(
+				HttpComponentsUtil.getQueryString(
+					liferayPortletURL.toString())),
+			"assetEntryId");
+
+		Assert.assertNotEquals(String.valueOf(assetEntry.getEntryId()), value);
+		Assert.assertEquals(
+			String.valueOf(assetEntry.getEntryId()),
+			_encryptor.decrypt(company.getKeyObj(), value));
+	}
 
 	@Test
 	public void testDoAsUserId() throws Exception {
@@ -175,6 +234,9 @@ public class PortletURLImplTest {
 
 		Assert.assertEquals(expectedToString, liferayPortletURL.toString());
 	}
+
+	@Inject
+	private AssetEntryLocalService _assetEntryLocalService;
 
 	@Inject
 	private Encryptor _encryptor;

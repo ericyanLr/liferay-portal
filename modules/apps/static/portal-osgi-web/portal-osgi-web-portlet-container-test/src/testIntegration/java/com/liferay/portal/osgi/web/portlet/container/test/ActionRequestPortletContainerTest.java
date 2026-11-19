@@ -246,6 +246,41 @@ public class ActionRequestPortletContainerTest
 	}
 
 	@Test
+	public void testPortalAuthenticationTokenWithEncryptedPortletURL()
+		throws Exception {
+
+		testPortlet = new ActionRequestTestPortlet();
+
+		setUpPortlet(
+			testPortlet, new HashMapDictionary<String, Object>(),
+			TEST_PORTLET_ID);
+
+		HttpServletRequest httpServletRequest =
+			PortletContainerTestUtil.getHttpServletRequest(group, layout);
+
+		PortletContainerTestUtil.Response response =
+			PortletContainerTestUtil.getPortalAuthentication(
+				httpServletRequest, layout, TEST_PORTLET_ID);
+
+		testPortlet.reset();
+
+		LiferayPortletURL liferayPortletURL = PortletURLFactoryUtil.create(
+			httpServletRequest, TEST_PORTLET_ID, layout.getPlid(),
+			PortletRequest.ACTION_PHASE);
+
+		liferayPortletURL.setEncrypt(true);
+
+		response = PortletContainerTestUtil.request(
+			HttpComponentsUtil.setParameter(
+				liferayPortletURL.toString(), "p_auth", response.getBody()),
+			Collections.singletonMap("Cookie", response.getCookies()));
+
+		Assert.assertEquals(200, response.getCode());
+
+		Assert.assertTrue(testPortlet.isCalledAction());
+	}
+
+	@Test
 	public void testStrutsAction() throws Exception {
 		setUpPortlet(
 			testPortlet,

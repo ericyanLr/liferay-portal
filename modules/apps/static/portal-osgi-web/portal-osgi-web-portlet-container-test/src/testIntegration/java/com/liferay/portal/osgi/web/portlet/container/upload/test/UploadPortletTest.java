@@ -10,6 +10,7 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
@@ -95,12 +96,18 @@ public class UploadPortletTest extends BasePortletContainerTestCase {
 
 	@Test
 	public void testUploadFile() throws Exception {
-		_testUploadFile();
+		_testUploadFile(false);
+	}
+
+	@Test
+	public void testUploadFileWithEncryptedPortletURL() throws Exception {
+		_testUploadFile(true);
 	}
 
 	@Test
 	public void testUploadZeroBytesFile() throws Exception {
-		PortletContainerTestUtil.Response response = _testUpload(new byte[0]);
+		PortletContainerTestUtil.Response response = _testUpload(
+			new byte[0], false);
 
 		Assert.assertEquals(200, response.getCode());
 
@@ -217,7 +224,8 @@ public class UploadPortletTest extends BasePortletContainerTestCase {
 		httpServletRequest.setAttribute(WebKeys.THEME_DISPLAY, themeDisplay);
 	}
 
-	private PortletContainerTestUtil.Response _testUpload(byte[] bytes)
+	private PortletContainerTestUtil.Response _testUpload(
+			byte[] bytes, boolean encrypt)
 		throws Exception {
 
 		LiferayServletRequest liferayServletRequest =
@@ -231,10 +239,14 @@ public class UploadPortletTest extends BasePortletContainerTestCase {
 		MockMultipartHttpServletRequest mockServletRequest =
 			(MockMultipartHttpServletRequest)servletRequest;
 
+		LiferayPortletURL liferayPortletURL = PortletURLFactoryUtil.create(
+			mockServletRequest, TestUploadPortlet.PORTLET_NAME,
+			layout.getPlid(), PortletRequest.ACTION_PHASE);
+
+		liferayPortletURL.setEncrypt(encrypt);
+
 		String url = PortletURLBuilder.create(
-			PortletURLFactoryUtil.create(
-				mockServletRequest, TestUploadPortlet.PORTLET_NAME,
-				layout.getPlid(), PortletRequest.ACTION_PHASE)
+			liferayPortletURL
 		).setActionName(
 			TestUploadPortlet.MVC_COMMAND_NAME
 		).setParameter(
@@ -247,11 +259,11 @@ public class UploadPortletTest extends BasePortletContainerTestCase {
 			url, mockServletRequest, TestUploadPortlet.PARAMETER_NAME);
 	}
 
-	private void _testUploadFile() throws Exception {
+	private void _testUploadFile(boolean encrypt) throws Exception {
 		String content = "Enterprise. Open Source. For Life.";
 
 		PortletContainerTestUtil.Response response = _testUpload(
-			content.getBytes());
+			content.getBytes(), encrypt);
 
 		Assert.assertEquals(200, response.getCode());
 

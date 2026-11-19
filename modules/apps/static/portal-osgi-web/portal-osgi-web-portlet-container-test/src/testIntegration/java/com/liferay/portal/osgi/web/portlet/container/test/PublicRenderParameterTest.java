@@ -14,6 +14,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.application.type.ApplicationType;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletQName;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
@@ -38,6 +39,7 @@ import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -106,6 +108,68 @@ public class PublicRenderParameterTest extends BasePortletContainerTestCase {
 			).setParameter(
 				_publicRenderParameterName, _publicRenderParameterValue
 			).buildString());
+	}
+
+	@Test
+	public void testWithEncryptedRenderURL() throws Exception {
+		AtomicReference<String> valueAtomicReference = new AtomicReference<>();
+
+		testPortlet = new TestPortlet() {
+
+			@Override
+			public void render(
+				RenderRequest renderRequest, RenderResponse renderResponse) {
+
+				valueAtomicReference.set(
+					renderRequest.getParameter(_publicRenderParameterName));
+			}
+
+		};
+
+		setUpPortlet(
+			testPortlet,
+			HashMapDictionaryBuilder.<String, Object>put(
+				"jakarta.portlet.supported-public-render-parameter",
+				_publicRenderParameterName
+			).put(
+				"jakarta.portlet.version", "3.0"
+			).build(),
+			TEST_PORTLET_ID, false);
+
+		LayoutTestUtil.addPortletToLayout(layout, TEST_PORTLET_ID);
+
+		PortletContainerTestUtil.Response response =
+			PortletContainerTestUtil.request(
+				PortletURLBuilder.create(
+					PortletURLFactoryUtil.create(
+						PortletContainerTestUtil.getHttpServletRequest(
+							group, layout),
+						TEST_PORTLET_ID, layout.getPlid(),
+						PortletRequest.RENDER_PHASE)
+				).setParameter(
+					_publicRenderParameterName, _publicRenderParameterValue
+				).buildString());
+
+		Assert.assertEquals(200, response.getCode());
+
+		Assert.assertEquals(
+			_publicRenderParameterValue, valueAtomicReference.get());
+
+		LiferayPortletURL liferayPortletURL = PortletURLFactoryUtil.create(
+			PortletContainerTestUtil.getHttpServletRequest(group, layout),
+			TEST_PORTLET_ID, layout.getPlid(), PortletRequest.RENDER_PHASE);
+
+		liferayPortletURL.removePublicRenderParameter(
+			_publicRenderParameterName);
+		liferayPortletURL.setEncrypt(true);
+
+		response = PortletContainerTestUtil.request(
+			liferayPortletURL.toString(),
+			Collections.singletonMap("Cookie", response.getCookies()));
+
+		Assert.assertEquals(200, response.getCode());
+
+		Assert.assertNull(valueAtomicReference.get());
 	}
 
 	@Test
