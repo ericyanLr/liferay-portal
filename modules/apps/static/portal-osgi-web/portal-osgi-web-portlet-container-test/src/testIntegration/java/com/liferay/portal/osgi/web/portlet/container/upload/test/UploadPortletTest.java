@@ -97,7 +97,7 @@ public class UploadPortletTest extends BasePortletContainerTestCase {
 	public void testUploadFile() throws Exception {
 		String content = "Enterprise. Open Source. For Life.";
 
-		PortletContainerTestUtil.Response response = testUpload(
+		PortletContainerTestUtil.Response response = _testUpload(
 			content.getBytes());
 
 		Assert.assertEquals(200, response.getCode());
@@ -119,7 +119,7 @@ public class UploadPortletTest extends BasePortletContainerTestCase {
 
 	@Test
 	public void testUploadZeroBytesFile() throws Exception {
-		PortletContainerTestUtil.Response response = testUpload(new byte[0]);
+		PortletContainerTestUtil.Response response = _testUpload(new byte[0]);
 
 		Assert.assertEquals(200, response.getCode());
 
@@ -236,7 +236,7 @@ public class UploadPortletTest extends BasePortletContainerTestCase {
 		httpServletRequest.setAttribute(WebKeys.THEME_DISPLAY, themeDisplay);
 	}
 
-	protected PortletContainerTestUtil.Response testUpload(byte[] bytes)
+	private PortletContainerTestUtil.Response _testUpload(byte[] bytes)
 		throws Exception {
 
 		LiferayServletRequest liferayServletRequest =
