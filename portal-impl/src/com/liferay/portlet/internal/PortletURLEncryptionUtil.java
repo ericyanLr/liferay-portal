@@ -16,6 +16,7 @@ import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Eric Yan
@@ -105,8 +107,15 @@ public class PortletURLEncryptionUtil {
 		return null;
 	}
 
+	private static boolean _isExcludedParameter(String name) {
+		return _excludedParameterNames.contains(name);
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortletURLEncryptionUtil.class);
+
+	private static final Set<String> _excludedParameterNames =
+		SetUtil.fromArray(WebKeys.ENCRYPT);
 
 	private static class DecryptedHttpServletRequest
 		extends HttpServletRequestWrapper {
@@ -146,7 +155,9 @@ public class PortletURLEncryptionUtil {
 				String[] values = entry.getValue();
 
 				for (int i = 0; i < values.length; i++) {
-					if (Validator.isNull(values[i])) {
+					if (_isExcludedParameter(name) ||
+						Validator.isNull(values[i])) {
+
 						continue;
 					}
 
