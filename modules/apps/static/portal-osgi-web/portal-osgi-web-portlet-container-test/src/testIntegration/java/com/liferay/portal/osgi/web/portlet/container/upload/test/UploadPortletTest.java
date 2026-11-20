@@ -277,7 +277,6 @@ public class UploadPortletTest extends BasePortletContainerTestCase {
 
 		TestFileEntry actualTestFileEntry = _testUploadPortlet.get(key);
 
-		Assert.assertNotNull(actualTestFileEntry);
 		Assert.assertEquals(
 			content, StringUtil.read(actualTestFileEntry.getInputStream()));
 	}
