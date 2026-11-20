@@ -95,26 +95,7 @@ public class UploadPortletTest extends BasePortletContainerTestCase {
 
 	@Test
 	public void testUploadFile() throws Exception {
-		String content = "Enterprise. Open Source. For Life.";
-
-		PortletContainerTestUtil.Response response = _testUpload(
-			content.getBytes());
-
-		Assert.assertEquals(200, response.getCode());
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			response.getBody());
-
-		Assert.assertTrue(jsonObject.getBoolean("success"));
-
-		String key =
-			group.getGroupId() + "_0_" + TestUploadPortlet.PARAMETER_NAME;
-
-		TestFileEntry actualTestFileEntry = _testUploadPortlet.get(key);
-
-		Assert.assertNotNull(actualTestFileEntry);
-		Assert.assertEquals(
-			content, StringUtil.read(actualTestFileEntry.getInputStream()));
+		_testUploadFile();
 	}
 
 	@Test
@@ -264,6 +245,29 @@ public class UploadPortletTest extends BasePortletContainerTestCase {
 
 		return PortletContainerTestUtil.postMultipart(
 			url, mockServletRequest, TestUploadPortlet.PARAMETER_NAME);
+	}
+
+	private void _testUploadFile() throws Exception {
+		String content = "Enterprise. Open Source. For Life.";
+
+		PortletContainerTestUtil.Response response = _testUpload(
+			content.getBytes());
+
+		Assert.assertEquals(200, response.getCode());
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			response.getBody());
+
+		Assert.assertTrue(jsonObject.getBoolean("success"));
+
+		String key =
+			group.getGroupId() + "_0_" + TestUploadPortlet.PARAMETER_NAME;
+
+		TestFileEntry actualTestFileEntry = _testUploadPortlet.get(key);
+
+		Assert.assertNotNull(actualTestFileEntry);
+		Assert.assertEquals(
+			content, StringUtil.read(actualTestFileEntry.getInputStream()));
 	}
 
 	private TestUploadPortlet _testUploadPortlet;
