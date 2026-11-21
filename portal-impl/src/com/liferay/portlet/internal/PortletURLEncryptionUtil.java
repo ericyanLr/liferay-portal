@@ -212,10 +212,10 @@ public class PortletURLEncryptionUtil {
 
 			super(httpServletRequest);
 
-			Map<String, String[]> parameters =
+			Map<String, String[]> parameterMap =
 				httpServletRequest.getParameterMap();
 
-			for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
+			for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
 				String name = entry.getKey();
 
 				String[] values = entry.getValue();
