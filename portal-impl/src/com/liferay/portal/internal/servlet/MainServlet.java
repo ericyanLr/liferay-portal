@@ -504,7 +504,7 @@ public class MainServlet extends HttpServlet {
 		httpServletRequest.setAttribute(WebKeys.CTX, getServletContext());
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("Encrypt request");
+			_log.debug("Decrypt request");
 		}
 
 		httpServletRequest =
